@@ -76,10 +76,11 @@ function initDB() {
     const insert = db.prepare('INSERT INTO proxies (host, port, username, password, geo) VALUES (?, ?, ?, ?, ?)');
     for (const line of lines) {
       const parts = line.split(':');
-      if (parts.length >= 2) {
-        const [host, port, username = null, password = null] = parts;
-        insert.run(host, parseInt(port), username, password, 'US');
-      }
+      if (parts.length < 2) continue;
+      const [host, portRaw, username = null, password = null] = parts;
+      const port = parseInt(portRaw);
+      if (!host || isNaN(port)) continue;
+      insert.run(host, port, username, password, 'US');
     }
   }
 
