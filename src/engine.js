@@ -363,8 +363,6 @@ async function runVisit(campaign, proxy, category) {
                         ua.includes('Android')   ? 'Linux armv8l' :
                         ua.includes('Macintosh') ? 'MacIntel' : 'Win32';
     // Connection profile based on device type + proxy GEO
-    // Connection type: wifi/ethernet for desktop, wifi/cellular for mobile
-    // effectiveType for cellular follows GEO quality pool
     const GEO_CELLULAR = {
       US: ['4g','4g','4g','3g'],
       UK: ['4g','4g','3g'],
@@ -399,6 +397,7 @@ async function runVisit(campaign, proxy, category) {
         connProfile = CONN_PROFILES[connType];
       }
     }
+    const noiseSeed = Math.floor(Math.random() * 0xffffffff);
 
     await context.addInitScript(({ w, h, dpr, platform, concurrency, memory, seed, isMobile, connType, connMedium, connDownlink, connRtt }) => {
 
