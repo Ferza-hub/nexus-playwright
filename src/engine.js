@@ -63,8 +63,35 @@ const CATEGORY_PROFILES = {
                secondary:{ weight:20, prefixes:['review ',''],               device:'mixed'   } },
 };
 
+function extractText(html) {
+  // Pull meta description, keywords, og:description — high signal, boost by repeating 3x
+  const metaContent = [...html.matchAll(/<meta[^>]+content=["']([^"']{3,})["'][^>]*>/gi)]
+    .map(m => m[1]).join(' ');
+  const title = (html.match(/<title[^>]*>([^<]+)<\/title>/i) || [])[1] || '';
+
+  // Strip script, style, noscript blocks entirely (removes JS/CSS noise)
+  let body = html
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<noscript[\s\S]*?<\/noscript>/gi, ' ');
+
+  // Strip remaining tags
+  body = body.replace(/<[^>]+>/g, ' ');
+
+  // Decode common HTML entities
+  body = body
+    .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&nbsp;/g, ' ').replace(/&#?\w+;/g, ' ');
+
+  // Collapse whitespace, cap length
+  body = body.replace(/\s+/g, ' ').trim().slice(0, 15000);
+
+  // Repeat meta + title 3x to give them more weight in scoring
+  return `${metaContent} ${title} ${metaContent} ${title} ${metaContent} ${title} ${body}`;
+}
+
 function detectCategory(html) {
-  const text = html.toLowerCase();
+  const text = extractText(html).toLowerCase();
   const scores = {};
   for (const [cat, kws] of Object.entries(CATEGORY_KEYWORDS)) {
     scores[cat] = kws.filter(kw => text.includes(kw)).length;
