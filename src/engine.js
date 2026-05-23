@@ -233,6 +233,7 @@ async function runVisit(campaign, proxy) {
 
   } catch (err) {
     try { await browser?.close(); } catch {}
+    console.error(`[visit error] ${err.message}`);
     return { success: false, reason: err.message };
   }
 }
@@ -276,9 +277,11 @@ async function runCampaign(campaignId) {
           VALUES (?, ?, 'sent', ?, ?, ?, ?, ?)
         `).run(campaignId, proxy?.id, r.duration, r.pages, r.persona, r.device, r.ua);
         db.prepare('UPDATE proxies SET last_used = CURRENT_TIMESTAMP, visits_count = visits_count + 1 WHERE id = ?').run(proxy?.id);
+        console.log(`[ok] ${r.device} ${r.persona} ${r.duration}s proxy#${proxy?.id}`);
       } else {
         db.prepare('UPDATE campaigns SET visits_failed = visits_failed + 1 WHERE id = ?').run(campaignId);
         db.prepare(`INSERT INTO visits (campaign_id, proxy_id, status) VALUES (?, ?, 'failed')`).run(campaignId, proxy?.id);
+        console.log(`[fail] proxy#${proxy?.id} — ${r.reason?.slice(0, 100)}`);
       }
     }
 
