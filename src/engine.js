@@ -331,6 +331,7 @@ async function runVisit(campaign, proxy, category) {
     const context = await browser.newContext({
       userAgent: ua,
       viewport,
+      deviceScaleFactor: device === 'mobile' ? 2 : 1,
       locale: 'en-US',
       timezoneId: 'America/New_York',
       ...(proxyConfig && { proxy: proxyConfig }),
@@ -341,12 +342,57 @@ async function runVisit(campaign, proxy, category) {
       },
     });
 
-    await context.addInitScript(() => {
+    const dpr         = device === 'mobile' ? 2 : 1;
+    const concurrency = device === 'mobile' ? pick([4,6]) : pick([4,6,8,12]);
+    const memory      = device === 'mobile' ? 4 : pick([4,8,16]);
+    const platform    = ua.includes('iPhone') || ua.includes('iPad') ? 'iPhone' :
+                        ua.includes('Android')   ? 'Linux armv8l' :
+                        ua.includes('Macintosh') ? 'MacIntel' : 'Win32';
+
+    await context.addInitScript(({ w, h, dpr, platform, concurrency, memory }) => {
+      // Core anti-detection
       Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
-      Object.defineProperty(navigator, 'plugins',   { get: () => [1,2,3,4,5] });
-      Object.defineProperty(navigator, 'languages', { get: () => ['en-US','en'] });
-      window.chrome = { runtime: {} };
-    });
+      Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
+      Object.defineProperty(navigator, 'platform',  { get: () => platform });
+      Object.defineProperty(navigator, 'hardwareConcurrency', { get: () => concurrency });
+      Object.defineProperty(navigator, 'deviceMemory',        { get: () => memory });
+
+      // Realistic plugins (Chrome default set)
+      const pluginData = [
+        { name: 'Chrome PDF Plugin',  filename: 'internal-pdf-viewer',              description: 'Portable Document Format' },
+        { name: 'Chrome PDF Viewer',  filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai', description: '' },
+        { name: 'Native Client',      filename: 'internal-nacl-plugin',             description: '' },
+      ];
+      Object.defineProperty(navigator, 'plugins', {
+        get: () => Object.assign(pluginData, {
+          item:      i => pluginData[i],
+          namedItem: n => pluginData.find(p => p.name === n) || null,
+          length:    pluginData.length,
+        }),
+      });
+
+      // Screen resolution matching viewport (prevents 0x0 / server resolution leak)
+      const taskbar = platform === 'Win32' ? 40 : 23;
+      Object.defineProperty(screen, 'width',       { get: () => w });
+      Object.defineProperty(screen, 'height',      { get: () => h });
+      Object.defineProperty(screen, 'availWidth',  { get: () => w });
+      Object.defineProperty(screen, 'availHeight', { get: () => h - taskbar });
+      Object.defineProperty(screen, 'colorDepth',  { get: () => 24 });
+      Object.defineProperty(screen, 'pixelDepth',  { get: () => 24 });
+
+      // Window dimensions
+      Object.defineProperty(window, 'devicePixelRatio', { get: () => dpr });
+      Object.defineProperty(window, 'outerWidth',       { get: () => w });
+      Object.defineProperty(window, 'outerHeight',      { get: () => h });
+
+      // Chrome runtime (richer object — bare {} is a known bot signal)
+      window.chrome = {
+        app: { isInstalled: false, InstallState: { DISABLED:'disabled',INSTALLED:'installed',NOT_INSTALLED:'not_installed' }, RunningState: { CANNOT_RUN:'cannot_run',READY_TO_RUN:'ready_to_run',RUNNING:'running' } },
+        runtime: { connect: () => {}, sendMessage: () => {} },
+        loadTimes: () => ({}),
+        csi: () => ({}),
+      };
+    }, { w: viewport.width, h: viewport.height, dpr, platform, concurrency, memory });
 
     const page = await context.newPage();
 
