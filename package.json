@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "install-browsers": "npx playwright install chromium"
+    "postinstall": "npx playwright install chromium"
   },
   "dependencies": {
     "playwright": "^1.44.0",
