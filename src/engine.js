@@ -255,38 +255,6 @@ async function clickRandomLink(page, baseUrl) {
   } catch { return null; }
 }
 
-// ── PRE-VISIT GOOGLE SEARCH ───────────────────────────────────────────────────
-
-async function preVisitSearch(page, targetUrl, searchQuery) {
-  const domain = new URL(targetUrl).hostname;
-  try {
-    await page.goto('https://www.google.com', { waitUntil: 'domcontentloaded', timeout: 12000 });
-    await sleep(rand(800, 2000));
-
-    const box = page.locator('textarea[name="q"], input[name="q"]').first();
-    await box.click();
-    await sleep(rand(200, 500));
-    for (const char of searchQuery) {
-      await page.keyboard.type(char, { delay: rand(60, 180) });
-    }
-    await sleep(rand(400, 1000));
-    await page.keyboard.press('Enter');
-    await page.waitForLoadState('domcontentloaded', { timeout: 10000 });
-    await sleep(rand(1200, 2800));
-
-    const resultLink = page.locator(`a[href*="${domain}"]`).first();
-    if (await resultLink.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await resultLink.click();
-      await page.waitForLoadState('domcontentloaded', { timeout: 20000 });
-      return;
-    }
-  } catch (e) {
-    console.log(`[search fallback] ${e.message?.slice(0, 60)}`);
-  }
-
-  // Fallback — allow error to propagate so runVisit catches it properly
-  await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 20000 });
-}
 
 // ── CORE VISIT ────────────────────────────────────────────────────────────────
 
@@ -294,8 +262,10 @@ async function runVisit(campaign, proxy, category) {
   const tier      = pickTier();
   const device    = resolveDevice(campaign.device, category, tier);
   const persona   = pickPersona(campaign.persona);
-  const referer   = pick(REFERRERS[campaign.traffic_source] || REFERRERS.organic);
   const query     = buildSearchQuery(campaign.target_url, category, tier);
+  const referer   = campaign.traffic_source === 'organic'
+    ? `https://www.google.com/search?q=${encodeURIComponent(query)}`
+    : pick(REFERRERS[campaign.traffic_source] || REFERRERS.organic);
 
   const existing    = proxy ? loadSession(proxy.id) : null;
   const isReturning = !!existing;
@@ -306,8 +276,6 @@ async function runVisit(campaign, proxy, category) {
     server: `http://${proxy.host}:${proxy.port}`,
     ...(proxy.username && { username: proxy.username, password: proxy.password }),
   } : undefined;
-
-  const useSearch = campaign.traffic_source === 'organic' && Math.random() < 0.75;
 
   let browser;
   const startTime = Date.now();
@@ -343,12 +311,8 @@ async function runVisit(campaign, proxy, category) {
 
     const page = await context.newPage();
 
-    if (useSearch) {
-      await preVisitSearch(page, campaign.target_url, query);
-    } else {
-      if (referer) await page.setExtraHTTPHeaders({ 'Referer': referer });
-      await page.goto(campaign.target_url, { waitUntil: 'domcontentloaded', timeout: 20000, referer: referer || undefined });
-    }
+    if (referer) await page.setExtraHTTPHeaders({ 'Referer': referer });
+    await page.goto(campaign.target_url, { waitUntil: 'domcontentloaded', timeout: 20000, referer: referer || undefined });
 
     const vp = page.viewportSize();
     if (!vp) throw new Error('page failed to load');
