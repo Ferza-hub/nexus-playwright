@@ -4,12 +4,12 @@ const { v4: uuidv4 } = require('uuid');
 const { db } = require('./db');
 
 const router = express.Router();
+
 function getPassword() {
   const row = db.prepare("SELECT value FROM settings WHERE key = 'panel_password'").get();
   return row ? row.value : (process.env.PANEL_PASSWORD || 'changeme123');
 }
 
-// Auth middleware
 router.use((req, res, next) => {
   if (req.path === '/auth/login' && req.method === 'POST') return next();
   const t = req.headers['x-auth-token'] || req.query.token;
@@ -17,7 +17,6 @@ router.use((req, res, next) => {
   next();
 });
 
-// ── CAMPAIGNS ──
 router.get('/campaigns', (req, res) => {
   const campaigns = db.prepare(`
     SELECT *, ROUND(CAST(visits_sent AS FLOAT) / visits_total * 100, 1) as progress
@@ -51,7 +50,7 @@ router.post('/campaigns', (req, res) => {
   `).run(id, name, target_url, pagesJson, visits_total, traffic_source, device, persona,
     min_duration, max_duration, bounce_rate, pages_per_session);
 
-  res.json({ id, message: 'Campaign created' });
+  res.json({ id, message: 'Created' });
 });
 
 router.patch('/campaigns/:id/status', (req, res) => {
@@ -68,7 +67,6 @@ router.delete('/campaigns/:id', (req, res) => {
   res.json({ success: true });
 });
 
-// ── PROXIES ──
 router.get('/proxies', (req, res) => {
   res.json(db.prepare('SELECT * FROM proxies ORDER BY id').all());
 });
@@ -100,7 +98,6 @@ router.delete('/proxies/:id', (req, res) => {
   res.json({ success: true });
 });
 
-// ── STATS ──
 router.get('/stats', (req, res) => {
   const totalCampaigns = db.prepare('SELECT COUNT(*) as c FROM campaigns').get().c;
   const activeCampaigns = db.prepare("SELECT COUNT(*) as c FROM campaigns WHERE status = 'running'").get().c;
@@ -131,14 +128,12 @@ router.get('/stats', (req, res) => {
   });
 });
 
-// Auth endpoint
 router.post('/auth/login', (req, res) => {
   const pwd = getPassword();
   if (req.body.password === pwd) res.json({ success: true, token: pwd });
   else res.status(401).json({ error: 'Wrong password' });
 });
 
-// Change password
 router.post('/settings/password', (req, res) => {
   const { current_password, new_password } = req.body;
   if (!new_password || new_password.length < 6)

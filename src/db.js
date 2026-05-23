@@ -1,3 +1,4 @@
+require('dotenv').config();
 const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
@@ -62,14 +63,12 @@ function initDB() {
     );
   `);
 
-  // Seed password from .env into settings table
   const pwdRow = db.prepare("SELECT value FROM settings WHERE key = 'panel_password'").get();
   if (!pwdRow) {
     const initPwd = process.env.PANEL_PASSWORD || 'changeme123';
     db.prepare("INSERT INTO settings (key, value) VALUES ('panel_password', ?)").run(initPwd);
   }
 
-  // Seed proxies from .env if empty
   const count = db.prepare('SELECT COUNT(*) as c FROM proxies').get().c;
   if (count === 0) {
     const proxyStr = process.env.PROXIES || '';
@@ -82,10 +81,9 @@ function initDB() {
         insert.run(host, parseInt(port), username, password, 'US');
       }
     }
-    if (lines.length) console.log(`✅ Seeded ${lines.length} proxies from .env`);
   }
 
-  console.log('✅ Database initialized');
+  console.log('Database ready');
 }
 
 module.exports = { db, initDB };

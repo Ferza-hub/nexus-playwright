@@ -20,9 +20,7 @@ async function main() {
   initDB();
   startScheduler();
   app.listen(PORT, () => {
-    console.log(`\n⚡ NexusTraffic Playwright Engine`);
-    console.log(`   Panel : http://localhost:${PORT}`);
-    console.log(`   Mode  : Playwright (Real Browser)\n`);
+    console.log(`Nexus Panel running on port ${PORT}`);
   });
 }
 

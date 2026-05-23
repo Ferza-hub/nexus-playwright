@@ -1,7 +1,7 @@
 {
-  "name": "nexus-playwright",
+  "name": "nexus-panel",
   "version": "1.0.0",
-  "description": "NexusTraffic Playwright Engine — Real browser traffic with residential proxies",
+  "description": "Nexus automation panel",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
