@@ -77,6 +77,12 @@ function initDB() {
     );
   `);
 
+  // Remove any proxy rows with NULL or invalid port that could crash future operations
+  try {
+    const removed = db.prepare('DELETE FROM proxies WHERE port IS NULL OR port <= 0 OR port > 65535').run();
+    if (removed.changes > 0) console.log(`[db] removed ${removed.changes} invalid proxy row(s)`);
+  } catch {}
+
   const pwdRow = db.prepare("SELECT value FROM settings WHERE key = 'panel_password'").get();
   if (!pwdRow) {
     const initPwd = process.env.PANEL_PASSWORD || 'changeme123';

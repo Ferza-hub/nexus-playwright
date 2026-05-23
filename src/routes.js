@@ -76,16 +76,20 @@ router.post('/proxies/bulk', (req, res) => {
   if (!Array.isArray(proxies)) return res.status(400).json({ error: 'proxies must be array' });
 
   const insert = db.prepare('INSERT INTO proxies (host, port, username, password, geo) VALUES (?, ?, ?, ?, ?)');
+  let added = 0;
   const insertMany = db.transaction(list => {
     for (const raw of list) {
       const parts = raw.trim().split(':');
       if (parts.length < 2) continue;
-      const [host, port, username = null, password = null] = parts;
-      insert.run(host, parseInt(port), username, password, geo);
+      const [host, portRaw, username = null, password = null] = parts;
+      const port = parseInt(portRaw, 10);
+      if (!host || !host.includes('.') || isNaN(port) || port <= 0 || port > 65535) continue;
+      insert.run(host, port, username || null, password || null, geo);
+      added++;
     }
   });
   insertMany(proxies);
-  res.json({ success: true, added: proxies.length });
+  res.json({ success: true, added });
 });
 
 router.patch('/proxies/:id/status', (req, res) => {
