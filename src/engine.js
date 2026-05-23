@@ -348,51 +348,179 @@ async function runVisit(campaign, proxy, category) {
     const platform    = ua.includes('iPhone') || ua.includes('iPad') ? 'iPhone' :
                         ua.includes('Android')   ? 'Linux armv8l' :
                         ua.includes('Macintosh') ? 'MacIntel' : 'Win32';
+    const noiseSeed   = Math.floor(Math.random() * 0xffffffff);
 
-    await context.addInitScript(({ w, h, dpr, platform, concurrency, memory }) => {
-      // Core anti-detection
-      Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
-      Object.defineProperty(navigator, 'languages', { get: () => ['en-US', 'en'] });
-      Object.defineProperty(navigator, 'platform',  { get: () => platform });
-      Object.defineProperty(navigator, 'hardwareConcurrency', { get: () => concurrency });
-      Object.defineProperty(navigator, 'deviceMemory',        { get: () => memory });
+    await context.addInitScript(({ w, h, dpr, platform, concurrency, memory, seed, isMobile }) => {
 
-      // Realistic plugins (Chrome default set)
+      // ── SEEDED RNG (consistent fingerprint per session) ────────────
+      let s = seed;
+      const rng = () => { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 0xffffffff; };
+
+      // ── NAVIGATOR CORE ────────────────────────────────────────────
+      const def = (obj, prop, val) => Object.defineProperty(obj, prop, { get: () => val, configurable: true });
+      def(navigator, 'webdriver',           undefined);
+      def(navigator, 'languages',           ['en-US', 'en']);
+      def(navigator, 'platform',            platform);
+      def(navigator, 'vendor',              'Google Inc.');
+      def(navigator, 'hardwareConcurrency', concurrency);
+      def(navigator, 'deviceMemory',        memory);
+      def(navigator, 'maxTouchPoints',      isMobile ? 5 : 0);
+      def(navigator, 'doNotTrack',          null);
+
+      // ── PLUGINS ───────────────────────────────────────────────────
       const pluginData = [
         { name: 'Chrome PDF Plugin',  filename: 'internal-pdf-viewer',              description: 'Portable Document Format' },
         { name: 'Chrome PDF Viewer',  filename: 'mhjfbmdgcfjbbpaeojofohoefgiehjai', description: '' },
         { name: 'Native Client',      filename: 'internal-nacl-plugin',             description: '' },
       ];
-      Object.defineProperty(navigator, 'plugins', {
-        get: () => Object.assign(pluginData, {
-          item:      i => pluginData[i],
-          namedItem: n => pluginData.find(p => p.name === n) || null,
-          length:    pluginData.length,
-        }),
+      def(navigator, 'plugins', Object.assign(pluginData, {
+        item:      i => pluginData[i],
+        namedItem: n => pluginData.find(p => p.name === n) || null,
+        length:    pluginData.length,
+      }));
+
+      // ── SCREEN ────────────────────────────────────────────────────
+      const taskbar = platform === 'Win32' ? 40 : 23;
+      def(screen, 'width',       w);
+      def(screen, 'height',      h);
+      def(screen, 'availWidth',  w);
+      def(screen, 'availHeight', h - taskbar);
+      def(screen, 'colorDepth',  24);
+      def(screen, 'pixelDepth',  24);
+      def(screen, 'orientation', {
+        type: isMobile ? 'portrait-primary' : 'landscape-primary',
+        angle: 0, onchange: null,
+        lock: () => Promise.resolve(), unlock: () => {},
+        addEventListener: () => {}, removeEventListener: () => {},
+      });
+      def(window, 'devicePixelRatio', dpr);
+      def(window, 'outerWidth',       w);
+      def(window, 'outerHeight',      h);
+
+      // ── CHROME RUNTIME ────────────────────────────────────────────
+      window.chrome = {
+        app: {
+          isInstalled: false,
+          InstallState:  { DISABLED: 'disabled', INSTALLED: 'installed', NOT_INSTALLED: 'not_installed' },
+          RunningState:  { CANNOT_RUN: 'cannot_run', READY_TO_RUN: 'ready_to_run', RUNNING: 'running' },
+          getDetails:    () => null,
+          getIsInstalled: () => false,
+          runningState:  () => 'cannot_run',
+        },
+        runtime: {
+          connect:        () => {},
+          sendMessage:    () => {},
+          onConnect:      { addListener: () => {}, removeListener: () => {} },
+          onMessage:      { addListener: () => {}, removeListener: () => {} },
+          id:             undefined,
+        },
+        loadTimes: () => ({ firstPaintTime: 0, firstPaintAfterLoadTime: 0, navigationType: 'Other' }),
+        csi:       () => ({ startE: Date.now(), onloadT: Date.now(), pageT: 1000, tran: 15 }),
+      };
+
+      // ── CANVAS FINGERPRINT NOISE ──────────────────────────────────
+      // Adds imperceptible per-session noise so each instance gets a
+      // unique but stable canvas hash → defeats mass-fingerprint matching
+      const origGetContext = HTMLCanvasElement.prototype.getContext;
+      const origToDataURL  = HTMLCanvasElement.prototype.toDataURL;
+      HTMLCanvasElement.prototype.toDataURL = function(type, ...args) {
+        const ctx = origGetContext.call(this, '2d');
+        if (ctx && this.width > 0 && this.height > 0) {
+          try {
+            const d = ctx.getImageData(0, 0, this.width, this.height);
+            for (let i = 0; i < d.data.length; i += Math.floor(rng() * 40 + 20)) {
+              if (d.data[i + 3] > 0) {
+                d.data[i] = Math.max(0, Math.min(255, d.data[i] + (rng() < 0.5 ? 1 : -1)));
+              }
+            }
+            ctx.putImageData(d, 0, 0);
+          } catch (e) {}
+        }
+        return origToDataURL.call(this, type, ...args);
+      };
+
+      // ── WEBGL FINGERPRINT ─────────────────────────────────────────
+      const GL_PROFILES = [
+        ['Google Inc. (NVIDIA)', 'ANGLE (NVIDIA, NVIDIA GeForce RTX 3060 Direct3D11 vs_5_0 ps_5_0, D3D11)'],
+        ['Google Inc. (NVIDIA)', 'ANGLE (NVIDIA, NVIDIA GeForce GTX 1650 Direct3D11 vs_5_0 ps_5_0, D3D11)'],
+        ['Google Inc. (Intel)',  'ANGLE (Intel, Intel(R) UHD Graphics 620 Direct3D11 vs_5_0 ps_5_0, D3D11)'],
+        ['Google Inc. (Intel)',  'ANGLE (Intel, Intel(R) Iris Xe Graphics Direct3D11 vs_5_0 ps_5_0, D3D11)'],
+        ['Google Inc. (AMD)',    'ANGLE (AMD, AMD Radeon RX 580 Direct3D11 vs_5_0 ps_5_0, D3D11)'],
+        ['Apple Inc.',           'Apple M1'],
+        ['Apple Inc.',           'Apple M2'],
+      ];
+      const [glVendor, glRenderer] = GL_PROFILES[seed % GL_PROFILES.length];
+      const patchWebGL = proto => {
+        const orig = proto.getParameter;
+        proto.getParameter = function(p) {
+          if (p === 37445) return glVendor;
+          if (p === 37446) return glRenderer;
+          return orig.call(this, p);
+        };
+      };
+      patchWebGL(WebGLRenderingContext.prototype);
+      if (typeof WebGL2RenderingContext !== 'undefined') patchWebGL(WebGL2RenderingContext.prototype);
+
+      // ── AUDIO CONTEXT NOISE ───────────────────────────────────────
+      if (typeof AudioBuffer !== 'undefined') {
+        const origGetChannelData = AudioBuffer.prototype.getChannelData;
+        AudioBuffer.prototype.getChannelData = function(channel) {
+          const data = origGetChannelData.call(this, channel);
+          for (let i = 0; i < data.length; i += 137) {
+            data[i] += (rng() - 0.5) * 1e-7;
+          }
+          return data;
+        };
+      }
+
+      // ── NETWORK INFO ──────────────────────────────────────────────
+      def(navigator, 'connection', {
+        effectiveType: '4g',
+        downlink:      pick2([5, 10, 25, 50]),
+        rtt:           pick2([25, 50, 75, 100]),
+        saveData:      false,
+        onchange:      null,
+        addEventListener:    () => {},
+        removeEventListener: () => {},
       });
 
-      // Screen resolution matching viewport (prevents 0x0 / server resolution leak)
-      const taskbar = platform === 'Win32' ? 40 : 23;
-      Object.defineProperty(screen, 'width',       { get: () => w });
-      Object.defineProperty(screen, 'height',      { get: () => h });
-      Object.defineProperty(screen, 'availWidth',  { get: () => w });
-      Object.defineProperty(screen, 'availHeight', { get: () => h - taskbar });
-      Object.defineProperty(screen, 'colorDepth',  { get: () => 24 });
-      Object.defineProperty(screen, 'pixelDepth',  { get: () => 24 });
+      // ── BATTERY API ───────────────────────────────────────────────
+      navigator.getBattery = () => Promise.resolve({
+        charging:        true,
+        chargingTime:    0,
+        dischargingTime: Infinity,
+        level:           0.75 + rng() * 0.25,
+        onchargingchange:        null,
+        onchargingtimechange:    null,
+        ondischargingtimechange: null,
+        onlevelchange:           null,
+        addEventListener:        () => {},
+        removeEventListener:     () => {},
+      });
 
-      // Window dimensions
-      Object.defineProperty(window, 'devicePixelRatio', { get: () => dpr });
-      Object.defineProperty(window, 'outerWidth',       { get: () => w });
-      Object.defineProperty(window, 'outerHeight',      { get: () => h });
+      // ── MEDIA DEVICES ─────────────────────────────────────────────
+      if (navigator.mediaDevices) {
+        navigator.mediaDevices.enumerateDevices = () => Promise.resolve([
+          { deviceId: 'default', kind: 'audioinput',  label: 'Default - Microphone', groupId: 'default' },
+          { deviceId: 'default', kind: 'audiooutput', label: 'Default - Speakers',   groupId: 'default' },
+          { deviceId: 'default', kind: 'videoinput',  label: isMobile ? 'Front Camera' : 'FaceTime HD Camera', groupId: 'default' },
+        ]);
+      }
 
-      // Chrome runtime (richer object — bare {} is a known bot signal)
-      window.chrome = {
-        app: { isInstalled: false, InstallState: { DISABLED:'disabled',INSTALLED:'installed',NOT_INSTALLED:'not_installed' }, RunningState: { CANNOT_RUN:'cannot_run',READY_TO_RUN:'ready_to_run',RUNNING:'running' } },
-        runtime: { connect: () => {}, sendMessage: () => {} },
-        loadTimes: () => ({}),
-        csi: () => ({}),
-      };
-    }, { w: viewport.width, h: viewport.height, dpr, platform, concurrency, memory });
+      // ── PERMISSIONS ───────────────────────────────────────────────
+      if (navigator.permissions) {
+        const origQuery = navigator.permissions.query.bind(navigator.permissions);
+        navigator.permissions.query = params => {
+          const prompt = ['notifications','push','midi','camera','microphone','geolocation'];
+          if (prompt.includes(params.name)) return Promise.resolve({ state: 'prompt', onchange: null });
+          return origQuery(params);
+        };
+      }
+
+      // helper used inside init script
+      function pick2(arr) { return arr[Math.floor(rng() * arr.length)]; }
+
+    }, { w: viewport.width, h: viewport.height, dpr, platform, concurrency, memory, seed: noiseSeed, isMobile: device === 'mobile' });
 
     const page = await context.newPage();
 
