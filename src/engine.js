@@ -247,14 +247,29 @@ async function clickRandomElement(page, baseUrl) {
   try {
     const handles = await page.$$('a[href], img');
 
-    // Classify each element: nav link, image-in-anchor, or standalone clickable image
-    const valid = await page.evaluate((base) =>
-      [...document.querySelectorAll('a[href], img')].map((el, i) => {
+    // Classify each element: nav link, image-in-anchor, or standalone clickable image.
+    // Ad containers and external-domain images are explicitly excluded to avoid click fraud.
+    const valid = await page.evaluate((base) => {
+      const AD_SELECTORS = [
+        'iframe','[id*="google_ads"]','[id*="gpt-ad"]','[class*="adsbygoogle"]',
+        '[class*="ad-slot"]','[class*="dfp"]','[data-ad]','[class*="sponsored"]',
+        '[id*="taboola"]','[id*="outbrain"]','[class*="mgid"]','[class*="revcontent"]',
+      ];
+      const inAdContainer = el => AD_SELECTORS.some(s => el.closest(s));
+
+      return [...document.querySelectorAll('a[href], img')].map((el, i) => {
+        if (inAdContainer(el)) return null; // never click anything inside an ad unit
+
         if (el.tagName === 'A') {
           const h = el.href;
+          // Internal navigation only — no external, no anchors, no files
           if (h && h.startsWith(base) && !h.includes('#') && !h.match(/\.(pdf|jpg|png|zip)$/i))
             return { i, nav: true };
         } else if (el.tagName === 'IMG') {
+          // Skip images served from known ad/tracking CDNs
+          const adDomains = /googlesyndication|doubleclick|adnxs|amazon-adsystem|outbrain|taboola|mgid|revcontent|pubmatic|rubiconproject|openx|criteo|smartadserver|casalemedia/i;
+          if (adDomains.test(el.src || '')) return null;
+
           const style = window.getComputedStyle(el);
           const clickable = style.cursor === 'pointer' || !!el.onclick ||
             !!el.closest('[onclick]') || !!el.closest('[role="button"]') ||
@@ -262,9 +277,8 @@ async function clickRandomElement(page, baseUrl) {
           if (clickable) return { i, nav: !!el.closest('a[href]') };
         }
         return null;
-      }).filter(Boolean),
-      baseUrl
-    );
+      }).filter(Boolean);
+    }, baseUrl);
 
     if (!valid.length) return null;
     const chosen = pick(valid);
@@ -545,13 +559,16 @@ async function runVisit(campaign, proxy, category) {
       if (Math.random() < 0.3) await page.mouse.move(rand(0,vp.width), rand(0,vp.height));
     }
 
+    // Persona-driven click probability — not every human clicks every visit
+    const clickProb = { quick_scanner: 0.25, window_shopper: 0.45, engaged_reader: 0.65, power_user: 0.85 };
+    const willClick = Math.random() < (clickProb[persona.name] || 0.4);
+
     const maxPages = rand(persona.pagesVisited[0], persona.pagesVisited[1]);
-    if (Math.random() * 100 >= campaign.bounce_rate && maxPages > 1) {
+    if (willClick && Math.random() * 100 >= campaign.bounce_rate && maxPages > 1) {
       for (let i = 1; i < maxPages; i++) {
         const result = await clickRandomElement(page, campaign.target_url);
         if (result === null) break;
         if (result) {
-          // Navigated to a new page
           pagesVisited++;
           await sleep(rand(1000, 3000));
           await humanScroll(page, persona);
