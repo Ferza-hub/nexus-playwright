@@ -245,12 +245,35 @@ async function humanScroll(page, persona) {
 
 async function clickRandomLink(page, baseUrl) {
   try {
-    const links = await page.$$eval('a[href]', (els, base) =>
-      els.map(el => el.href).filter(h => h && h.startsWith(base) && !h.includes('#') && !h.match(/\.(pdf|jpg|png|zip)$/i)),
+    // Collect all <a> handles upfront, filter valid indices in browser context (fast)
+    const handles = await page.$$('a[href]');
+    const validIdxs = await page.$$eval('a[href]', (els, base) =>
+      els.map((el, i) => ({ i, href: el.href }))
+        .filter(({ href: h }) => h && h.startsWith(base) && !h.includes('#') && !h.match(/\.(pdf|jpg|png|zip)$/i))
+        .map(({ i }) => i),
       baseUrl
     );
-    if (!links.length) return null;
-    await page.goto(pick(links), { waitUntil: 'domcontentloaded', timeout: 15000 });
+    if (!validIdxs.length) return null;
+
+    const el = handles[pick(validIdxs)];
+    if (!el) return null;
+
+    // Scroll into view, pause like a human noticing the link
+    await el.scrollIntoViewIfNeeded({ timeout: 3000 });
+    await sleep(rand(300, 800));
+
+    const box = await el.boundingBox();
+    if (!box) return null;
+
+    // Natural mouse movement to a random point inside the element
+    const vp = page.viewportSize();
+    const toX = Math.round(box.x + box.width  * (0.15 + Math.random() * 0.7));
+    const toY = Math.round(box.y + box.height * (0.15 + Math.random() * 0.7));
+    await moveMouse(page, rand(0, vp?.width || 800), rand(0, vp?.height || 600), toX, toY);
+    await sleep(rand(80, 260));
+
+    await el.click({ timeout: 5000 });
+    await page.waitForLoadState('domcontentloaded', { timeout: 15000 });
     return true;
   } catch { return null; }
 }
