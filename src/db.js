@@ -11,6 +11,11 @@ function initDB() {
   db.exec(`
     PRAGMA journal_mode = WAL;
 
+    CREATE TABLE IF NOT EXISTS settings (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL
+    );
+
     CREATE TABLE IF NOT EXISTS campaigns (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
@@ -56,6 +61,13 @@ function initDB() {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     );
   `);
+
+  // Seed password from .env into settings table
+  const pwdRow = db.prepare("SELECT value FROM settings WHERE key = 'panel_password'").get();
+  if (!pwdRow) {
+    const initPwd = process.env.PANEL_PASSWORD || 'changeme123';
+    db.prepare("INSERT INTO settings (key, value) VALUES ('panel_password', ?)").run(initPwd);
+  }
 
   // Seed proxies from .env if empty
   const count = db.prepare('SELECT COUNT(*) as c FROM proxies').get().c;

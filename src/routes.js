@@ -4,12 +4,16 @@ const { v4: uuidv4 } = require('uuid');
 const { db } = require('./db');
 
 const router = express.Router();
-const TOKEN = process.env.PANEL_PASSWORD || 'changeme123';
+function getPassword() {
+  const row = db.prepare("SELECT value FROM settings WHERE key = 'panel_password'").get();
+  return row ? row.value : (process.env.PANEL_PASSWORD || 'changeme123');
+}
 
 // Auth middleware
 router.use((req, res, next) => {
+  if (req.path === '/auth/login' && req.method === 'POST') return next();
   const t = req.headers['x-auth-token'] || req.query.token;
-  if (t !== TOKEN) return res.status(401).json({ error: 'Unauthorized' });
+  if (t !== getPassword()) return res.status(401).json({ error: 'Unauthorized' });
   next();
 });
 
@@ -129,8 +133,20 @@ router.get('/stats', (req, res) => {
 
 // Auth endpoint
 router.post('/auth/login', (req, res) => {
-  if (req.body.password === TOKEN) res.json({ success: true, token: TOKEN });
+  const pwd = getPassword();
+  if (req.body.password === pwd) res.json({ success: true, token: pwd });
   else res.status(401).json({ error: 'Wrong password' });
+});
+
+// Change password
+router.post('/settings/password', (req, res) => {
+  const { current_password, new_password } = req.body;
+  if (!new_password || new_password.length < 6)
+    return res.status(400).json({ error: 'Password minimal 6 karakter' });
+  if (current_password !== getPassword())
+    return res.status(401).json({ error: 'Password lama salah' });
+  db.prepare("UPDATE settings SET value = ? WHERE key = 'panel_password'").run(new_password);
+  res.json({ success: true });
 });
 
 module.exports = router;
