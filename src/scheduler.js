@@ -12,7 +12,13 @@ async function processPending() {
   for (const campaign of pending) {
     if (active.has(campaign.id)) continue;
     active.add(campaign.id);
-    runCampaign(campaign.id).finally(() => active.delete(campaign.id));
+    const maxRuntime = 4 * 60 * 60 * 1000; // 4 hours hard cap per campaign run
+    const timeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('campaign run timeout')), maxRuntime)
+    );
+    Promise.race([runCampaign(campaign.id), timeout])
+      .catch(err => console.error(`[scheduler] ${campaign.name}: ${err.message}`))
+      .finally(() => active.delete(campaign.id));
   }
 }
 

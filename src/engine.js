@@ -116,9 +116,13 @@ function fetchHTML(url) {
 async function getCampaignCategory(campaignId, targetUrl) {
   const cached = loadMeta(campaignId);
   if (cached?.category) return cached.category;
-  const html = await fetchHTML(targetUrl);
+
+  const hardTimeout = new Promise(resolve => setTimeout(() => resolve(''), 8000));
+  const html = await Promise.race([fetchHTML(targetUrl), hardTimeout]);
+
   const category = detectCategory(html);
   saveMeta(campaignId, { category, detectedAt: new Date().toISOString() });
+  console.log(`[category] ${targetUrl} → ${category}`);
   return category;
 }
 
