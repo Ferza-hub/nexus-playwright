@@ -3,10 +3,24 @@ const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
 
-const DATA_DIR = path.join(__dirname, '../data');
+// Priority: DATA_DIR env → repo/data → /root/data (legacy path)
+function resolveDataDir() {
+  if (process.env.DATA_DIR) return process.env.DATA_DIR;
+  const repoData   = path.join(__dirname, '../data');
+  const legacyData = path.join(__dirname, '../../data');
+  // If legacy path has an existing database, use it (preserves data after path change)
+  if (!fs.existsSync(path.join(repoData, 'nexus.db')) &&
+       fs.existsSync(path.join(legacyData, 'nexus.db'))) {
+    return legacyData;
+  }
+  return repoData;
+}
+
+const DATA_DIR = resolveDataDir();
 if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 
 const db = new Database(path.join(DATA_DIR, 'nexus.db'));
+console.log(`[db] data dir: ${DATA_DIR}`);
 
 function initDB() {
   db.exec(`
