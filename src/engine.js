@@ -1,5 +1,24 @@
 const { chromium } = require('playwright');
 const { db } = require('./db');
+const fs = require('fs');
+const path = require('path');
+
+const SESSIONS_DIR = path.join(__dirname, '../data/sessions');
+if (!fs.existsSync(SESSIONS_DIR)) fs.mkdirSync(SESSIONS_DIR, { recursive: true });
+
+function sessionPath(proxyId) {
+  return path.join(SESSIONS_DIR, `proxy_${proxyId}.json`);
+}
+
+function loadSession(proxyId) {
+  const p = sessionPath(proxyId);
+  if (!fs.existsSync(p)) return null;
+  try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return null; }
+}
+
+function saveSession(proxyId, state) {
+  try { fs.writeFileSync(sessionPath(proxyId), JSON.stringify(state)); } catch {}
+}
 
 const PERSONAS = {
   quick_scanner:   { readTime: [8, 25],    scrollDepth: [0.2, 0.5], clickRate: 0.1, pagesVisited: [1, 2], weight: 25 },
@@ -125,11 +144,15 @@ async function clickRandomLink(page, baseUrl) {
 
 async function runVisit(campaign, proxy) {
   const device = getDevice(campaign.device);
-  const ua = pick(USER_AGENTS[device]);
-  const viewport = pick(VIEWPORTS[device]);
   const persona = pickPersona(campaign.persona);
   const sources = REFERRERS[campaign.traffic_source] || REFERRERS.organic;
   const referer = pick(sources);
+
+  const existingSession = proxy ? loadSession(proxy.id) : null;
+  const isReturning = !!existingSession;
+
+  const ua = existingSession?.ua || pick(USER_AGENTS[device]);
+  const viewport = existingSession?.viewport || pick(VIEWPORTS[device]);
 
   const proxyConfig = proxy ? {
     server: `http://${proxy.host}:${proxy.port}`,
@@ -160,6 +183,7 @@ async function runVisit(campaign, proxy) {
       locale: 'en-US',
       timezoneId: 'America/New_York',
       ...(proxyConfig && { proxy: proxyConfig }),
+      ...(existingSession?.storageState && { storageState: existingSession.storageState }),
       extraHTTPHeaders: {
         'Accept-Language': 'en-US,en;q=0.9',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
@@ -226,10 +250,15 @@ async function runVisit(campaign, proxy) {
 
     const duration = Math.round((Date.now() - startTime) / 1000);
 
+    if (proxy) {
+      const storageState = await context.storageState();
+      saveSession(proxy.id, { storageState, ua, viewport });
+    }
+
     await context.close();
     await browser.close();
 
-    return { success: true, duration, pages: pagesVisited, persona: persona.name, device, ua };
+    return { success: true, duration, pages: pagesVisited, persona: persona.name, device, ua, returning: isReturning };
 
   } catch (err) {
     try { await browser?.close(); } catch {}
@@ -277,7 +306,7 @@ async function runCampaign(campaignId) {
           VALUES (?, ?, 'sent', ?, ?, ?, ?, ?)
         `).run(campaignId, proxy?.id, r.duration, r.pages, r.persona, r.device, r.ua);
         db.prepare('UPDATE proxies SET last_used = CURRENT_TIMESTAMP, visits_count = visits_count + 1 WHERE id = ?').run(proxy?.id);
-        console.log(`[ok] ${r.device} ${r.persona} ${r.duration}s proxy#${proxy?.id}`);
+        console.log(`[ok] ${r.returning ? 'returning' : 'new'} | ${r.device} ${r.persona} ${r.duration}s proxy#${proxy?.id}`);
       } else {
         db.prepare('UPDATE campaigns SET visits_failed = visits_failed + 1 WHERE id = ?').run(campaignId);
         db.prepare(`INSERT INTO visits (campaign_id, proxy_id, status) VALUES (?, ?, 'failed')`).run(campaignId, proxy?.id);
