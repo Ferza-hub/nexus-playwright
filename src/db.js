@@ -69,19 +69,23 @@ function initDB() {
     db.prepare("INSERT INTO settings (key, value) VALUES ('panel_password', ?)").run(initPwd);
   }
 
-  const count = db.prepare('SELECT COUNT(*) as c FROM proxies').get().c;
-  if (count === 0) {
-    const proxyStr = process.env.PROXIES || '';
-    const lines = proxyStr.split(',').map(l => l.trim()).filter(Boolean);
-    const insert = db.prepare('INSERT INTO proxies (host, port, username, password, geo) VALUES (?, ?, ?, ?, ?)');
-    for (const line of lines) {
-      const parts = line.split(':');
-      if (parts.length < 2) continue;
-      const [host, portRaw, username = null, password = null] = parts;
-      const port = parseInt(portRaw);
-      if (!host || isNaN(port)) continue;
-      insert.run(host, port, username, password, 'US');
+  try {
+    const count = db.prepare('SELECT COUNT(*) as c FROM proxies').get().c;
+    if (count === 0) {
+      const proxyStr = process.env.PROXIES || '';
+      const lines = proxyStr.split(',').map(l => l.trim()).filter(Boolean);
+      const insert = db.prepare('INSERT INTO proxies (host, port, username, password, geo) VALUES (?, ?, ?, ?, ?)');
+      for (const line of lines) {
+        const parts = line.split(':');
+        if (parts.length < 2) continue;
+        const [host, portRaw, username = null, password = null] = parts;
+        const port = parseInt(portRaw, 10);
+        if (!host || !host.includes('.') || isNaN(port) || port <= 0 || port > 65535) continue;
+        insert.run(host, port, username || null, password || null, 'US');
+      }
     }
+  } catch (err) {
+    console.error('[db] proxy seed skipped:', err.message);
   }
 
   console.log('Database ready');
