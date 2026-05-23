@@ -362,9 +362,32 @@ async function runVisit(campaign, proxy, category) {
     const platform    = ua.includes('iPhone') || ua.includes('iPad') ? 'iPhone' :
                         ua.includes('Android')   ? 'Linux armv8l' :
                         ua.includes('Macintosh') ? 'MacIntel' : 'Win32';
-    const noiseSeed   = Math.floor(Math.random() * 0xffffffff);
+    // Connection profile based on device type + proxy GEO
+    const GEO_CONN = {
+      // Developed markets — mostly fast connections
+      US: { desktop: ['4g'],              mobile: ['4g','4g','4g','3g']          },
+      UK: { desktop: ['4g'],              mobile: ['4g','4g','3g']               },
+      AU: { desktop: ['4g'],              mobile: ['4g','4g','3g']               },
+      SG: { desktop: ['4g'],              mobile: ['4g','4g','4g']               },
+      // Emerging markets — more varied, slower more common
+      ID: { desktop: ['4g','4g','3g'],    mobile: ['4g','3g','3g','2g']          },
+      MY: { desktop: ['4g','4g','3g'],    mobile: ['4g','4g','3g']               },
+      PH: { desktop: ['4g','3g'],         mobile: ['4g','3g','3g','2g']          },
+      IN: { desktop: ['4g','4g','3g'],    mobile: ['4g','3g','3g','2g']          },
+      BR: { desktop: ['4g','4g','3g'],    mobile: ['4g','3g','3g']               },
+    };
+    const CONN_PROFILES = {
+      '4g': { downlink: pick([10,15,20,25,50]),  rtt: pick([20,30,40,50])     },
+      '3g': { downlink: pick([1,2,3,4,5]),        rtt: pick([80,100,150,200]) },
+      '2g': { downlink: pick([0.1,0.3,0.5,0.8]), rtt: pick([250,300,400])    },
+    };
+    const proxyGeo       = proxy?.geo || 'US';
+    const geoProfile     = GEO_CONN[proxyGeo] || GEO_CONN.US;
+    const connTypePool   = geoProfile[device] || ['4g'];
+    const connType       = pick(connTypePool);
+    const connProfile    = CONN_PROFILES[connType];
 
-    await context.addInitScript(({ w, h, dpr, platform, concurrency, memory, seed, isMobile }) => {
+    await context.addInitScript(({ w, h, dpr, platform, concurrency, memory, seed, isMobile, connType, connDownlink, connRtt }) => {
 
       // ── SEEDED RNG (consistent fingerprint per session) ────────────
       let s = seed;
@@ -487,12 +510,12 @@ async function runVisit(campaign, proxy, category) {
         };
       }
 
-      // ── NETWORK INFO ──────────────────────────────────────────────
+      // ── NETWORK INFO (GEO + device aware) ────────────────────────
       def(navigator, 'connection', {
-        effectiveType: '4g',
-        downlink:      pick2([5, 10, 25, 50]),
-        rtt:           pick2([25, 50, 75, 100]),
-        saveData:      false,
+        effectiveType: connType,
+        downlink:      connDownlink,
+        rtt:           connRtt,
+        saveData:      connType === '2g' ? (Math.random() < 0.4) : false,
         onchange:      null,
         addEventListener:    () => {},
         removeEventListener: () => {},
@@ -534,7 +557,7 @@ async function runVisit(campaign, proxy, category) {
       // helper used inside init script
       function pick2(arr) { return arr[Math.floor(rng() * arr.length)]; }
 
-    }, { w: viewport.width, h: viewport.height, dpr, platform, concurrency, memory, seed: noiseSeed, isMobile: device === 'mobile' });
+    }, { w: viewport.width, h: viewport.height, dpr, platform, concurrency, memory, seed: noiseSeed, isMobile: device === 'mobile', connType, connDownlink: connProfile.downlink, connRtt: connProfile.rtt });
 
     const page = await context.newPage();
 
