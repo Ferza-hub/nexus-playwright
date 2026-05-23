@@ -243,29 +243,40 @@ async function humanScroll(page, persona) {
   }
 }
 
-async function clickRandomLink(page, baseUrl) {
+async function clickRandomElement(page, baseUrl) {
   try {
-    // Collect all <a> handles upfront, filter valid indices in browser context (fast)
-    const handles = await page.$$('a[href]');
-    const validIdxs = await page.$$eval('a[href]', (els, base) =>
-      els.map((el, i) => ({ i, href: el.href }))
-        .filter(({ href: h }) => h && h.startsWith(base) && !h.includes('#') && !h.match(/\.(pdf|jpg|png|zip)$/i))
-        .map(({ i }) => i),
+    const handles = await page.$$('a[href], img');
+
+    // Classify each element: nav link, image-in-anchor, or standalone clickable image
+    const valid = await page.evaluate((base) =>
+      [...document.querySelectorAll('a[href], img')].map((el, i) => {
+        if (el.tagName === 'A') {
+          const h = el.href;
+          if (h && h.startsWith(base) && !h.includes('#') && !h.match(/\.(pdf|jpg|png|zip)$/i))
+            return { i, nav: true };
+        } else if (el.tagName === 'IMG') {
+          const style = window.getComputedStyle(el);
+          const clickable = style.cursor === 'pointer' || !!el.onclick ||
+            !!el.closest('[onclick]') || !!el.closest('[role="button"]') ||
+            !!el.closest('a[href]');
+          if (clickable) return { i, nav: !!el.closest('a[href]') };
+        }
+        return null;
+      }).filter(Boolean),
       baseUrl
     );
-    if (!validIdxs.length) return null;
 
-    const el = handles[pick(validIdxs)];
+    if (!valid.length) return null;
+    const chosen = pick(valid);
+    const el = handles[chosen.i];
     if (!el) return null;
 
-    // Scroll into view, pause like a human noticing the link
     await el.scrollIntoViewIfNeeded({ timeout: 3000 });
     await sleep(rand(300, 800));
 
     const box = await el.boundingBox();
     if (!box) return null;
 
-    // Natural mouse movement to a random point inside the element
     const vp = page.viewportSize();
     const toX = Math.round(box.x + box.width  * (0.15 + Math.random() * 0.7));
     const toY = Math.round(box.y + box.height * (0.15 + Math.random() * 0.7));
@@ -273,8 +284,13 @@ async function clickRandomLink(page, baseUrl) {
     await sleep(rand(80, 260));
 
     await el.click({ timeout: 5000 });
-    await page.waitForLoadState('domcontentloaded', { timeout: 15000 });
-    return true;
+    if (chosen.nav) {
+      await page.waitForLoadState('domcontentloaded', { timeout: 15000 });
+    } else {
+      // Image interaction (lightbox / carousel / modal) — just wait briefly
+      await sleep(rand(800, 2500));
+    }
+    return chosen.nav; // true = navigated to new page, false = in-page interaction
   } catch { return null; }
 }
 
@@ -358,10 +374,14 @@ async function runVisit(campaign, proxy, category) {
     const maxPages = rand(persona.pagesVisited[0], persona.pagesVisited[1]);
     if (Math.random() * 100 >= campaign.bounce_rate && maxPages > 1) {
       for (let i = 1; i < maxPages; i++) {
-        if (!await clickRandomLink(page, campaign.target_url)) break;
-        pagesVisited++;
-        await sleep(rand(1000, 3000));
-        await humanScroll(page, persona);
+        const result = await clickRandomElement(page, campaign.target_url);
+        if (result === null) break;
+        if (result) {
+          // Navigated to a new page
+          pagesVisited++;
+          await sleep(rand(1000, 3000));
+          await humanScroll(page, persona);
+        }
         await sleep(rand(persona.readTime[0], persona.readTime[1]) * 500);
       }
     }
