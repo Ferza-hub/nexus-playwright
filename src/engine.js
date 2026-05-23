@@ -254,16 +254,14 @@ async function clickRandomLink(page, baseUrl) {
 // ── PRE-VISIT GOOGLE SEARCH ───────────────────────────────────────────────────
 
 async function preVisitSearch(page, targetUrl, searchQuery) {
+  const domain = new URL(targetUrl).hostname;
   try {
-    const domain = new URL(targetUrl).hostname;
-
     await page.goto('https://www.google.com', { waitUntil: 'domcontentloaded', timeout: 12000 });
     await sleep(rand(800, 2000));
 
     const box = page.locator('textarea[name="q"], input[name="q"]').first();
     await box.click();
     await sleep(rand(200, 500));
-
     for (const char of searchQuery) {
       await page.keyboard.type(char, { delay: rand(60, 180) });
     }
@@ -276,12 +274,14 @@ async function preVisitSearch(page, targetUrl, searchQuery) {
     if (await resultLink.isVisible({ timeout: 3000 }).catch(() => false)) {
       await resultLink.click();
       await page.waitForLoadState('domcontentloaded', { timeout: 20000 });
-      return true;
+      return;
     }
-  } catch {}
+  } catch (e) {
+    console.log(`[search fallback] ${e.message?.slice(0, 60)}`);
+  }
 
-  await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 20000 }).catch(() => {});
-  return false;
+  // Fallback — allow error to propagate so runVisit catches it properly
+  await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 20000 });
 }
 
 // ── CORE VISIT ────────────────────────────────────────────────────────────────
@@ -346,11 +346,12 @@ async function runVisit(campaign, proxy, category) {
       await page.goto(campaign.target_url, { waitUntil: 'domcontentloaded', timeout: 20000, referer: referer || undefined });
     }
 
+    const vp = page.viewportSize();
+    if (!vp) throw new Error('page failed to load');
+
     pagesVisited++;
     await sleep(rand(1000, 3000));
     await humanScroll(page, persona);
-
-    const vp = page.viewportSize();
     await moveMouse(page, rand(0,vp.width), rand(0,vp.height), rand(0,vp.width), rand(0,vp.height));
 
     const readTime = rand(persona.readTime[0], persona.readTime[1]) * 1000;
@@ -401,8 +402,8 @@ async function runCampaign(campaignId) {
 
   const allProxies = db.prepare("SELECT * FROM proxies WHERE status = 'active'").all();
   if (!allProxies.length) {
-    db.prepare("UPDATE campaigns SET status = 'failed' WHERE id = ?").run(campaignId);
-    return;
+    console.log(`[campaign] "${campaign.name}" — no active proxies, will retry`);
+    return; // scheduler retries in 30s; do not set to failed
   }
 
   const category = await getCampaignCategory(campaignId, campaign.target_url);
