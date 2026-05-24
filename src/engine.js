@@ -711,16 +711,20 @@ async function runCampaign(campaignId) {
   const campaign = db.prepare('SELECT * FROM campaigns WHERE id = ?').get(campaignId);
   if (!campaign || campaign.status !== 'running') return;
 
-  const allProxies = db.prepare("SELECT * FROM proxies WHERE status = 'active'").all();
+  const geo = campaign.target_geo || 'any';
+  const allProxies = geo === 'any'
+    ? db.prepare("SELECT * FROM proxies WHERE status = 'active'").all()
+    : db.prepare("SELECT * FROM proxies WHERE status = 'active' AND geo = ?").all(geo);
+
   if (!allProxies.length) {
-    console.log(`[campaign] "${campaign.name}" — no active proxies, will retry`);
-    return; // scheduler retries in 30s; do not set to failed
+    console.log(`[campaign] "${campaign.name}" — no active proxies${geo !== 'any' ? ` for GEO ${geo}` : ''}, will retry`);
+    return;
   }
 
   const category = await getCampaignCategory(campaignId, campaign.target_url);
   const speed    = campaign.speed || 'normal';
   const profile  = SPEED_PROFILES[speed] || SPEED_PROFILES.normal;
-  console.log(`[campaign] "${campaign.name}" → category: ${category} | speed: ${speed} | concurrent: ${profile.concurrent}`);
+  console.log(`[campaign] "${campaign.name}" → category:${category} geo:${geo} speed:${speed} concurrent:${profile.concurrent} proxies:${allProxies.length}`);
 
   const remaining = campaign.visits_total - campaign.visits_sent;
   let i = 0;

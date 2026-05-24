@@ -30,7 +30,7 @@ router.post('/campaigns', (req, res) => {
     name, target_url, pages, visits_total,
     traffic_source = 'organic', device = 'mixed',
     persona = 'mixed', min_duration = 30, max_duration = 180,
-    bounce_rate = 40, pages_per_session = 3, speed = 'normal',
+    bounce_rate = 40, pages_per_session = 3, speed = 'normal', target_geo = 'any',
   } = req.body;
 
   if (!name || !target_url || !visits_total)
@@ -48,10 +48,10 @@ router.post('/campaigns', (req, res) => {
 
   db.prepare(`
     INSERT INTO campaigns (id, name, target_url, pages, visits_total, traffic_source, device, persona,
-      min_duration, max_duration, bounce_rate, pages_per_session, speed, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+      min_duration, max_duration, bounce_rate, pages_per_session, speed, target_geo, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
   `).run(id, name, target_url, pagesJson, visits_total, traffic_source, device, persona,
-    min_duration, max_duration, bounce_rate, pages_per_session, speed);
+    min_duration, max_duration, bounce_rate, pages_per_session, speed, target_geo);
 
   res.json({ id, message: 'Created' });
 });

@@ -242,12 +242,26 @@ tr:last-child td{border-bottom:none}tr:hover td{background:rgba(56,189,248,.02)}
       <div class="form-group"><label class="form-label">Jumlah Visits</label><input type="number" class="form-input" id="nc-visits" value="20" min="1"></div>
       <div class="form-group"><label class="form-label">Traffic Source</label><div class="sel-wrap"><select class="form-select" id="nc-source"><option value="organic">Organic (Google)</option><option value="social">Social Media</option><option value="referral">Referral</option><option value="direct">Direct</option></select></div></div>
     </div>
-    <div class="form-group"><label class="form-label">Speed Mode</label><div class="sel-wrap"><select class="form-select" id="nc-speed">
-      <option value="natural">🐢 Natural — 4–12h gap, 2 concurrent (SEO safe)</option>
-      <option value="normal" selected>⚡ Normal — 1–3h gap, 5 concurrent</option>
-      <option value="fast">🚀 Fast — 15–30min gap, 8 concurrent</option>
-      <option value="turbo">💥 Turbo — no gap, 15 concurrent (volume only)</option>
-    </select></div></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Speed Mode</label><div class="sel-wrap"><select class="form-select" id="nc-speed">
+        <option value="natural">🐢 Natural (SEO safe)</option>
+        <option value="normal" selected>⚡ Normal</option>
+        <option value="fast">🚀 Fast</option>
+        <option value="turbo">💥 Turbo (volume)</option>
+      </select></div></div>
+      <div class="form-group"><label class="form-label">Region Proxy</label><div class="sel-wrap"><select class="form-select" id="nc-geo">
+        <option value="any">🌍 All Regions</option>
+        <option value="US">🇺🇸 United States</option>
+        <option value="UK">🇬🇧 United Kingdom</option>
+        <option value="ID">🇮🇩 Indonesia</option>
+        <option value="SG">🇸🇬 Singapore</option>
+        <option value="AU">🇦🇺 Australia</option>
+        <option value="MY">🇲🇾 Malaysia</option>
+        <option value="PH">🇵🇭 Philippines</option>
+        <option value="IN">🇮🇳 India</option>
+        <option value="BR">🇧🇷 Brazil</option>
+      </select></div></div>
+    </div>
     <div class="form-row">
       <div class="form-group"><label class="form-label">Device</label><div class="sel-wrap"><select class="form-select" id="nc-device"><option value="mixed">Mixed</option><option value="desktop">Desktop</option><option value="mobile">Mobile</option></select></div></div>
       <div class="form-group"><label class="form-label">Persona</label><div class="sel-wrap"><select class="form-select" id="nc-persona"><option value="mixed">Mixed (Random)</option><option value="quick_scanner">Quick Scanner</option><option value="engaged_reader">Engaged Reader</option><option value="window_shopper">Window Shopper</option><option value="power_user">Power User</option></select></div></div>
@@ -376,6 +390,7 @@ function renderCard(c,actions=true){
       <span>Device: <span>${c.device}</span></span>
       <span>Bounce: <span>${c.bounce_rate}%</span></span>
       <span>Speed: <span>${{natural:'🐢',normal:'⚡',fast:'🚀',turbo:'💥'}[c.speed]||'⚡'} ${c.speed||'normal'}</span></span>
+      <span>GEO: <span>${c.target_geo==='any'?'🌍 All':c.target_geo||'🌍 All'}</span></span>
     </div>
     <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
     ${actions?`<div class="cc-footer">
@@ -415,6 +430,7 @@ async function createCampaign(){
       max_duration:parseInt(document.getElementById('nc-maxdur').value),
       bounce_rate:parseInt(document.getElementById('nc-bounce').value),
       speed:document.getElementById('nc-speed').value,
+      target_geo:document.getElementById('nc-geo').value,
     }});
     closeModal('modal-campaign');toast('Task dibuat!','success');loadCampaigns();loadDashboard();
   }catch(e){toast(e.message,'error');}
