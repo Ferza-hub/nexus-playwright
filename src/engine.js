@@ -5,6 +5,24 @@ const path = require('path');
 const https = require('https');
 const http = require('http');
 
+// ── GLOBAL BROWSER SEMAPHORE ──────────────────────────────────────────────────
+// Caps total Chromium instances across ALL campaigns to prevent OOM.
+// Per-campaign concurrency (speed mode) is a ceiling, this is the floor.
+
+const MAX_BROWSERS = parseInt(process.env.MAX_CONCURRENT_TOTAL || '10');
+let activeBrowsers = 0;
+
+function acquireBrowser() {
+  return new Promise(resolve => {
+    const try_ = () => {
+      if (activeBrowsers < MAX_BROWSERS) { activeBrowsers++; resolve(); }
+      else setTimeout(try_, 500);
+    };
+    try_();
+  });
+}
+function releaseBrowser() { if (activeBrowsers > 0) activeBrowsers--; }
+
 // ── SESSION & META HELPERS ────────────────────────────────────────────────────
 
 const SESSIONS_DIR = path.join(__dirname, '../data/sessions');
@@ -404,6 +422,7 @@ async function runVisit(campaign, proxy, category, speed = 'normal') {
   const startTime = Date.now();
   let pagesVisited = 0;
 
+  await acquireBrowser();
   try {
     browser = await chromium.launch({
       headless: true,
@@ -695,11 +714,13 @@ async function runVisit(campaign, proxy, category, speed = 'normal') {
 
     await context.close();
     await browser.close();
+    releaseBrowser();
 
     return { success:true, duration, pages:pagesVisited, persona:persona.name, device, ua, returning:isReturning, tier, category };
 
   } catch (err) {
     try { await browser?.close(); } catch {}
+    releaseBrowser();
     console.error(`[visit error] ${err.message}`);
     return { success:false, reason: err.message };
   }
