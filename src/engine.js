@@ -711,15 +711,17 @@ async function runCampaign(campaignId) {
   const campaign = db.prepare('SELECT * FROM campaigns WHERE id = ?').get(campaignId);
   if (!campaign || campaign.status !== 'running') return;
 
-  const geo = campaign.target_geo || 'any';
-  const allProxies = geo === 'any'
+  const geoRaw  = campaign.target_geo || 'any';
+  const geos    = geoRaw === 'any' ? [] : geoRaw.split(',').map(g => g.trim()).filter(Boolean);
+  const allProxies = geos.length === 0
     ? db.prepare("SELECT * FROM proxies WHERE status = 'active'").all()
-    : db.prepare("SELECT * FROM proxies WHERE status = 'active' AND geo = ?").all(geo);
+    : db.prepare(`SELECT * FROM proxies WHERE status = 'active' AND geo IN (${geos.map(() => '?').join(',')})`).all(...geos);
 
   if (!allProxies.length) {
-    console.log(`[campaign] "${campaign.name}" — no active proxies${geo !== 'any' ? ` for GEO ${geo}` : ''}, will retry`);
+    console.log(`[campaign] "${campaign.name}" — no active proxies${geos.length ? ` for GEO [${geos.join(',')}]` : ''}, will retry`);
     return;
   }
+  const geo = geos.length ? geos.join(',') : 'any';
 
   const category = await getCampaignCategory(campaignId, campaign.target_url);
   const speed    = campaign.speed || 'normal';

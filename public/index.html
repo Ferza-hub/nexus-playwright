@@ -99,6 +99,14 @@ tr:last-child td{border-bottom:none}tr:hover td{background:rgba(56,189,248,.02)}
 .chart-bar{width:100%;border-radius:3px 3px 0 0;min-height:2px}
 .chart-lbl{font-size:.6rem;color:var(--muted);font-family:'Cabinet Grotesk',sans-serif;font-weight:600}
 @media(max-width:768px){.stats-grid{grid-template-columns:1fr 1fr}.grid-2{grid-template-columns:1fr}.form-row,.form-row-3{grid-template-columns:1fr}}
+.ms-wrap{position:relative}
+.ms-trigger{background:var(--s2);border:1px solid var(--border);border-radius:9px;color:var(--text);padding:.55rem .8rem;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;transition:border-color .15s}
+.ms-trigger:hover,.ms-trigger.open{border-color:var(--accent)}
+.ms-dropdown{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--s2);border:1px solid var(--border);border-radius:9px;z-index:200;padding:.35rem;max-height:220px;overflow-y:auto}
+.ms-dropdown.open{display:block}
+.ms-option{display:flex;align-items:center;gap:.5rem;padding:.35rem .5rem;border-radius:6px;cursor:pointer;font-size:.82rem;transition:background .1s}
+.ms-option:hover{background:var(--s3)}
+.ms-option input[type=checkbox]{accent-color:var(--accent);width:13px;height:13px;cursor:pointer;flex-shrink:0}
 </style>
 </head>
 <body>
@@ -249,18 +257,25 @@ tr:last-child td{border-bottom:none}tr:hover td{background:rgba(56,189,248,.02)}
         <option value="fast">🚀 Fast</option>
         <option value="turbo">💥 Turbo (volume)</option>
       </select></div></div>
-      <div class="form-group"><label class="form-label">Region Proxy</label><div class="sel-wrap"><select class="form-select" id="nc-geo">
-        <option value="any">🌍 All Regions</option>
-        <option value="US">🇺🇸 United States</option>
-        <option value="UK">🇬🇧 United Kingdom</option>
-        <option value="ID">🇮🇩 Indonesia</option>
-        <option value="SG">🇸🇬 Singapore</option>
-        <option value="AU">🇦🇺 Australia</option>
-        <option value="MY">🇲🇾 Malaysia</option>
-        <option value="PH">🇵🇭 Philippines</option>
-        <option value="IN">🇮🇳 India</option>
-        <option value="BR">🇧🇷 Brazil</option>
-      </select></div></div>
+      <div class="form-group"><label class="form-label">Region Proxy</label>
+        <div class="ms-wrap" id="geo-wrap">
+          <div class="ms-trigger" id="geo-trigger" onclick="toggleMs('geo')">
+            <span id="geo-label">🌍 All Regions</span><span style="color:var(--muted);font-size:.7rem">▾</span>
+          </div>
+          <div class="ms-dropdown" id="geo-dropdown">
+            <label class="ms-option"><input type="checkbox" value="any" checked onchange="onGeoChange(this)"> 🌍 All Regions</label>
+            <label class="ms-option"><input type="checkbox" value="US" onchange="onGeoChange(this)"> 🇺🇸 United States</label>
+            <label class="ms-option"><input type="checkbox" value="UK" onchange="onGeoChange(this)"> 🇬🇧 United Kingdom</label>
+            <label class="ms-option"><input type="checkbox" value="ID" onchange="onGeoChange(this)"> 🇮🇩 Indonesia</label>
+            <label class="ms-option"><input type="checkbox" value="SG" onchange="onGeoChange(this)"> 🇸🇬 Singapore</label>
+            <label class="ms-option"><input type="checkbox" value="AU" onchange="onGeoChange(this)"> 🇦🇺 Australia</label>
+            <label class="ms-option"><input type="checkbox" value="MY" onchange="onGeoChange(this)"> 🇲🇾 Malaysia</label>
+            <label class="ms-option"><input type="checkbox" value="PH" onchange="onGeoChange(this)"> 🇵🇭 Philippines</label>
+            <label class="ms-option"><input type="checkbox" value="IN" onchange="onGeoChange(this)"> 🇮🇳 India</label>
+            <label class="ms-option"><input type="checkbox" value="BR" onchange="onGeoChange(this)"> 🇧🇷 Brazil</label>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="form-row">
       <div class="form-group"><label class="form-label">Device</label><div class="sel-wrap"><select class="form-select" id="nc-device"><option value="mixed">Mixed</option><option value="desktop">Desktop</option><option value="mobile">Mobile</option></select></div></div>
@@ -430,9 +445,9 @@ async function createCampaign(){
       max_duration:parseInt(document.getElementById('nc-maxdur').value),
       bounce_rate:parseInt(document.getElementById('nc-bounce').value),
       speed:document.getElementById('nc-speed').value,
-      target_geo:document.getElementById('nc-geo').value,
+      target_geo:getGeoValue(),
     }});
-    closeModal('modal-campaign');toast('Task dibuat!','success');loadCampaigns();loadDashboard();
+    closeModal('modal-campaign');resetGeoSelect();toast('Task dibuat!','success');loadCampaigns();loadDashboard();
   }catch(e){toast(e.message,'error');}
   btn.innerHTML='Buat Campaign →';btn.disabled=false;
 }
@@ -531,6 +546,50 @@ async function changePassword(){
     document.getElementById('pwd-confirm').value='';
   }catch(e){toast(e.message,'error');}
   btn.innerHTML='Simpan Password →';btn.disabled=false;
+}
+
+// ── MULTI-SELECT HELPERS ──────────────────────────────────────────────────────
+const GEO_FLAGS = {any:'🌍 All Regions',US:'🇺🇸 US',UK:'🇬🇧 UK',ID:'🇮🇩 ID',SG:'🇸🇬 SG',AU:'🇦🇺 AU',MY:'🇲🇾 MY',PH:'🇵🇭 PH',IN:'🇮🇳 IN',BR:'🇧🇷 BR'};
+
+function toggleMs(id){
+  const trigger=document.getElementById(id+'-trigger');
+  const dd=document.getElementById(id+'-dropdown');
+  const open=dd.classList.toggle('open');
+  trigger.classList.toggle('open',open);
+  if(open){
+    const close=e=>{if(!document.getElementById(id+'-wrap').contains(e.target)){dd.classList.remove('open');trigger.classList.remove('open');document.removeEventListener('click',close);}};
+    setTimeout(()=>document.addEventListener('click',close),0);
+  }
+}
+
+function onGeoChange(cb){
+  const all=[...document.querySelectorAll('#geo-dropdown input[type=checkbox]')];
+  if(cb.value==='any'){
+    if(cb.checked) all.filter(c=>c.value!=='any').forEach(c=>c.checked=false);
+    else cb.checked=true; // can't uncheck all
+  } else {
+    document.querySelector('#geo-dropdown input[value="any"]').checked=false;
+    if(!all.filter(c=>c.value!=='any').some(c=>c.checked)){
+      document.querySelector('#geo-dropdown input[value="any"]').checked=true;
+    }
+  }
+  updateGeoLabel();
+}
+
+function updateGeoLabel(){
+  const checked=[...document.querySelectorAll('#geo-dropdown input:checked')].map(c=>c.value);
+  const label=checked.includes('any')?'🌍 All Regions':checked.map(v=>GEO_FLAGS[v]||v).join(', ');
+  document.getElementById('geo-label').textContent=label;
+}
+
+function getGeoValue(){
+  const checked=[...document.querySelectorAll('#geo-dropdown input:checked')].map(c=>c.value);
+  return checked.includes('any')?'any':checked.join(',');
+}
+
+function resetGeoSelect(){
+  document.querySelectorAll('#geo-dropdown input').forEach(c=>c.checked=c.value==='any');
+  updateGeoLabel();
 }
 
 function init(){
