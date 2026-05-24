@@ -241,6 +241,40 @@ function pickPersona(pref) {
   return { name: 'engaged_reader', ...PERSONAS.engaged_reader };
 }
 
+// ── WARM-UP BROWSING (natural/normal only) ────────────────────────────────────
+
+const WARMUP_SITES = {
+  fashion:   ['https://www.vogue.com/', 'https://www.elle.com/'],
+  tech:      ['https://techcrunch.com/', 'https://www.theverge.com/'],
+  food:      ['https://www.allrecipes.com/', 'https://www.foodnetwork.com/'],
+  health:    ['https://www.healthline.com/', 'https://www.webmd.com/'],
+  finance:   ['https://finance.yahoo.com/', 'https://www.cnbc.com/markets/'],
+  travel:    ['https://www.tripadvisor.com/', 'https://www.lonelyplanet.com/'],
+  education: ['https://medium.com/', 'https://www.coursera.org/'],
+  ecommerce: ['https://www.amazon.com/', 'https://www.ebay.com/'],
+  news:      ['https://news.google.com/', 'https://www.bbc.com/news/'],
+  general:   ['https://www.reddit.com/', 'https://news.google.com/'],
+};
+
+async function warmupBrowse(page, category) {
+  const sites = WARMUP_SITES[category] || WARMUP_SITES.general;
+  const count = Math.random() < 0.5 ? 1 : 2;
+  const chosen = [...sites].sort(() => Math.random() - 0.5).slice(0, count);
+
+  for (const url of chosen) {
+    try {
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 12000 });
+      const vp = page.viewportSize();
+      if (vp) {
+        await sleep(rand(3000, 8000));
+        await page.mouse.wheel(0, rand(100, 400));
+        await sleep(rand(1000, 3000));
+        await page.mouse.move(rand(0, vp.width), rand(0, vp.height));
+      }
+    } catch { /* warmup timeout is fine, skip and continue */ }
+  }
+}
+
 // ── BROWSER INTERACTIONS ──────────────────────────────────────────────────────
 
 async function moveMouse(page, fromX, fromY, toX, toY) {
@@ -662,6 +696,12 @@ async function runVisit(campaign, proxy, category, speed = 'normal') {
     }, { w: viewport.width, h: viewport.height, dpr, platform, concurrency, memory, seed: noiseSeed, isMobile: device === 'mobile', connType, connMedium, connDownlink: connProfile.downlink, connRtt: connProfile.rtt });
 
     const page = await context.newPage();
+
+    // Warm-up: visit 1-2 relevant sites first so the session looks lived-in
+    // Skipped for fast/turbo where speed matters more than quality
+    if (['natural', 'normal'].includes(speed)) {
+      await warmupBrowse(page, category);
+    }
 
     if (referer) await page.setExtraHTTPHeaders({ 'Referer': referer });
     await page.goto(campaign.target_url, { waitUntil: 'domcontentloaded', timeout: 20000, referer: referer || undefined });
