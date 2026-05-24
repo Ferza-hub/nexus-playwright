@@ -46,6 +46,7 @@ function initDB() {
       max_duration INTEGER DEFAULT 180,
       bounce_rate INTEGER DEFAULT 40,
       pages_per_session INTEGER DEFAULT 3,
+      speed TEXT DEFAULT 'normal',
       status TEXT DEFAULT 'pending',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       completed_at DATETIME
@@ -78,6 +79,9 @@ function initDB() {
   `);
 
   // Remove any proxy rows with NULL or invalid port that could crash future operations
+  // Migrations for existing databases
+  try { db.exec(`ALTER TABLE campaigns ADD COLUMN speed TEXT DEFAULT 'normal'`); } catch {}
+
   try {
     const removed = db.prepare('DELETE FROM proxies WHERE port IS NULL OR port <= 0 OR port > 65535').run();
     if (removed.changes > 0) console.log(`[db] removed ${removed.changes} invalid proxy row(s)`);

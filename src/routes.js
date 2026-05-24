@@ -30,7 +30,7 @@ router.post('/campaigns', (req, res) => {
     name, target_url, pages, visits_total,
     traffic_source = 'organic', device = 'mixed',
     persona = 'mixed', min_duration = 30, max_duration = 180,
-    bounce_rate = 40, pages_per_session = 3,
+    bounce_rate = 40, pages_per_session = 3, speed = 'normal',
   } = req.body;
 
   if (!name || !target_url || !visits_total)
@@ -40,15 +40,18 @@ router.post('/campaigns', (req, res) => {
     return res.status(400).json({ error: 'Invalid URL' });
   }
 
+  if (!['natural','normal','fast','turbo'].includes(speed))
+    return res.status(400).json({ error: 'speed must be natural/normal/fast/turbo' });
+
   const id = uuidv4();
   const pagesJson = JSON.stringify(pages || [target_url]);
 
   db.prepare(`
     INSERT INTO campaigns (id, name, target_url, pages, visits_total, traffic_source, device, persona,
-      min_duration, max_duration, bounce_rate, pages_per_session, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
+      min_duration, max_duration, bounce_rate, pages_per_session, speed, status)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')
   `).run(id, name, target_url, pagesJson, visits_total, traffic_source, device, persona,
-    min_duration, max_duration, bounce_rate, pages_per_session);
+    min_duration, max_duration, bounce_rate, pages_per_session, speed);
 
   res.json({ id, message: 'Created' });
 });

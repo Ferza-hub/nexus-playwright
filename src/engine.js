@@ -151,13 +151,24 @@ function resolveDevice(campaignDevice, category, tier) {
   return pref;
 }
 
+// ── SPEED PROFILES ────────────────────────────────────────────────────────────
+
+const SPEED_PROFILES = {
+  //            gap min/max hours   concurrent  clearSession  batchSleep ms
+  natural: { minGap: 4,    maxGap: 12,  concurrent: 2,  clear: false, sleep: [10000, 20000] },
+  normal:  { minGap: 1,    maxGap: 3,   concurrent: 5,  clear: false, sleep: [5000,  15000] },
+  fast:    { minGap: 0.25, maxGap: 0.5, concurrent: 8,  clear: false, sleep: [2000,  6000]  },
+  turbo:   { minGap: 0.05, maxGap: 0.1, concurrent: 15, clear: true,  sleep: [500,   2000]  },
+};
+
 // ── RETURN INTERVAL ENFORCEMENT ───────────────────────────────────────────────
 
-function isProxyReady(proxyId) {
+function isProxyReady(proxyId, speed = 'normal') {
   const s = loadSession(proxyId);
   if (!s?.last_visited_at) return true;
   const hours = (Date.now() - new Date(s.last_visited_at).getTime()) / 3600000;
-  return hours >= (4 + Math.random() * 8); // 4–12h minimum gap
+  const { minGap, maxGap } = SPEED_PROFILES[speed] || SPEED_PROFILES.normal;
+  return hours >= (minGap + Math.random() * (maxGap - minGap));
 }
 
 // ── PERSONAS ─────────────────────────────────────────────────────────────────
@@ -309,9 +320,67 @@ async function clickRandomElement(page, baseUrl) {
 }
 
 
+// ── OCCASIONAL AD CLICK (realistic CTR) ──────────────────────────────────────
+
+async function maybeClickAd(page, persona) {
+  // Industry display CTR: 0.1–2%. Weighted by persona engagement level.
+  const ctrProb = { quick_scanner: 0.005, window_shopper: 0.01, engaged_reader: 0.015, power_user: 0.02 };
+  if (Math.random() > (ctrProb[persona.name] || 0.01)) return;
+
+  try {
+    const baseDomain = new URL(page.url()).hostname;
+
+    // Find a visible clickable ad: iframe or external link
+    const adHandle = await page.evaluateHandle((base) => {
+      const visible = el => {
+        const r = el.getBoundingClientRect();
+        return r.width > 40 && r.height > 20 && r.top >= 0 && r.top < window.innerHeight * 3;
+      };
+      // Prefer iframes (banner/display ads)
+      const frames = [...document.querySelectorAll('iframe')].filter(visible);
+      // Fallback: external links (not internal navigation)
+      const extLinks = [...document.querySelectorAll('a[href]')].filter(el => {
+        try { return new URL(el.href).hostname !== base && visible(el); } catch { return false; }
+      });
+      const pool = frames.length ? frames : extLinks;
+      return pool.length ? pool[Math.floor(Math.random() * pool.length)] : null;
+    }, baseDomain);
+
+    if (!adHandle || adHandle.toString() === 'null') return;
+
+    await adHandle.scrollIntoViewIfNeeded({ timeout: 3000 });
+    await sleep(rand(600, 2000)); // pause — like noticing the ad
+
+    const box = await adHandle.boundingBox();
+    if (!box || box.width < 10) return;
+
+    const vp = page.viewportSize();
+    const toX = Math.round(box.x + box.width  * (0.2 + Math.random() * 0.6));
+    const toY = Math.round(box.y + box.height * (0.2 + Math.random() * 0.6));
+    await moveMouse(page, rand(0, vp?.width || 800), rand(0, vp?.height || 600), toX, toY);
+    await sleep(rand(150, 500));
+
+    // Ad clicks often open a new tab
+    const newPagePromise = page.context().waitForEvent('page', { timeout: 4000 }).catch(() => null);
+    await adHandle.click({ timeout: 3000 }).catch(() => {});
+    const newPage = await newPagePromise;
+
+    if (newPage) {
+      await newPage.waitForLoadState('domcontentloaded', { timeout: 8000 }).catch(() => {});
+      await sleep(rand(2000, 5000)); // brief look at the landing page
+      await newPage.close().catch(() => {});
+    } else {
+      await sleep(rand(1500, 4000));
+      await page.goBack({ timeout: 8000 }).catch(() => {});
+      await page.waitForLoadState('domcontentloaded', { timeout: 8000 }).catch(() => {});
+    }
+    console.log(`[ad-click] ${persona.name}`);
+  } catch { /* silent — ad clicks are optional */ }
+}
+
 // ── CORE VISIT ────────────────────────────────────────────────────────────────
 
-async function runVisit(campaign, proxy, category) {
+async function runVisit(campaign, proxy, category, speed = 'normal') {
   const tier      = pickTier();
   const device    = resolveDevice(campaign.device, category, tier);
   const persona   = pickPersona(campaign.persona);
@@ -320,7 +389,8 @@ async function runVisit(campaign, proxy, category) {
     ? `https://www.google.com/search?q=${encodeURIComponent(query)}`
     : pick(REFERRERS[campaign.traffic_source] || REFERRERS.organic);
 
-  const existing    = proxy ? loadSession(proxy.id) : null;
+  // Turbo: clear session so each visit = new user from that IP (volume over retention)
+  const existing    = (proxy && speed !== 'turbo') ? loadSession(proxy.id) : null;
   const isReturning = !!existing;
   const ua          = existing?.ua       || pick(USER_AGENTS[device]);
   const viewport    = existing?.viewport || pick(VIEWPORTS[device]);
@@ -595,6 +665,9 @@ async function runVisit(campaign, proxy, category) {
       if (Math.random() < 0.3) await page.mouse.move(rand(0,vp.width), rand(0,vp.height));
     }
 
+    // Occasional ad click — keeps CTR non-zero, realistic for publishers
+    await maybeClickAd(page, persona);
+
     // Persona-driven click probability — not every human clicks every visit
     const clickProb = { quick_scanner: 0.25, window_shopper: 0.45, engaged_reader: 0.65, power_user: 0.85 };
     const willClick = Math.random() < (clickProb[persona.name] || 0.4);
@@ -645,9 +718,10 @@ async function runCampaign(campaignId) {
   }
 
   const category = await getCampaignCategory(campaignId, campaign.target_url);
-  console.log(`[campaign] "${campaign.name}" → category: ${category}`);
+  const speed    = campaign.speed || 'normal';
+  const profile  = SPEED_PROFILES[speed] || SPEED_PROFILES.normal;
+  console.log(`[campaign] "${campaign.name}" → category: ${category} | speed: ${speed} | concurrent: ${profile.concurrent}`);
 
-  const MAX_CONCURRENT = parseInt(process.env.MAX_CONCURRENT || '2');
   const remaining = campaign.visits_total - campaign.visits_sent;
   let i = 0;
 
@@ -655,18 +729,17 @@ async function runCampaign(campaignId) {
     const current = db.prepare('SELECT status FROM campaigns WHERE id = ?').get(campaignId);
     if (current.status !== 'running') break;
 
-    // Prefer proxies that have respected the return interval; fallback = least-recently-used
-    const ready = allProxies.filter(p => isProxyReady(p.id));
+    const ready = allProxies.filter(p => isProxyReady(p.id, speed));
     const pool  = ready.length > 0 ? ready : [...allProxies].sort((a, b) => {
       const ta = loadSession(a.id)?.last_visited_at || '2000-01-01';
       const tb = loadSession(b.id)?.last_visited_at || '2000-01-01';
       return new Date(ta) - new Date(tb);
     });
 
-    const batchSize = Math.min(MAX_CONCURRENT, remaining - i);
+    const batchSize = Math.min(profile.concurrent, remaining - i);
     const batch = Array.from({ length: batchSize }, (_, j) => {
       const proxy = pool[j % pool.length];
-      return runVisit(campaign, proxy, category).then(r => ({ r, proxy }));
+      return runVisit(campaign, proxy, category, speed).then(r => ({ r, proxy }));
     });
 
     for (const s of await Promise.allSettled(batch)) {
@@ -687,7 +760,7 @@ async function runCampaign(campaignId) {
     }
 
     i += batchSize;
-    await sleep(rand(5000, 15000));
+    await sleep(rand(...profile.sleep));
   }
 
   const final = db.prepare('SELECT visits_sent,visits_total FROM campaigns WHERE id=?').get(campaignId);
