@@ -1,610 +1,74 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nexus Panel</title>
-<link href="https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;600;700;800;900&family=Epilogue:wght@400;500&display=swap" rel="stylesheet"><style>
-:root{--bg:#07090f;--s1:#0d1117;--s2:#161b22;--s3:#1f2937;--border:rgba(56,189,248,0.08);--border2:rgba(56,189,248,0.04);--accent:#38bdf8;--green:#22c55e;--amber:#f59e0b;--red:#ef4444;--purple:#a78bfa;--text:#e2e8f0;--muted:#64748b;--muted2:#94a3b8}
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:'Epilogue',sans-serif;font-size:14px;overflow-x:hidden}
-body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(56,189,248,0.015) 1px,transparent 1px),linear-gradient(90deg,rgba(56,189,248,0.015) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0}
-::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--s3);border-radius:2px}
-header{position:fixed;top:0;left:0;right:0;z-index:100;height:54px;background:rgba(7,9,15,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 1.25rem;gap:1rem}
-.logo{font-family:'Cabinet Grotesk',sans-serif;font-weight:900;font-size:1.1rem;letter-spacing:-.5px;display:flex;align-items:center;gap:.5rem}
-.logo-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);animation:pulse 2s infinite}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
-.nav-pills{display:flex;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:3px;gap:2px;margin:0 auto}
-.nav-pill{padding:.3rem .9rem;border-radius:7px;font-size:.78rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .15s;font-family:'Cabinet Grotesk',sans-serif}
-.nav-pill:hover{color:var(--text)}.nav-pill.active{background:var(--accent);color:#07090f}
-.hdr-right{display:flex;align-items:center;gap:.6rem;margin-left:auto}
-.online-badge{display:flex;align-items:center;gap:.35rem;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);border-radius:20px;padding:.2rem .65rem;font-size:.72rem;font-weight:700;color:var(--green)}
-.online-dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 1.5s infinite}
-.layout{display:flex;padding-top:54px;min-height:100vh;position:relative;z-index:1}
-main{flex:1;padding:1.5rem;max-width:1200px;margin:0 auto;width:100%}
-.page{display:none}.page.active{display:block;animation:fadeIn .2s ease}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
-.page-title{font-family:'Cabinet Grotesk',sans-serif;font-size:1.25rem;font-weight:900;letter-spacing:-.3px;margin-bottom:.2rem}
-.page-sub{color:var(--muted2);font-size:.82rem;margin-bottom:1.5rem}
-.card{background:var(--s1);border:1px solid var(--border);border-radius:13px;padding:1.1rem}
-.card-title{font-family:'Cabinet Grotesk',sans-serif;font-weight:800;font-size:.88rem;margin-bottom:.875rem;display:flex;align-items:center;justify-content:space-between}
-.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.875rem;margin-bottom:1.25rem}
-.stat-card{background:var(--s1);border:1px solid var(--border);border-radius:13px;padding:1rem 1.1rem}
-.stat-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.9rem;margin-bottom:.65rem}
-.stat-val{font-family:'Cabinet Grotesk',sans-serif;font-size:1.5rem;font-weight:900;letter-spacing:-1px;line-height:1;margin-bottom:.15rem}
-.stat-lbl{font-size:.7rem;color:var(--muted)}
-.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;padding:.55rem 1.1rem;border-radius:9px;font-family:'Cabinet Grotesk',sans-serif;font-weight:700;font-size:.82rem;cursor:pointer;transition:all .15s;border:none}
-.btn-primary{background:var(--accent);color:#07090f;box-shadow:0 0 18px rgba(56,189,248,.2)}.btn-primary:hover{background:#7dd3fc;transform:translateY(-1px)}.btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.btn-secondary{background:var(--s3);color:var(--muted2);border:1px solid var(--border)}.btn-secondary:hover{color:var(--text)}
-.btn-danger{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.2)}.btn-danger:hover{background:rgba(239,68,68,.2)}
-.btn-success{background:rgba(34,197,94,.1);color:var(--green);border:1px solid rgba(34,197,94,.25)}
-.btn-sm{padding:.3rem .65rem;font-size:.72rem;border-radius:7px}.btn-full{width:100%}
-.form-group{display:flex;flex-direction:column;gap:.3rem;margin-bottom:.8rem}
-.form-label{font-size:.68rem;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;font-family:'Cabinet Grotesk',sans-serif}
-.form-input,.form-select{background:var(--s2);border:1px solid var(--border);border-radius:9px;color:var(--text);padding:.55rem .8rem;font-family:'Epilogue',sans-serif;font-size:.85rem;outline:none;transition:border-color .15s;width:100%;appearance:none}
-.form-input:focus,.form-select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(56,189,248,.08)}
-.form-input::placeholder{color:var(--muted)}
-.sel-wrap{position:relative}.sel-wrap::after{content:'▾';position:absolute;right:.8rem;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;font-size:.75rem}
-.form-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem}
-.tag{display:inline-block;padding:.12rem .45rem;border-radius:5px;font-size:.65rem;font-weight:700;font-family:'Cabinet Grotesk',sans-serif}
-.tag-blue{background:rgba(56,189,248,.1);color:var(--accent)}.tag-green{background:rgba(34,197,94,.1);color:var(--green)}.tag-amber{background:rgba(245,158,11,.1);color:var(--amber)}.tag-red{background:rgba(239,68,68,.1);color:var(--red)}.tag-purple{background:rgba(167,139,250,.1);color:var(--purple)}
-.prog-bar{height:4px;background:var(--s3);border-radius:2px;overflow:hidden}.prog-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--purple));transition:width .3s}
-.campaign-card{background:var(--s2);border:1px solid var(--border);border-radius:11px;padding:.9rem;margin-bottom:.6rem;transition:border-color .15s}
-.campaign-card:hover{border-color:rgba(56,189,248,.2)}
-.cc-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.55rem}
-.cc-title{font-family:'Cabinet Grotesk',sans-serif;font-weight:800;font-size:.87rem;margin-bottom:.1rem}
-.cc-url{font-size:.7rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:280px}
-.cc-meta{display:flex;gap:.65rem;font-size:.7rem;color:var(--muted);margin-bottom:.5rem;flex-wrap:wrap}
-.cc-meta span{color:var(--muted2);font-weight:600}
-.cc-footer{display:flex;align-items:center;gap:.4rem;margin-top:.6rem}
-.proxy-card{background:var(--s2);border:1px solid var(--border);border-radius:11px;padding:.875rem;transition:border-color .15s}
-.proxy-card:hover{border-color:rgba(56,189,248,.2)}
-.proxy-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:.75rem}
-.log-item{display:flex;gap:.6rem;align-items:flex-start;padding:.4rem 0;border-bottom:1px solid var(--border2);font-size:.78rem}
-.log-item:last-child{border-bottom:none}
-.log-time{color:var(--muted);white-space:nowrap;font-size:.68rem;width:65px;flex-shrink:0;font-family:'Cabinet Grotesk',sans-serif;font-weight:700;margin-top:1px}
-.log-dot{width:5px;height:5px;border-radius:50%;margin-top:4px;flex-shrink:0}
-.log-msg{color:var(--muted2);line-height:1.4}.log-msg strong{color:var(--text);font-weight:600}
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;align-items:center;justify-content:center;padding:1rem}
-.modal-overlay.open{display:flex}
-.modal-box{background:var(--s1);border:1px solid var(--border);border-radius:16px;padding:1.75rem;width:100%;max-width:520px;max-height:92vh;overflow-y:auto}
-.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
-.modal-title{font-family:'Cabinet Grotesk',sans-serif;font-weight:800;font-size:.95rem}
-#toast{position:fixed;bottom:1.5rem;right:1.5rem;z-index:999;display:flex;flex-direction:column;gap:.5rem}
-.toast-item{background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:.6rem .9rem;font-size:.78rem;font-weight:600;font-family:'Cabinet Grotesk',sans-serif;animation:slideIn .2s ease;display:flex;align-items:center;gap:.4rem;min-width:200px}
-@keyframes slideIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
-.toast-item.success{border-color:rgba(34,197,94,.3);color:var(--green)}.toast-item.error{border-color:rgba(239,68,68,.3);color:var(--red)}.toast-item.info{border-color:rgba(56,189,248,.3);color:var(--accent)}
-.spinner{width:14px;height:14px;border:2px solid rgba(56,189,248,.2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
-@keyframes spin{to{transform:rotate(360deg)}}
-#login-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999}
-.login-box{background:var(--s1);border:1px solid var(--border);border-radius:20px;padding:2.5rem;width:100%;max-width:380px;text-align:center}
-.login-logo{font-family:'Cabinet Grotesk',sans-serif;font-weight:900;font-size:1.5rem;margin-bottom:.35rem}
-.login-sub{color:var(--muted);font-size:.82rem;margin-bottom:1.75rem}
-.login-error{color:var(--red);font-size:.78rem;margin-top:.65rem;display:none}
-/* Persona badges */
-.persona-badge{display:inline-flex;align-items:center;gap:.25rem;padding:.12rem .45rem;border-radius:5px;font-size:.65rem;font-weight:700;font-family:'Cabinet Grotesk',sans-serif}
-.p-quick{background:rgba(245,158,11,.1);color:var(--amber)}
-.p-engaged{background:rgba(34,197,94,.1);color:var(--green)}
-.p-window{background:rgba(56,189,248,.1);color:var(--accent)}
-.p-power{background:rgba(167,139,250,.1);color:var(--purple)}
-.p-mixed{background:rgba(100,116,139,.1);color:var(--muted2)}
-.tbl-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse}
-th{text-align:left;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);padding:.5rem .75rem;border-bottom:1px solid var(--border)}
-td{padding:.65rem .75rem;font-size:.8rem;border-bottom:1px solid var(--border2);vertical-align:middle}
-tr:last-child td{border-bottom:none}tr:hover td{background:rgba(56,189,248,.02)}
-.chart-bars{display:flex;align-items:flex-end;gap:4px;height:80px;padding:.5rem 0}
-.chart-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
-.chart-bar{width:100%;border-radius:3px 3px 0 0;min-height:2px}
-.chart-lbl{font-size:.6rem;color:var(--muted);font-family:'Cabinet Grotesk',sans-serif;font-weight:600}
-@media(max-width:768px){.stats-grid{grid-template-columns:1fr 1fr}.grid-2{grid-template-columns:1fr}.form-row,.form-row-3{grid-template-columns:1fr}}
-.ms-wrap{position:relative}
-.ms-trigger{background:var(--s2);border:1px solid var(--border);border-radius:9px;color:var(--text);padding:.55rem .8rem;font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:space-between;user-select:none;transition:border-color .15s}
-.ms-trigger:hover,.ms-trigger.open{border-color:var(--accent)}
-.ms-dropdown{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--s2);border:1px solid var(--border);border-radius:9px;z-index:200;padding:.35rem;max-height:220px;overflow-y:auto}
-.ms-dropdown.open{display:block}
-.ms-option{display:flex;align-items:center;gap:.5rem;padding:.35rem .5rem;border-radius:6px;cursor:pointer;font-size:.82rem;transition:background .1s}
-.ms-option:hover{background:var(--s3)}
-.ms-option input[type=checkbox]{accent-color:var(--accent);width:13px;height:13px;cursor:pointer;flex-shrink:0}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nexus Social</title>
+  <link rel="stylesheet" href="/css/app.css">
 </head>
 <body>
-
-<div id="login-screen">
-  <div class="login-box">
-    <div class="login-logo">⚡ Nexus Panel</div>
-    <div class="login-sub">Automation Panel</div>
-    <div style="text-align:left">
-      <div class="form-group"><label class="form-label">Password</label><input type="password" class="form-input" id="login-pass" placeholder="Panel password" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    </div>
-    <button class="btn btn-primary btn-full" id="login-btn" onclick="doLogin()">Masuk →</button>
-    <div class="login-error" id="login-err">Password salah</div>
-  </div>
-</div>
-
-<header>
-  <div class="logo"><div class="logo-dot"></div>Nexus Panel</div>
-  <div class="nav-pills">
-    <div class="nav-pill active" onclick="showPage('dashboard',this)">Dashboard</div>
-    <div class="nav-pill" onclick="showPage('campaigns',this)">Campaigns</div>
-    <div class="nav-pill" onclick="showPage('proxies',this)">Proxies</div>
-    <div class="nav-pill" onclick="showPage('logs',this)">Logs</div>
-    <div class="nav-pill" onclick="showPage('settings',this)">Settings</div>
-  </div>
-  <div class="hdr-right">
-    <div class="online-badge" id="proxy-badge"><div class="online-dot"></div>— Proxies</div>
-    <button class="btn btn-secondary btn-sm" onclick="doLogout()">Logout</button>
-  </div>
-</header>
-
-<div class="layout">
-<main>
-
-<!-- DASHBOARD -->
-<div class="page active" id="page-dashboard">
-  <div class="page-title">Dashboard</div>
-  <div class="page-sub" id="dash-sub">Memuat...</div>
-  <div class="stats-grid">
-    <div class="stat-card"><div class="stat-icon" style="background:rgba(56,189,248,.1)">📊</div><div class="stat-val" id="s-campaigns">—</div><div class="stat-lbl">Total Tasks</div></div>
-    <div class="stat-card"><div class="stat-icon" style="background:rgba(34,197,94,.1)">🚀</div><div class="stat-val" id="s-active">—</div><div class="stat-lbl">Berjalan</div></div>
-    <div class="stat-card"><div class="stat-icon" style="background:rgba(167,139,250,.1)">✅</div><div class="stat-val" id="s-visits">—</div><div class="stat-lbl">Selesai</div></div>
-    <div class="stat-card"><div class="stat-icon" style="background:rgba(245,158,11,.1)">⚡</div><div class="stat-val" id="s-rate">—%</div><div class="stat-lbl">Success Rate</div></div>
-  </div>
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-title">Visits 7 Hari</div>
-      <div class="chart-bars" id="dash-chart"></div>
-      <div style="display:flex;justify-content:space-around" id="dash-labels"></div>
-    </div>
-    <div class="card">
-      <div class="card-title">Recent Activity</div>
-      <div id="dash-log" style="max-height:180px;overflow-y:auto"></div>
+  <div id="login-screen" class="login-screen hidden">
+    <div class="login-box">
+      <div class="login-logo">⬡ Nexus Social</div>
+      <input type="password" id="login-password" placeholder="Panel password" autocomplete="current-password">
+      <button id="login-btn" class="btn btn-primary w-full">Sign in</button>
+      <p id="login-error" class="error-text hidden">Invalid password</p>
     </div>
   </div>
-  <div class="card">
-    <div class="card-title">Task Aktif <span class="tag tag-blue" id="active-count">0</span></div>
-    <div id="active-list"><div style="color:var(--muted);font-size:.82rem">Tidak ada task aktif.</div></div>
-  </div>
-</div>
 
-<!-- CAMPAIGNS -->
-<div class="page" id="page-campaigns">
-  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem">
-    <div><div class="page-title">Tasks</div><div class="page-sub">Kelola automation tasks</div></div>
-    <button class="btn btn-primary" onclick="showModal('modal-campaign')">+ Task Baru</button>
-  </div>
-  <div class="card">
-    <div style="display:flex;gap:.4rem;margin-bottom:1rem;flex-wrap:wrap">
-      <button class="btn btn-secondary btn-sm" onclick="filterC('all',this)">Semua</button>
-      <button class="btn btn-secondary btn-sm" onclick="filterC('running',this)">Running</button>
-      <button class="btn btn-secondary btn-sm" onclick="filterC('pending',this)">Pending</button>
-      <button class="btn btn-secondary btn-sm" onclick="filterC('completed',this)">Selesai</button>
-    </div>
-    <div id="campaign-list"></div>
-  </div>
-</div>
-
-<!-- PROXIES -->
-<div class="page" id="page-proxies">
-  <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem">
-    <div><div class="page-title">Proxy Manager</div><div class="page-sub">Kelola residential proxies</div></div>
-    <button class="btn btn-primary" onclick="showModal('modal-proxy')">+ Tambah Proxy</button>
-  </div>
-  <div class="proxy-grid" id="proxy-list"></div>
-</div>
-
-<!-- LOGS -->
-<div class="page" id="page-logs">
-  <div class="page-title">Logs</div>
-  <div class="page-sub">Riwayat aktivitas</div>
-  <div class="card">
-    <div class="tbl-wrap">
-      <table>
-        <thead><tr><th>Waktu</th><th>Campaign</th><th>Status</th><th>Persona</th><th>Device</th><th>Duration</th><th>Pages</th><th>Proxy</th></tr></thead>
-        <tbody id="logs-table"></tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<!-- SETTINGS -->
-<div class="page" id="page-settings">
-  <div class="page-title">Settings</div>
-  <div class="page-sub">Kelola konfigurasi panel</div>
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-title">Ganti Password Panel</div>
-      <div class="form-group"><label class="form-label">Password Lama</label><input type="password" class="form-input" id="pwd-old" placeholder="Password saat ini"></div>
-      <div class="form-group"><label class="form-label">Password Baru</label><input type="password" class="form-input" id="pwd-new" placeholder="Min. 6 karakter"></div>
-      <div class="form-group"><label class="form-label">Konfirmasi Password Baru</label><input type="password" class="form-input" id="pwd-confirm" placeholder="Ulangi password baru"></div>
-      <button class="btn btn-primary btn-full" id="pwd-btn" onclick="changePassword()">Simpan Password →</button>
-    </div>
-    <div class="card">
-      <div class="card-title">Info Panel</div>
-      <div style="display:flex;flex-direction:column;gap:.75rem">
-        <div style="background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:.75rem">
-          <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:.3rem;font-family:'Cabinet Grotesk',sans-serif">Engine</div>
-          <div style="font-weight:700;font-size:.88rem">Playwright (Real Browser)</div>
-        </div>
-        <div style="background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:.75rem">
-          <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:.3rem;font-family:'Cabinet Grotesk',sans-serif">Catatan</div>
-          <div style="font-size:.78rem;color:var(--muted2);line-height:1.6">Password baru langsung aktif. Token login lama akan otomatis tidak valid — Anda akan diminta login ulang.</div>
-        </div>
+  <div id="app" class="app hidden">
+    <aside class="sidebar">
+      <div class="sidebar-logo">⬡ Nexus</div>
+      <nav class="sidebar-nav">
+        <a href="#traffic"   class="nav-item" data-page="traffic">
+          <span class="nav-icon">⚡</span><span>Traffic</span>
+        </a>
+        <a href="#proxies"   class="nav-item" data-page="proxies">
+          <span class="nav-icon">🔗</span><span>Proxies</span>
+        </a>
+        <a href="#analytics" class="nav-item" data-page="analytics">
+          <span class="nav-icon">📊</span><span>Analytics</span>
+        </a>
+        <a href="#logs"      class="nav-item" data-page="logs">
+          <span class="nav-icon">📋</span><span>Logs</span>
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="#settings" class="nav-item" data-page="settings">
+          <span class="nav-icon">⚙️</span><span>Settings</span>
+        </a>
+        <button id="logout-btn" class="btn btn-ghost btn-sm">Sign out</button>
       </div>
-    </div>
+    </aside>
+
+    <main class="main-content">
+      <div id="page-container"></div>
+    </main>
   </div>
-</div>
 
-</main>
-</div>
-
-<!-- MODAL CAMPAIGN -->
-<div class="modal-overlay" id="modal-campaign">
-  <div class="modal-box">
-    <div class="modal-header"><div class="modal-title">Task Baru</div><button class="btn btn-secondary btn-sm" onclick="closeModal('modal-campaign')">✕</button></div>
-    <div class="form-group"><label class="form-label">Nama Task</label><input class="form-input" id="nc-name" placeholder="cth: Task 1"></div>
-    <div class="form-group"><label class="form-label">Target URL</label><input class="form-input" id="nc-url" placeholder="https://yoursite.com"></div>
-    <div class="form-group"><label class="form-label">Halaman Internal (opsional, satu per baris)</label><textarea class="form-input" id="nc-pages" rows="3" placeholder="https://yoursite.com/article-1&#10;https://yoursite.com/article-2" style="resize:vertical;min-height:70px"></textarea></div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Jumlah Visits</label><input type="number" class="form-input" id="nc-visits" value="20" min="1"></div>
-      <div class="form-group"><label class="form-label">Traffic Source</label><div class="sel-wrap"><select class="form-select" id="nc-source"><option value="organic">Organic (Google)</option><option value="social">Social Media</option><option value="referral">Referral</option><option value="direct">Direct</option></select></div></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Speed Mode</label><div class="sel-wrap"><select class="form-select" id="nc-speed">
-        <option value="natural">🐢 Natural (SEO safe)</option>
-        <option value="normal" selected>⚡ Normal</option>
-        <option value="fast">🚀 Fast</option>
-        <option value="turbo">💥 Turbo (volume)</option>
-      </select></div></div>
-      <div class="form-group"><label class="form-label">Region Proxy</label>
-        <div class="ms-wrap" id="geo-wrap">
-          <div class="ms-trigger" id="geo-trigger" onclick="toggleMs('geo')">
-            <span id="geo-label">🌍 All Regions</span><span style="color:var(--muted);font-size:.7rem">▾</span>
-          </div>
-          <div class="ms-dropdown" id="geo-dropdown">
-            <label class="ms-option"><input type="checkbox" value="any" checked onchange="onGeoChange(this)"> 🌍 All Regions</label>
-            <label class="ms-option"><input type="checkbox" value="US" onchange="onGeoChange(this)"> 🇺🇸 United States</label>
-            <label class="ms-option"><input type="checkbox" value="UK" onchange="onGeoChange(this)"> 🇬🇧 United Kingdom</label>
-            <label class="ms-option"><input type="checkbox" value="ID" onchange="onGeoChange(this)"> 🇮🇩 Indonesia</label>
-            <label class="ms-option"><input type="checkbox" value="SG" onchange="onGeoChange(this)"> 🇸🇬 Singapore</label>
-            <label class="ms-option"><input type="checkbox" value="AU" onchange="onGeoChange(this)"> 🇦🇺 Australia</label>
-            <label class="ms-option"><input type="checkbox" value="MY" onchange="onGeoChange(this)"> 🇲🇾 Malaysia</label>
-            <label class="ms-option"><input type="checkbox" value="PH" onchange="onGeoChange(this)"> 🇵🇭 Philippines</label>
-            <label class="ms-option"><input type="checkbox" value="IN" onchange="onGeoChange(this)"> 🇮🇳 India</label>
-            <label class="ms-option"><input type="checkbox" value="BR" onchange="onGeoChange(this)"> 🇧🇷 Brazil</label>
-          </div>
-        </div>
+  <!-- Modal -->
+  <div id="modal-overlay" class="modal-overlay hidden">
+    <div id="modal-box" class="modal-box">
+      <div class="modal-header">
+        <h3 id="modal-title"></h3>
+        <button id="modal-close" class="btn btn-ghost btn-sm">✕</button>
       </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Device</label><div class="sel-wrap"><select class="form-select" id="nc-device"><option value="mixed">Mixed</option><option value="desktop">Desktop</option><option value="mobile">Mobile</option></select></div></div>
-      <div class="form-group"><label class="form-label">Persona</label><div class="sel-wrap"><select class="form-select" id="nc-persona"><option value="mixed">Mixed (Random)</option><option value="quick_scanner">Quick Scanner</option><option value="engaged_reader">Engaged Reader</option><option value="window_shopper">Window Shopper</option><option value="power_user">Power User</option></select></div></div>
-    </div>
-    <div class="form-row-3">
-      <div class="form-group"><label class="form-label">Min Duration (s)</label><input type="number" class="form-input" id="nc-mindur" value="30" min="5"></div>
-      <div class="form-group"><label class="form-label">Max Duration (s)</label><input type="number" class="form-input" id="nc-maxdur" value="180" min="10"></div>
-      <div class="form-group"><label class="form-label">Bounce Rate %</label><input type="number" class="form-input" id="nc-bounce" value="40" min="0" max="100"></div>
-    </div>
-    <div style="display:flex;gap:.5rem">
-      <button class="btn btn-secondary" style="flex:1" onclick="closeModal('modal-campaign')">Batal</button>
-      <button class="btn btn-primary" style="flex:2" id="nc-submit" onclick="createCampaign()">Buat Task →</button>
+      <div id="modal-body"></div>
     </div>
   </div>
-</div>
 
-<!-- MODAL PROXY -->
-<div class="modal-overlay" id="modal-proxy">
-  <div class="modal-box">
-    <div class="modal-header"><div class="modal-title">Tambah Proxy</div><button class="btn btn-secondary btn-sm" onclick="closeModal('modal-proxy')">✕</button></div>
-    <div class="form-group">
-      <label class="form-label">Format: host:port:user:pass (satu per baris)</label>
-      <textarea class="form-input" id="proxy-raw" rows="5" placeholder="dy01.glorycloud.com:30000:user:pass" style="resize:vertical;min-height:80px"></textarea>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">GEO</label><div class="sel-wrap"><select class="form-select" id="proxy-geo"><option value="US">🇺🇸 US</option><option value="UK">🇬🇧 UK</option><option value="ID">🇮🇩 Indonesia</option><option value="SG">🇸🇬 Singapore</option><option value="AU">🇦🇺 Australia</option></select></div></div>
-    </div>
-    <div style="display:flex;gap:.5rem">
-      <button class="btn btn-secondary" style="flex:1" onclick="closeModal('modal-proxy')">Batal</button>
-      <button class="btn btn-primary" style="flex:2" onclick="addProxies()">Tambah →</button>
-    </div>
-  </div>
-</div>
+  <!-- Toast container -->
+  <div id="toast-container"></div>
 
-<div id="toast"></div>
-
-<script>
-const API='';
-let TOKEN=localStorage.getItem('nx_token')||'';
-let cFilter='all';
-
-async function api(path,opts={}){
-  const res=await fetch(`${API}${path}`,{...opts,headers:{'Content-Type':'application/json','x-auth-token':TOKEN,...(opts.headers||{})},body:opts.body?JSON.stringify(opts.body):undefined});
-  if(!res.ok){const e=await res.json().catch(()=>({error:`HTTP ${res.status}`}));throw new Error(e.error||'Failed');}
-  return res.json();
-}
-
-function showPage(name,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-'+name).classList.add('active');document.querySelectorAll('.nav-pill').forEach(p=>p.classList.remove('active'));if(el)el.classList.add('active');if(name==='campaigns')loadCampaigns();if(name==='proxies')loadProxies();if(name==='logs')loadLogs();}
-function showModal(id){document.getElementById(id).classList.add('open');}
-function closeModal(id){document.getElementById(id).classList.remove('open');}
-function toast(msg,type='info'){const el=document.createElement('div');el.className=`toast-item ${type}`;el.innerHTML=`${type==='success'?'✅':type==='error'?'❌':'ℹ️'} ${msg}`;document.getElementById('toast').appendChild(el);setTimeout(()=>el.remove(),3500);}
-
-function doLogin(){
-  const pass=document.getElementById('login-pass').value;
-  const btn=document.getElementById('login-btn');
-  btn.innerHTML='<span class="spinner"></span>';btn.disabled=true;
-  fetch(`${API}/api/auth/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pass})})
-    .then(r=>r.json()).then(d=>{
-      if(d.success){TOKEN=pass;localStorage.setItem('nx_token',TOKEN);document.getElementById('login-screen').style.display='none';init();}
-      else{document.getElementById('login-err').style.display='block';}
-    }).catch(()=>{document.getElementById('login-err').style.display='block';})
-    .finally(()=>{btn.innerHTML='Masuk →';btn.disabled=false;});
-}
-
-function doLogout(){localStorage.removeItem('nx_token');location.reload();}
-
-async function loadDashboard(){
-  try{
-    const d=await api('/api/stats');
-    const o=d.overview;
-    document.getElementById('s-campaigns').textContent=o.totalCampaigns;
-    document.getElementById('s-active').textContent=o.activeCampaigns;
-    document.getElementById('s-visits').textContent=o.totalVisits.toLocaleString();
-    document.getElementById('s-rate').textContent=d.successRate+'%';
-    document.getElementById('proxy-badge').innerHTML=`<div class="online-dot"></div>${o.activeProxies} Proxies`;
-    document.getElementById('dash-sub').textContent=`${o.totalCampaigns} tasks · ${o.totalVisits.toLocaleString()} selesai`;
-    document.getElementById('active-count').textContent=o.activeCampaigns;
-    renderChart(d.visitsByDay);
-    renderLog(d.recentVisits);
-    const campaigns=await api('/api/campaigns');
-    const active=campaigns.filter(c=>c.status==='running');
-    document.getElementById('active-list').innerHTML=active.length?active.map(c=>renderCard(c,false)).join(''):'<div style="color:var(--muted);font-size:.82rem">Tidak ada task aktif.</div>';
-  }catch(e){document.getElementById('dash-sub').textContent='Tidak dapat terhubung ke server';}
-}
-
-function renderChart(data){
-  const el=document.getElementById('dash-chart');
-  const ll=document.getElementById('dash-labels');
-  if(!data||!data.length){el.innerHTML='<div style="color:var(--muted);margin:auto;font-size:.8rem">Belum ada data</div>';return;}
-  const max=Math.max(...data.map(d=>d.count),1);
-  el.innerHTML=data.map(d=>`<div class="chart-col"><div class="chart-bar" style="height:${Math.max((d.count/max)*70,2)}px;background:linear-gradient(180deg,var(--accent),rgba(56,189,248,.3))"></div></div>`).join('');
-  ll.innerHTML=data.map(d=>`<span class="chart-lbl">${d.day.slice(5)}</span>`).join('');
-}
-
-function renderLog(visits){
-  const el=document.getElementById('dash-log');
-  if(!visits||!visits.length){el.innerHTML='<div style="color:var(--muted);font-size:.8rem">Belum ada aktivitas</div>';return;}
-  el.innerHTML=visits.slice(0,8).map(v=>`
-    <div class="log-item">
-      <span class="log-time">${v.created_at?v.created_at.slice(11,16):'--:--'}</span>
-      <div class="log-dot" style="background:${v.status==='sent'?'var(--green)':'var(--red)'}"></div>
-      <span class="log-msg"><strong>${v.status==='sent'?'✓':'✗'} ${v.campaign_name||'—'}</strong> · ${v.persona||'—'} · ${v.duration||0}s · ${v.pages||1}p</span>
-    </div>`).join('');
-}
-
-const personaClass={quick_scanner:'p-quick',engaged_reader:'p-engaged',window_shopper:'p-window',power_user:'p-power',mixed:'p-mixed'};
-const personaLabel={quick_scanner:'Quick',engaged_reader:'Engaged',window_shopper:'Shopper',power_user:'Power',mixed:'Mixed'};
-
-function renderCard(c,actions=true){
-  const st={running:'tag-green',pending:'tag-amber',completed:'tag-blue',paused:'tag-purple',failed:'tag-red',cancelled:'tag-red'};
-  const pct=c.visits_total>0?Math.min(100,(c.visits_sent/c.visits_total)*100):0;
-  return `<div class="campaign-card">
-    <div class="cc-head">
-      <div style="flex:1;min-width:0">
-        <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.1rem">
-          <div class="cc-title">${c.name}</div>
-          <span class="persona-badge ${personaClass[c.persona]||'p-mixed'}">${personaLabel[c.persona]||c.persona}</span>
-        </div>
-        <div class="cc-url">🔗 ${c.target_url}</div>
-      </div>
-      <span class="tag ${st[c.status]||'tag-blue'}" style="margin-left:.5rem;flex-shrink:0">${c.status}</span>
-    </div>
-    <div class="cc-meta">
-      <span>Visits: <span>${c.visits_sent}/${c.visits_total}</span></span>
-      <span>Source: <span>${c.traffic_source}</span></span>
-      <span>Device: <span>${c.device}</span></span>
-      <span>Bounce: <span>${c.bounce_rate}%</span></span>
-      <span>Speed: <span>${{natural:'🐢',normal:'⚡',fast:'🚀',turbo:'💥'}[c.speed]||'⚡'} ${c.speed||'normal'}</span></span>
-      <span>GEO: <span>${c.target_geo==='any'?'🌍 All':c.target_geo||'🌍 All'}</span></span>
-    </div>
-    <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
-    ${actions?`<div class="cc-footer">
-      ${c.status==='pending'||c.status==='paused'?`<button class="btn btn-success btn-sm" onclick="setStatus('${c.id}','running')">▶ Start</button>`:''}
-      ${c.status==='running'?`<button class="btn btn-secondary btn-sm" onclick="setStatus('${c.id}','paused')">⏸ Pause</button>`:''}
-      ${!['completed','cancelled'].includes(c.status)?`<button class="btn btn-danger btn-sm" onclick="setStatus('${c.id}','cancelled')">■ Stop</button>`:''}
-      <button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="delCampaign('${c.id}')">🗑</button>
-      <span style="font-size:.7rem;color:var(--muted2);font-weight:700;margin-left:.5rem">${pct.toFixed(1)}%</span>
-    </div>`:`<div class="cc-footer"><span style="font-size:.7rem;color:var(--muted2);font-weight:700">${pct.toFixed(1)}% — ${c.visits_sent} visits</span></div>`}
-  </div>`;
-}
-
-async function loadCampaigns(){
-  const el=document.getElementById('campaign-list');
-  try{
-    const all=await api('/api/campaigns');
-    const f=cFilter==='all'?all:all.filter(c=>c.status===cFilter);
-    el.innerHTML=f.length?f.map(c=>renderCard(c,true)).join(''):'<div style="color:var(--muted);padding:1rem;text-align:center">Tidak ada task.</div>';
-  }catch(e){el.innerHTML=`<div style="color:var(--red);padding:1rem">${e.message}</div>`;}
-}
-
-async function createCampaign(){
-  const btn=document.getElementById('nc-submit');
-  btn.innerHTML='<span class="spinner"></span>';btn.disabled=true;
-  try{
-    const pagesRaw=document.getElementById('nc-pages').value.trim();
-    const pages=pagesRaw?pagesRaw.split('\n').map(l=>l.trim()).filter(Boolean):[];
-    await api('/api/campaigns',{method:'POST',body:{
-      name:document.getElementById('nc-name').value,
-      target_url:document.getElementById('nc-url').value,
-      pages,
-      visits_total:parseInt(document.getElementById('nc-visits').value),
-      traffic_source:document.getElementById('nc-source').value,
-      device:document.getElementById('nc-device').value,
-      persona:document.getElementById('nc-persona').value,
-      min_duration:parseInt(document.getElementById('nc-mindur').value),
-      max_duration:parseInt(document.getElementById('nc-maxdur').value),
-      bounce_rate:parseInt(document.getElementById('nc-bounce').value),
-      speed:document.getElementById('nc-speed').value,
-      target_geo:getGeoValue(),
-    }});
-    closeModal('modal-campaign');resetGeoSelect();toast('Task dibuat!','success');loadCampaigns();loadDashboard();
-  }catch(e){toast(e.message,'error');}
-  btn.innerHTML='Buat Campaign →';btn.disabled=false;
-}
-
-async function setStatus(id,status){
-  try{await api(`/api/campaigns/${id}/status`,{method:'PATCH',body:{status}});toast(`Campaign ${status}`,'success');loadCampaigns();loadDashboard();}
-  catch(e){toast(e.message,'error');}
-}
-
-async function delCampaign(id){
-  if(!confirm('Hapus campaign?'))return;
-  try{await api(`/api/campaigns/${id}`,{method:'DELETE'});toast('Dihapus','success');loadCampaigns();}
-  catch(e){toast(e.message,'error');}
-}
-
-function filterC(f,el){cFilter=f;loadCampaigns();}
-
-async function loadProxies(){
-  const el=document.getElementById('proxy-list');
-  try{
-    const proxies=await api('/api/proxies');
-    const online=proxies.filter(p=>p.status==='active').length;
-    document.getElementById('proxy-badge').innerHTML=`<div class="online-dot"></div>${online}/${proxies.length} Proxies`;
-    el.innerHTML=proxies.map(p=>`
-      <div class="proxy-card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem">
-          <span style="font-family:'Cabinet Grotesk',sans-serif;font-weight:800;font-size:.75rem;color:var(--muted2);background:var(--s3);padding:.15rem .5rem;border-radius:5px">Proxy #${p.id}</span>
-          <span style="font-size:.72rem;font-weight:700;color:${p.status==='active'?'var(--green)':'var(--red)'}">${p.status==='active'?'● Active':'● Inactive'}</span>
-        </div>
-        <div style="font-family:'Cabinet Grotesk',sans-serif;font-weight:700;font-size:.85rem;margin-bottom:.35rem">${p.host}:${p.port}</div>
-        <div style="font-size:.72rem;color:var(--muted);margin-bottom:.5rem">GEO: <strong style="color:var(--muted2)">${p.geo}</strong> · Visits: <strong style="color:var(--muted2)">${p.visits_count||0}</strong></div>
-        <div style="display:flex;gap:.4rem">
-          <button class="btn btn-sm ${p.status==='active'?'btn-secondary':'btn-success'}" onclick="toggleProxy(${p.id},'${p.status==='active'?'inactive':'active'}')">${p.status==='active'?'Disable':'Enable'}</button>
-          <button class="btn btn-danger btn-sm" onclick="delProxy(${p.id})">Hapus</button>
-        </div>
-      </div>`).join('');
-  }catch(e){el.innerHTML=`<div style="color:var(--red);padding:1rem">${e.message}</div>`;}
-}
-
-async function addProxies(){
-  const raw=document.getElementById('proxy-raw').value.trim();
-  const geo=document.getElementById('proxy-geo').value;
-  if(!raw){toast('Isi proxy dulu','error');return;}
-  const lines=raw.split('\n').filter(l=>l.trim());
-  try{
-    await api('/api/proxies/bulk',{method:'POST',body:{proxies:lines,geo}});
-    closeModal('modal-proxy');toast(`${lines.length} proxy ditambahkan!`,'success');
-    document.getElementById('proxy-raw').value='';loadProxies();
-  }catch(e){toast(e.message,'error');}
-}
-
-async function toggleProxy(id,status){
-  try{await api(`/api/proxies/${id}/status`,{method:'PATCH',body:{status}});loadProxies();}
-  catch(e){toast(e.message,'error');}
-}
-
-async function delProxy(id){
-  if(!confirm('Hapus proxy?'))return;
-  try{await api(`/api/proxies/${id}`,{method:'DELETE'});toast('Dihapus','success');loadProxies();}
-  catch(e){toast(e.message,'error');}
-}
-
-async function loadLogs(){
-  const tbody=document.getElementById('logs-table');
-  try{
-    const d=await api('/api/stats');
-    tbody.innerHTML=d.recentVisits.length?d.recentVisits.map(v=>`
-      <tr>
-        <td style="color:var(--muted);font-size:.7rem">${v.created_at?v.created_at.slice(0,16).replace('T',' '):'—'}</td>
-        <td style="font-weight:600">${v.campaign_name||'—'}</td>
-        <td><span class="tag ${v.status==='sent'?'tag-green':'tag-red'}">${v.status}</span></td>
-        <td><span class="persona-badge ${personaClass[v.persona]||'p-mixed'}">${personaLabel[v.persona]||v.persona||'—'}</span></td>
-        <td style="font-size:.75rem">${v.device||'—'}</td>
-        <td>${v.duration?v.duration+'s':'—'}</td>
-        <td>${v.pages||1}</td>
-        <td style="color:var(--muted);font-size:.72rem">${v.proxy_host||'—'} <span class="tag tag-blue" style="font-size:.6rem">${v.geo||'—'}</span></td>
-      </tr>`).join(''):'<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:2rem">Belum ada visit</td></tr>';
-  }catch(e){tbody.innerHTML='<tr><td colspan="8" style="text-align:center;color:var(--red);padding:1rem">Tidak dapat terhubung ke server</td></tr>';}
-}
-
-async function changePassword(){
-  const oldPwd=document.getElementById('pwd-old').value;
-  const newPwd=document.getElementById('pwd-new').value;
-  const confirm=document.getElementById('pwd-confirm').value;
-  if(!oldPwd||!newPwd){toast('Isi semua field','error');return;}
-  if(newPwd!==confirm){toast('Konfirmasi password tidak cocok','error');return;}
-  if(newPwd.length<6){toast('Password minimal 6 karakter','error');return;}
-  const btn=document.getElementById('pwd-btn');
-  btn.innerHTML='<span class="spinner"></span>';btn.disabled=true;
-  try{
-    await api('/api/settings/password',{method:'POST',body:{current_password:oldPwd,new_password:newPwd}});
-    toast('Password berhasil diubah! Silakan login ulang.','success');
-    TOKEN=newPwd;localStorage.setItem('nx_token',newPwd);
-    document.getElementById('pwd-old').value='';
-    document.getElementById('pwd-new').value='';
-    document.getElementById('pwd-confirm').value='';
-  }catch(e){toast(e.message,'error');}
-  btn.innerHTML='Simpan Password →';btn.disabled=false;
-}
-
-// ── MULTI-SELECT HELPERS ──────────────────────────────────────────────────────
-const GEO_FLAGS = {any:'🌍 All Regions',US:'🇺🇸 US',UK:'🇬🇧 UK',ID:'🇮🇩 ID',SG:'🇸🇬 SG',AU:'🇦🇺 AU',MY:'🇲🇾 MY',PH:'🇵🇭 PH',IN:'🇮🇳 IN',BR:'🇧🇷 BR'};
-
-function toggleMs(id){
-  const trigger=document.getElementById(id+'-trigger');
-  const dd=document.getElementById(id+'-dropdown');
-  const open=dd.classList.toggle('open');
-  trigger.classList.toggle('open',open);
-  if(open){
-    const close=e=>{if(!document.getElementById(id+'-wrap').contains(e.target)){dd.classList.remove('open');trigger.classList.remove('open');document.removeEventListener('click',close);}};
-    setTimeout(()=>document.addEventListener('click',close),0);
-  }
-}
-
-function onGeoChange(cb){
-  const all=[...document.querySelectorAll('#geo-dropdown input[type=checkbox]')];
-  if(cb.value==='any'){
-    if(cb.checked) all.filter(c=>c.value!=='any').forEach(c=>c.checked=false);
-    else cb.checked=true; // can't uncheck all
-  } else {
-    document.querySelector('#geo-dropdown input[value="any"]').checked=false;
-    if(!all.filter(c=>c.value!=='any').some(c=>c.checked)){
-      document.querySelector('#geo-dropdown input[value="any"]').checked=true;
-    }
-  }
-  updateGeoLabel();
-}
-
-function updateGeoLabel(){
-  const checked=[...document.querySelectorAll('#geo-dropdown input:checked')].map(c=>c.value);
-  const label=checked.includes('any')?'🌍 All Regions':checked.map(v=>GEO_FLAGS[v]||v).join(', ');
-  document.getElementById('geo-label').textContent=label;
-}
-
-function getGeoValue(){
-  const checked=[...document.querySelectorAll('#geo-dropdown input:checked')].map(c=>c.value);
-  return checked.includes('any')?'any':checked.join(',');
-}
-
-function resetGeoSelect(){
-  document.querySelectorAll('#geo-dropdown input').forEach(c=>c.checked=c.value==='any');
-  updateGeoLabel();
-}
-
-function init(){
-  loadDashboard();
-  setInterval(()=>{
-    const p=document.querySelector('.page.active');
-    if(p?.id==='page-dashboard')loadDashboard();
-    if(p?.id==='page-campaigns')loadCampaigns();
-    if(p?.id==='page-logs')loadLogs();
-  },15000);
-}
-
-window.onload=()=>{
-  if(TOKEN){document.getElementById('login-screen').style.display='none';init();}
-};
-</script>
+  <script src="/js/api.js"></script>
+  <script src="/js/components/modal.js"></script>
+  <script src="/js/components/toast.js"></script>
+  <script src="/js/pages/accounts.js"></script>
+  <script src="/js/pages/proxies.js"></script>
+  <script src="/js/pages/traffic.js"></script>
+  <script src="/js/pages/analytics.js"></script>
+  <script src="/js/pages/logs.js"></script>
+  <script src="/js/pages/settings.js"></script>
+  <script src="/js/app.js"></script>
 </body>
 </html>
