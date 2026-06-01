@@ -6,12 +6,12 @@ const { makeLogger } = require('../utils/logger');
 
 const log = makeLogger('TrafficRunner');
 
-const MAX_CONCURRENT = parseInt(process.env.MAX_CONCURRENT_BROWSERS ?? '4', 10);
+const MAX_CONCURRENT = parseInt(process.env.MAX_CONCURRENT_BROWSERS ?? '10', 10);
 
-// Daily view cap — protects 4GB VPS from over-delivery and limits detection risk.
-// Formula for 4GB: 4 workers × ~54 views/hr × 24hr = ~5k theoretical max.
-// Default 500/day = organic-looking volume. Override with DAILY_VIEW_LIMIT in .env.
-const DAILY_LIMIT = parseInt(process.env.DAILY_VIEW_LIMIT ?? '500', 10);
+// Daily cap — rotating proxy can handle much higher volume than static pool.
+// Default 10,000 views/day (10 workers × ~50s/view ≈ 700/hr theoretical).
+// Lower this in .env if you want to pace delivery (e.g. DAILY_VIEW_LIMIT=500).
+const DAILY_LIMIT = parseInt(process.env.DAILY_VIEW_LIMIT ?? '10000', 10);
 
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
@@ -117,7 +117,8 @@ async function runJob(jobId) {
         log.debug('Action done', { jobId, done, target: job.target_count });
       } else if (result.reason === 'no_ghost_available' || result.reason === 'no_key_account') {
         logEntry('skipped', result.reason);
-        await delay(randInt(15_000, 30_000));
+        // Short wait — with rotating proxy, slot frees up quickly as workers cycle
+        await delay(randInt(2_000, 5_000));
       } else {
         streak++;
         const isTimeout = /timeout|ETIMEDOUT|net::/i.test(result.reason ?? '');
@@ -128,7 +129,9 @@ async function runJob(jobId) {
       }
 
       if (_active.has(jobId) && done < job.target_count) {
-        await delay(randInt(2000, 5000)); // base inter-action delay (was 500-2000, too fast)
+        // Short inter-action gap — rotating proxy gives fresh IP each connection,
+        // so no cool-down needed between views from the same worker.
+        await delay(randInt(500, 1500));
       }
     }
   };
