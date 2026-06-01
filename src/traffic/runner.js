@@ -6,7 +6,7 @@ const { makeLogger } = require('../utils/logger');
 
 const log = makeLogger('TrafficRunner');
 
-const MAX_CONCURRENT = parseInt(process.env.MAX_CONCURRENT_BROWSERS ?? '10', 10);
+const MAX_CONCURRENT = parseInt(process.env.MAX_CONCURRENT_BROWSERS ?? '20', 10);
 
 // Daily cap — rotating proxy can handle much higher volume than static pool.
 // Default 10,000 views/day (10 workers × ~50s/view ≈ 700/hr theoretical).

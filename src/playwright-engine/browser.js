@@ -106,7 +106,7 @@ function _pickProxy() {
 // Rotating proxy + 10 workers: ~2-2.5GB for browsers, leaves ~1.5GB headroom.
 
 const MIN_FREE_MB    = parseInt(process.env.MIN_FREE_RAM_MB      ?? '300', 10);
-const MAX_CONCURRENT = parseInt(process.env.MAX_CONCURRENT_BROWSERS ?? '10', 10);
+const MAX_CONCURRENT = parseInt(process.env.MAX_CONCURRENT_BROWSERS ?? '20', 10);
 
 function _ramOk()          { return (os.freemem() / 1024 / 1024) >= MIN_FREE_MB; }
 function isConcurrencyFull() { return _active.size >= MAX_CONCURRENT || !_ramOk(); }
