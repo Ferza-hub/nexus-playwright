@@ -1,5 +1,5 @@
 {
-  "name": "nexus-social",
+  "name": "nexus-playwright",
   "version": "1.0.0",
   "description": "Social media automation engine — Ghost Engine, Playwright, Web Panel",
   "main": "src/index.js",

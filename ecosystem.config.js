@@ -2,7 +2,7 @@
 
 module.exports = {
   apps: [{
-    name: 'nexus-social',
+    name: 'nexus-playwright',
     script: 'src/index.js',
     instances: 1,
     autorestart: true,
