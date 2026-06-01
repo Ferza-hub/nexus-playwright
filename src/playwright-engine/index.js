@@ -196,8 +196,8 @@ async function _checkLoggedIn(page, platform) {
 // ----------------------------------------------------------------
 
 // ── executeGhostView ──────────────────────────────────────────────────────────
-// One worker: pick proxy → launch browser → navigate → watch → done.
-// No sessions, no referrers, no pre-warm. Proxy handles the IP diversity.
+// One worker: pick proxy → launch browser (random profile) → navigate with
+// social referrer → watch → done. Proxy handles IP; profile handles identity.
 
 async function executeGhostView(platform, url) {
   let session = null;
@@ -205,8 +205,11 @@ async function executeGhostView(platform, url) {
     session = await launchEphemeral();
     const { page, proxyId } = session;
 
-    // Navigate — proxy is already set in browser context
-    await page.goto(url, { waitUntil: 'commit', timeout: 60000 });
+    // Social referrer — makes platform see organic share traffic, not direct
+    const referer = _pickReferrer(platform) ?? undefined;
+
+    // Navigate with referrer baked into the HTTP request
+    await page.goto(url, { waitUntil: 'commit', timeout: 60000, referer });
     await page.waitForLoadState('domcontentloaded', { timeout: 30000 }).catch(() => {});
 
     // Dismiss consent / cookie banners (Google, GDPR, platform-specific)
@@ -241,7 +244,7 @@ async function executeGhostView(platform, url) {
 
     await _delay(watchMs);
 
-    log.info('View delivered', { platform, ms: watchMs, proxy: proxyId ?? 'direct' });
+    log.info('View delivered', { platform, ms: watchMs, referer: referer ?? 'direct', proxy: proxyId ?? 'none' });
     return { success: true };
 
   } catch (err) {

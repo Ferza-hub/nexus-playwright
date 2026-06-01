@@ -8,8 +8,24 @@ const log = makeLogger('TrafficRunner');
 
 const MAX_CONCURRENT = parseInt(process.env.MAX_CONCURRENT_BROWSERS ?? '4', 10);
 
+// Daily view cap — protects 4GB VPS from over-delivery and limits detection risk.
+// Formula for 4GB: 4 workers × ~54 views/hr × 24hr = ~5k theoretical max.
+// Default 500/day = organic-looking volume. Override with DAILY_VIEW_LIMIT in .env.
+const DAILY_LIMIT = parseInt(process.env.DAILY_VIEW_LIMIT ?? '500', 10);
+
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+function _todayCount(db) {
+  const midnight = new Date();
+  midnight.setHours(0, 0, 0, 0);
+  try {
+    const row = db.prepare(
+      `SELECT COUNT(*) AS n FROM traffic_logs WHERE status='success' AND created_at >= ?`
+    ).get(midnight.toISOString());
+    return row?.n ?? 0;
+  } catch { return 0; }
+}
 
 // ----------------------------------------------------------------
 // Action definitions — all traffic goes through the ghost pool.
@@ -70,7 +86,15 @@ async function runJob(jobId) {
 
   const worker = async () => {
     while (_active.has(jobId) && done < job.target_count) {
-      if (streak >= 5) break; // fail faster — don't spam 10 retries in a row
+      if (streak >= 5) break;
+
+      // Daily cap — pause workers until midnight if limit reached
+      if (_todayCount(db) >= DAILY_LIMIT) {
+        logEntry('skipped', 'daily_limit_reached');
+        log.info('Daily limit reached, pausing worker', { jobId, limit: DAILY_LIMIT });
+        await delay(randInt(300_000, 600_000)); // check again in 5-10 min
+        continue;
+      }
 
       let result;
       try {
