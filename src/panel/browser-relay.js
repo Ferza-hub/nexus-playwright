@@ -56,6 +56,9 @@ class RelaySession {
         '--disable-dev-shm-usage',
         '--disable-gpu',
         '--window-size=1280,800',
+        '--disable-blink-features=AutomationControlled',
+        '--disable-features=IsolateOrigins,site-per-process',
+        '--lang=en-US',
       ],
     });
 
@@ -63,6 +66,20 @@ class RelaySession {
       viewport: { width: 1280, height: 800 },
       locale:   'en-US',
       userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+      extraHTTPHeaders: { 'Accept-Language': 'en-US,en;q=0.9' },
+    });
+
+    // Remove automation fingerprints that Google detects
+    await this.context.addInitScript(() => {
+      Object.defineProperty(navigator, 'webdriver',  { get: () => undefined });
+      Object.defineProperty(navigator, 'languages',  { get: () => ['en-US', 'en'] });
+      Object.defineProperty(navigator, 'plugins',    { get: () => ({ length: 3 }) });
+      Object.defineProperty(navigator, 'platform',   { get: () => 'Win32' });
+      window.chrome = { runtime: {} };
+      // Remove cdc_ automation marker
+      delete window.cdc_adoQpoasnfa76pfcZLmcfl_Array;
+      delete window.cdc_adoQpoasnfa76pfcZLmcfl_Promise;
+      delete window.cdc_adoQpoasnfa76pfcZLmcfl_Symbol;
     });
 
     this.page = await this.context.newPage();
