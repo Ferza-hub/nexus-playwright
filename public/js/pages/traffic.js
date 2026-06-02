@@ -2,14 +2,18 @@
 
 const TrafficPage = (() => {
   const PLATFORMS = {
-    youtube:   { label: 'YouTube',   emoji: '▶️',  actions: ['views'] },
-    instagram: { label: 'Instagram', emoji: '📸', actions: ['views'] },
-    tiktok:    { label: 'TikTok',    emoji: '🎵', actions: ['views'] },
-    facebook:  { label: 'Facebook',  emoji: '👥', actions: ['views'] },
+    youtube:   { label: 'YouTube',   emoji: '▶️',  actions: ['views', 'likes', 'subscribe'] },
+    instagram: { label: 'Instagram', emoji: '📸', actions: ['views', 'likes', 'follow']    },
+    tiktok:    { label: 'TikTok',    emoji: '🎵', actions: ['views', 'likes', 'follow']    },
+    facebook:  { label: 'Facebook',  emoji: '👥', actions: ['views', 'likes', 'follow']    },
+    twitter:   { label: 'Twitter/X', emoji: '🐦', actions: ['likes', 'follow']             },
   };
 
   const ACTION_HINT = {
-    views: 'Direct video/reel URL — paste from browser address bar',
+    views:     'Direct video/reel URL — paste from browser address bar',
+    likes:     'Direct post/video/tweet URL',
+    subscribe: 'Channel URL — youtube.com/@channel or /channel/ID',
+    follow:    'Username only (without @)',
   };
 
   let _platform   = 'youtube';

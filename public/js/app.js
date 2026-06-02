@@ -2,6 +2,7 @@
 
 const PAGES = {
   traffic:   TrafficPage,
+  accounts:  AccountsPage,
   proxies:   ProxiesPage,
   analytics: AnalyticsPage,
   logs:      LogsPage,

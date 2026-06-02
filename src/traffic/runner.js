@@ -39,13 +39,35 @@ function _todayCount(db) {
 //   buildParams maps the raw target_value string to the right param key.
 // ----------------------------------------------------------------
 
-// Proxy-based anonymous views. No sessions needed.
-// Each worker = ephemeral browser + proxy → navigate → watch → done.
+// Proxy-based anonymous views + session-based actions.
+// views (anon)  → executeGhostView  — proxy only, no account needed
+// views (session) → executeGhostAction watch_reel/watch_video
+// likes / follow / subscribe → executeGhostAction — requires imported account session
 const TRAFFIC_ACTIONS = {
-  youtube:   { views: { type: 'view', ghostPlatform: 'youtube'   } },
-  instagram: { views: { type: 'view', ghostPlatform: 'instagram' } },
-  tiktok:    { views: { type: 'view', ghostPlatform: 'tiktok'    } },
-  facebook:  { views: { type: 'view', ghostPlatform: 'facebook'  } },
+  youtube: {
+    views:     { type: 'view',   ghostPlatform: 'youtube'                                                                    },
+    likes:     { type: 'action', ghostPlatform: 'youtube',   action: 'like_video',    buildParams: v => ({ videoUrl: v })   },
+    subscribe: { type: 'action', ghostPlatform: 'youtube',   action: 'subscribe',     buildParams: v => ({ channelUrl: v }) },
+  },
+  instagram: {
+    views:     { type: 'action', ghostPlatform: 'instagram', action: 'watch_reel',    buildParams: v => ({ reelUrl: v })    },
+    likes:     { type: 'action', ghostPlatform: 'instagram', action: 'like_post',     buildParams: v => ({ postUrl: v })    },
+    follow:    { type: 'action', ghostPlatform: 'instagram', action: 'follow',        buildParams: v => ({ username: v })   },
+  },
+  tiktok: {
+    views:     { type: 'action', ghostPlatform: 'tiktok',    action: 'watch_video',   buildParams: v => ({ videoUrl: v })   },
+    likes:     { type: 'action', ghostPlatform: 'tiktok',    action: 'like_video',    buildParams: v => ({ videoUrl: v })   },
+    follow:    { type: 'action', ghostPlatform: 'tiktok',    action: 'follow',        buildParams: v => ({ username: v })   },
+  },
+  facebook: {
+    views:     { type: 'view',   ghostPlatform: 'facebook'                                                                   },
+    likes:     { type: 'action', ghostPlatform: 'facebook',  action: 'like_post',     buildParams: v => ({ postUrl: v })    },
+    follow:    { type: 'action', ghostPlatform: 'facebook',  action: 'follow_page',   buildParams: v => ({ profileUrl: v }) },
+  },
+  twitter: {
+    likes:     { type: 'action', ghostPlatform: 'twitter',   action: 'like_post',     buildParams: v => ({ tweetUrl: v })   },
+    follow:    { type: 'action', ghostPlatform: 'twitter',   action: 'follow',        buildParams: v => ({ username: v })   },
+  },
 };
 
 // In-memory stop signals keyed by job id
