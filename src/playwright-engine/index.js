@@ -224,16 +224,42 @@ async function executeGhostView(platform, url) {
     await page.locator(consentSels).first().click({ timeout: 3000 }).catch(() => {});
     await _delay(_ri(800, 1500));
 
-    // Trigger playback for video platforms
+    // Trigger and verify playback — headless Chromium blocks autoplay by default
+    // even with the launch flag; a JS .play() call is the most reliable trigger.
     if (/youtube|facebook|tiktok|instagram/.test(platform)) {
-      await page.locator('video').first().waitFor({ timeout: 8000 }).catch(() => {});
-      // click centre of player or press Space
+      await page.locator('video').first().waitFor({ timeout: 10000 }).catch(() => {});
+
+      // Layer 1: JS force-play (muted to bypass autoplay policy in strict contexts)
+      await page.evaluate(() => {
+        const v = document.querySelector('video');
+        if (!v) return;
+        v.muted = true;
+        v.play().catch(() => {});
+      }).catch(() => {});
+
+      // Layer 2: click player centre + Space as fallback
       const player = await page.$('#movie_player, video').catch(() => null);
       if (player) {
         const box = await player.boundingBox().catch(() => null);
         if (box) await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2).catch(() => {});
       }
       await page.keyboard.press('Space').catch(() => {});
+
+      // Wait briefly then verify video is actually advancing
+      await _delay(3000);
+      const playing = await page.evaluate(() => {
+        const v = document.querySelector('video');
+        return v ? (!v.paused && v.currentTime > 0) : false;
+      }).catch(() => false);
+
+      if (!playing) {
+        // Last resort: unmute and play again
+        await page.evaluate(() => {
+          const v = document.querySelector('video');
+          if (v) { v.muted = false; v.play().catch(() => {}); }
+        }).catch(() => {});
+        await _delay(1000);
+      }
     }
 
     // Watch — minimum threshold that platforms count

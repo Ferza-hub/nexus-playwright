@@ -105,8 +105,10 @@ function _pickProxy() {
 // Refuse launch if free RAM < MIN_FREE_RAM_MB (default 300MB).
 // Rotating proxy + 10 workers: ~2-2.5GB for browsers, leaves ~1.5GB headroom.
 
-const MIN_FREE_MB    = parseInt(process.env.MIN_FREE_RAM_MB      ?? '300', 10);
-const MAX_CONCURRENT = parseInt(process.env.MAX_CONCURRENT_BROWSERS ?? '20', 10);
+const MIN_FREE_MB    = parseInt(process.env.MIN_FREE_RAM_MB      ?? '400', 10);
+// Safe default for 4GB VPS: 8 workers × ~250MB = 2GB for browsers, 2GB for OS+Node+swap.
+// Increase via MAX_CONCURRENT_BROWSERS in .env only if VPS has more RAM.
+const MAX_CONCURRENT = parseInt(process.env.MAX_CONCURRENT_BROWSERS ?? '8', 10);
 
 function _ramOk()          { return (os.freemem() / 1024 / 1024) >= MIN_FREE_MB; }
 function isConcurrencyFull() { return _active.size >= MAX_CONCURRENT || !_ramOk(); }
@@ -144,6 +146,11 @@ function _launchArgs(profile, proxy) {
     '--disable-blink-features=AutomationControlled',
     '--disable-infobars', '--no-first-run', '--no-default-browser-check',
     '--disable-http2',
+    // Allow video autoplay without user gesture — critical for view delivery
+    '--autoplay-policy=no-user-gesture-required',
+    '--enable-features=AutoplayIgnoreWebAudio',
+    // Allow video decode in headless mode
+    '--use-fake-ui-for-media-stream',
     `--lang=${(profile.locale ?? 'en-US').split('-')[0]}`,
     `--window-size=${profile.vp.width},${profile.vp.height}`,
   ];
