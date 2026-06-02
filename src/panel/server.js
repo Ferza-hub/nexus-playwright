@@ -9,7 +9,7 @@ const morgan  = require('morgan');
 const { requireAuth, loginHandler, changePasswordHandler } = require('./middleware/auth');
 
 const app  = express();
-const PORT = process.env.PORT || 3003;
+const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(morgan('dev'));
