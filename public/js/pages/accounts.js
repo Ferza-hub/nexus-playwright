@@ -142,7 +142,8 @@ const AccountsPage = (() => {
     } catch (err) { Toast.error(err.message); }
   }
 
-  // ── Connect account (credential-based) ──────────────────────────────────────
+  // Platforms that block headless login (Google OAuth) — redirect to cookie import
+  const OAUTH_ONLY = ['youtube', 'threads'];
 
   function connectAccount() {
     const platOpts = Object.entries(PLATFORMS).map(([key, p], i) => `
@@ -163,29 +164,16 @@ const AccountsPage = (() => {
         <input type="hidden" id="cp-platform" value="youtube">
       </div>
 
-      <div class="form-group">
-        <label>Email / Username</label>
-        <input type="text" id="cp-email" placeholder="your@email.com" autocomplete="off">
-      </div>
+      <div id="cp-body"></div>
 
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" id="cp-password" placeholder="••••••••" autocomplete="off">
-        <div class="text-muted text-sm" style="margin-top:.3rem">
-          Used once to log in — not stored. Session cookie saved instead.
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label>Label <span class="text-muted text-sm">(optional)</span></label>
-        <input type="text" id="cp-label" placeholder="e.g. Client A — YouTube">
-      </div>
-
-      <div class="flex gap-1" style="justify-content:flex-end;margin-top:1rem">
+      <div id="cp-footer" class="flex gap-1" style="justify-content:flex-end;margin-top:1rem">
         <button class="btn btn-ghost" onclick="Modal.close()">Cancel</button>
         <button class="btn btn-primary" onclick="AccountsPage._submitConnect()">Connect & Warm Up</button>
       </div>
     `);
+
+    // Render initial platform form
+    AccountsPage._selPlatForm('youtube', document.querySelector('[data-cp="youtube"]'));
   }
 
   function _selPlatForm(key, btn) {
@@ -194,6 +182,76 @@ const AccountsPage = (() => {
       b.style.cssText = 'justify-content:center;gap:.3rem';
     });
     document.getElementById('cp-platform').value = key;
+
+    const body   = document.getElementById('cp-body');
+    const footer = document.getElementById('cp-footer');
+
+    if (OAUTH_ONLY.includes(key)) {
+      // Google/Threads blocks headless login — guide to cookie import
+      const info = PLATFORMS[key];
+      body.innerHTML = `
+        <div class="card" style="padding:.85rem 1rem;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);margin-top:.25rem">
+          <div style="display:flex;gap:.6rem;align-items:flex-start">
+            <span style="font-size:1.2rem">⚠️</span>
+            <div class="text-sm" style="line-height:1.7">
+              <strong>${info.emoji} ${info.label} uses Google OAuth</strong> — automated login is blocked by Google's bot detection.<br>
+              Use <strong>Cookie Import</strong> instead:
+              <ol style="margin:.4rem 0 0;padding-left:1.2rem;color:var(--text-muted)">
+                <li>Open <strong>${info.label}</strong> in your browser and sign in</li>
+                <li>Install <strong>Cookie Editor</strong> extension</li>
+                <li>Click the extension → <strong>Export → Export as JSON</strong></li>
+                <li>Paste below and import — warmup starts automatically</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:.9rem">
+          <label>Label <span class="text-muted text-sm">(optional)</span></label>
+          <input type="text" id="cp-label" placeholder="e.g. Client A — YouTube">
+        </div>
+        <div class="form-group">
+          <label>Cookies JSON</label>
+          <textarea id="cp-cookies" rows="6"
+            style="width:100%;box-sizing:border-box;font-family:monospace;font-size:.8rem"
+            placeholder='[{"name":"SID","value":"...","domain":".youtube.com",...}]'></textarea>
+        </div>`;
+      footer.innerHTML = `
+        <button class="btn btn-ghost" onclick="Modal.close()">Cancel</button>
+        <button class="btn btn-primary" onclick="AccountsPage._submitCookieConnect()">Import & Warm Up</button>`;
+    } else {
+      body.innerHTML = `
+        <div class="form-group" style="margin-top:.25rem">
+          <label>Email / Username</label>
+          <input type="text" id="cp-email" placeholder="your@email.com" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="cp-password" placeholder="••••••••" autocomplete="off">
+          <div class="text-muted text-sm" style="margin-top:.3rem">
+            Used once to log in — not stored. Only the session cookie is saved.
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Label <span class="text-muted text-sm">(optional)</span></label>
+          <input type="text" id="cp-label" placeholder="e.g. Client A — Instagram">
+        </div>`;
+      footer.innerHTML = `
+        <button class="btn btn-ghost" onclick="Modal.close()">Cancel</button>
+        <button class="btn btn-primary" onclick="AccountsPage._submitConnect()">Connect & Warm Up</button>`;
+    }
+  }
+
+  async function _submitCookieConnect() {
+    const platform     = document.getElementById('cp-platform').value;
+    const label        = document.getElementById('cp-label')?.value.trim();
+    const cookies_json = document.getElementById('cp-cookies')?.value.trim();
+    if (!cookies_json) { Toast.error('Paste cookies JSON first'); return; }
+    try {
+      const res = await API.post('/api/accounts/import', { platform, label, cookies_json });
+      Toast.success(`Imported ${res.cookies} cookies — warmup started`);
+      Modal.close();
+      await reload();
+    } catch (err) { Toast.error(err.message); }
   }
 
   async function _submitConnect() {
@@ -300,7 +358,7 @@ const AccountsPage = (() => {
 
   return {
     render, destroy,
-    connectAccount, _selPlatForm, _submitConnect,
+    connectAccount, _selPlatForm, _submitConnect, _submitCookieConnect,
     importCookies, _selPlat, _submitImport,
     rewarm, setStatus, remove,
   };
