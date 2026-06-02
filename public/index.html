@@ -1,78 +1,1190 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nexus Social</title>
-  <link rel="stylesheet" href="/css/app.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nexus — Escalate Your Digital Presence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0a0a0a;--paper:#f5f0e8;--cream:#ede8dc;
+  --accent:#c8f135;--red:#e8341a;--muted:#6b6560;
+  --border:rgba(10,10,10,.1);
+  --mono:'DM Mono',monospace;--display:'Bebas Neue',sans-serif;
+  --serif:'DM Serif Display',serif;--body:'Inter',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);
+  font-size:15px;line-height:1.6;overflow-x:hidden}
+
+/* PAGES */
+.page{display:none;min-height:100vh}
+.page.active{display:flex;flex-direction:column}
+#page-dashboard.active{flex-direction:row}
+
+/* ══ SHARED COMPONENTS ══ */
+.logo{font-family:var(--display);font-size:1.5rem;letter-spacing:.05em;
+  color:var(--ink);text-decoration:none;display:flex;align-items:center;gap:.5rem;cursor:pointer}
+.logo-mark{width:22px;height:22px;background:var(--ink);border-radius:50%;
+  display:flex;align-items:center;justify-content:center}
+.logo-pulse{width:8px;height:8px;background:var(--accent);border-radius:50%;
+  animation:breathe 2.5s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.5);opacity:.5}}
+
+.btn-ink{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;
+  padding:.5rem 1.25rem;background:var(--ink);color:var(--paper);border:none;cursor:pointer;
+  transition:background .15s}
+.btn-ink:hover{background:var(--red)}
+.btn-accent{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;
+  padding:.75rem 1.5rem;background:var(--accent);color:var(--ink);border:none;cursor:pointer;
+  transition:background .15s}
+.btn-accent:hover{background:#d4f84a}
+.btn-outline{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;
+  padding:.75rem 1.5rem;background:transparent;color:var(--ink);
+  border:1px solid var(--border);cursor:pointer;transition:all .15s}
+.btn-outline:hover{border-color:var(--ink);background:var(--cream)}
+
+/* ══ LANDING ══ */
+.land-header{display:flex;align-items:center;justify-content:space-between;
+  padding:0 2.5rem;height:58px;border-bottom:1px solid var(--border);
+  position:sticky;top:0;background:rgba(245,240,232,.95);
+  backdrop-filter:blur(20px);z-index:100}
+.land-nav{display:flex;align-items:center;gap:2rem}
+.land-nav a{font-size:.78rem;font-weight:500;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--muted);text-decoration:none;transition:color .15s}
+.land-nav a:hover{color:var(--ink)}
+
+.hero{display:grid;grid-template-columns:55% 45%;min-height:calc(100vh - 58px)}
+.hero-left{padding:7rem 3rem 5rem 2.5rem;display:flex;flex-direction:column;
+  justify-content:center;border-right:1px solid var(--border)}
+.eyebrow{font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--red);margin-bottom:2rem;display:flex;align-items:center;gap:.6rem}
+.eyebrow::before{content:'';width:24px;height:1px;background:var(--red)}
+.hero-h1{font-family:var(--display);font-size:clamp(3.5rem,7vw,6.5rem);
+  line-height:.93;letter-spacing:.02em;margin-bottom:1rem}
+.hero-h1 em{font-family:var(--serif);font-style:italic;font-size:clamp(3rem,6.5vw,6rem);
+  color:var(--red);display:block}
+.hero-p{font-size:1rem;color:var(--muted);max-width:420px;margin:1.5rem 0 2.5rem;line-height:1.75}
+.hero-cta{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:3rem}
+.hero-stats{display:flex;border-top:1px solid var(--border)}
+.hstat{flex:1;padding:1rem 1.5rem;border-right:1px solid var(--border)}
+.hstat:last-child{border-right:none}
+.hstat-val{font-family:var(--display);font-size:1.6rem;letter-spacing:.02em;line-height:1;margin-bottom:.1rem}
+.hstat-lbl{font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+.hero-right{background:var(--ink);position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center}
+.grid-bg{position:absolute;inset:0;
+  background-image:linear-gradient(rgba(200,241,53,.06) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(200,241,53,.06) 1px,transparent 1px);
+  background-size:44px 44px;animation:gridScroll 20s linear infinite}
+@keyframes gridScroll{to{background-position:0 44px}}
+.dash-preview{position:relative;z-index:2;width:82%;max-width:380px;
+  background:rgba(20,20,20,.92);border:1px solid rgba(200,241,53,.15);
+  border-radius:12px;overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,.6)}
+.dp-bar{padding:.7rem 1rem;border-bottom:1px solid rgba(200,241,53,.08);
+  display:flex;align-items:center;gap:.4rem}
+.dp-dot{width:8px;height:8px;border-radius:50%}
+.dp-label{font-family:var(--mono);font-size:.62rem;color:rgba(245,240,232,.35);
+  letter-spacing:.06em;margin-left:auto}
+.dp-body{padding:1rem}
+.dp-metrics{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.75rem}
+.dp-metric{background:rgba(245,240,232,.04);border:1px solid rgba(245,240,232,.06);
+  border-radius:6px;padding:.6rem}
+.dp-mval{font-family:var(--display);font-size:1.4rem;color:var(--accent);line-height:1;margin-bottom:.1rem}
+.dp-mlbl{font-family:var(--mono);font-size:.52rem;color:rgba(245,240,232,.35);text-transform:uppercase;letter-spacing:.06em}
+.dp-mchg{font-family:var(--mono);font-size:.52rem;color:var(--accent);margin-top:.15rem}
+.dp-bars{display:flex;align-items:flex-end;gap:5px;height:60px;margin-bottom:.75rem}
+.dp-bar-item{flex:1;border-radius:2px 2px 0 0;
+  background:linear-gradient(180deg,var(--accent),rgba(200,241,53,.3));
+  animation:barUp 1.5s ease-out forwards;transform-origin:bottom}
+@keyframes barUp{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+.dp-bar-item:nth-child(1){animation-delay:.05s}
+.dp-bar-item:nth-child(2){animation-delay:.1s}
+.dp-bar-item:nth-child(3){animation-delay:.15s}
+.dp-bar-item:nth-child(4){animation-delay:.2s}
+.dp-bar-item:nth-child(5){animation-delay:.25s}
+.dp-bar-item:nth-child(6){animation-delay:.3s}
+.dp-bar-item:nth-child(7){animation-delay:.35s}
+.dp-src{display:flex;align-items:center;gap:.5rem;margin-bottom:.35rem}
+.dp-src-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.dp-src-name{font-family:var(--mono);font-size:.6rem;color:rgba(245,240,232,.5);flex:1}
+.dp-src-bar{flex:2;height:3px;background:rgba(245,240,232,.06);border-radius:2px;overflow:hidden}
+.dp-src-fill{height:100%;border-radius:2px}
+.dp-src-pct{font-family:var(--mono);font-size:.58rem;color:rgba(245,240,232,.4);width:26px;text-align:right}
+
+/* Ticker */
+.ticker{background:var(--ink);padding:.6rem 0;overflow:hidden;
+  border-top:1px solid rgba(200,241,53,.15)}
+.ticker-track{display:flex;width:max-content;animation:tickRoll 25s linear infinite}
+.t-item{font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--accent);padding:0 2rem;white-space:nowrap;
+  border-right:1px solid rgba(200,241,53,.1);display:flex;align-items:center;gap:.4rem}
+.t-item::before{content:'◆';font-size:.3rem;opacity:.6}
+@keyframes tickRoll{to{transform:translateX(-50%)}}
+
+/* How it works */
+.how{padding:6rem 2.5rem;max-width:1200px;margin:0 auto}
+.section-lbl{font-family:var(--mono);font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--red);margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+.section-lbl::before{content:'';width:20px;height:1px;background:var(--red)}
+.how-title{font-family:var(--display);font-size:clamp(2rem,4vw,3.5rem);
+  line-height:.93;margin-bottom:3.5rem}
+.how-title em{font-family:var(--serif);font-style:italic;color:var(--red)}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:2rem}
+.step{padding:1.5rem;border:1px solid var(--border);background:white}
+.step-num{font-family:var(--mono);font-size:.62rem;color:var(--muted);
+  letter-spacing:.08em;margin-bottom:1rem}
+.step-title{font-family:var(--display);font-size:1.1rem;letter-spacing:.03em;margin-bottom:.5rem}
+.step-desc{font-size:.8rem;color:var(--muted);line-height:1.7}
+
+/* Pricing */
+.pricing-section{background:var(--cream);padding:6rem 2.5rem;border-top:1px solid var(--border)}
+.pricing-inner{max-width:1100px;margin:0 auto}
+.pricing-title{font-family:var(--display);font-size:clamp(2rem,4vw,3.5rem);
+  line-height:.93;margin-bottom:3rem}
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem}
+.plan{border:1px solid var(--border);padding:2rem;background:var(--paper);
+  position:relative;cursor:pointer;transition:all .2s}
+.plan:hover{transform:translateY(-3px);border-color:var(--ink)}
+.plan.hot{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.plan-badge{position:absolute;top:-1px;right:1.5rem;font-family:var(--mono);
+  font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;
+  background:var(--accent);color:var(--ink);padding:.18rem .6rem}
+.plan-tier{font-family:var(--mono);font-size:.65rem;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:1.25rem}
+.plan.hot .plan-tier{color:rgba(245,240,232,.4)}
+.plan-price{font-family:var(--display);font-size:3rem;letter-spacing:.02em;line-height:1}
+.plan-per{font-size:.78rem;color:var(--muted);margin-bottom:1.5rem}
+.plan.hot .plan-per{color:rgba(245,240,232,.4)}
+.plan-div{height:1px;background:var(--border);margin-bottom:1.25rem}
+.plan.hot .plan-div{background:rgba(245,240,232,.1)}
+.plan-features{list-style:none;display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.75rem}
+.plan-features li{font-size:.8rem;color:var(--muted);
+  display:flex;align-items:flex-start;gap:.5rem;line-height:1.4}
+.plan.hot .plan-features li{color:rgba(245,240,232,.6)}
+.plan-features li::before{content:'→';font-family:var(--mono);font-size:.65rem;
+  color:var(--red);flex-shrink:0}
+.plan.hot .plan-features li::before{color:var(--accent)}
+.plan-cta{width:100%;padding:.8rem;font-family:var(--mono);font-size:.7rem;
+  letter-spacing:.08em;text-transform:uppercase;background:var(--ink);color:var(--paper);
+  border:none;cursor:pointer;transition:background .15s}
+.plan-cta:hover{background:var(--red)}
+.plan.hot .plan-cta{background:var(--accent);color:var(--ink)}
+.plan.hot .plan-cta:hover{background:#d4f84a}
+
+/* ══ AUTH MODAL ══ */
+.overlay{position:fixed;inset:0;background:rgba(10,10,10,.72);
+  backdrop-filter:blur(8px);z-index:500;display:none;
+  align-items:center;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:var(--paper);width:100%;max-width:420px;
+  border:1px solid var(--border);position:relative;
+  animation:modalIn .25s ease-out}
+@keyframes modalIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.modal-x{position:absolute;top:1rem;right:1rem;background:none;border:none;
+  cursor:pointer;font-size:1.1rem;color:var(--muted);transition:color .15s}
+.modal-x:hover{color:var(--ink)}
+.modal-body{padding:2.25rem}
+.modal-eyebrow{font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--red);margin-bottom:.75rem}
+.modal-title{font-family:var(--display);font-size:2rem;letter-spacing:.02em;
+  line-height:.95;margin-bottom:.65rem}
+.modal-sub{font-size:.83rem;color:var(--muted);margin-bottom:1.75rem;line-height:1.7}
+.oauth-list{display:flex;flex-direction:column;gap:.65rem}
+.oauth-btn{width:100%;padding:.8rem 1.1rem;border:1px solid var(--border);
+  background:white;cursor:pointer;font-family:var(--body);font-size:.85rem;font-weight:500;
+  display:flex;align-items:center;gap:.8rem;transition:all .15s;text-align:left}
+.oauth-btn:hover{border-color:var(--ink);background:var(--cream)}
+.oauth-ico{width:20px;height:20px;flex-shrink:0}
+.modal-div{display:flex;align-items:center;gap:.8rem;margin:1.1rem 0}
+.modal-div::before,.modal-div::after{content:'';flex:1;height:1px;background:var(--border)}
+.modal-div span{font-family:var(--mono);font-size:.58rem;color:var(--muted);
+  letter-spacing:.06em;text-transform:uppercase}
+.free-note{background:var(--cream);border:1px solid var(--border);
+  padding:.7rem 1rem;display:flex;align-items:center;gap:.65rem}
+.free-note-text{font-size:.78rem;color:var(--muted);line-height:1.5}
+.free-note-text strong{color:var(--ink)}
+
+/* ══ DASHBOARD ══ */
+#page-dashboard{min-height:100vh}
+.sidebar{width:232px;background:var(--ink);color:var(--paper);
+  display:flex;flex-direction:column;height:100vh;position:sticky;top:0;flex-shrink:0}
+.sb-logo{padding:1.1rem 1.4rem;border-bottom:1px solid rgba(245,240,232,.08);
+  display:flex;align-items:center;gap:.55rem}
+.sb-logo-mark{width:26px;height:26px;background:var(--accent);border-radius:50%;
+  display:flex;align-items:center;justify-content:center}
+.sb-logo-dot{width:9px;height:9px;background:var(--ink);border-radius:50%}
+.sb-logo-txt{font-family:var(--display);font-size:1.2rem;letter-spacing:.05em}
+.sb-user{padding:.9rem 1.4rem;border-bottom:1px solid rgba(245,240,232,.08);
+  display:flex;align-items:center;gap:.7rem}
+.sb-av{width:30px;height:30px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--red));
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--display);font-size:.9rem;color:var(--ink);flex-shrink:0}
+.sb-name{font-size:.8rem;font-weight:600}
+.sb-plan{font-family:var(--mono);font-size:.58rem;color:var(--accent);
+  letter-spacing:.06em;text-transform:uppercase}
+.sb-nav{padding:.5rem 0;flex:1;overflow-y:auto}
+.sb-sec{font-family:var(--mono);font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;
+  color:rgba(245,240,232,.22);padding:.45rem 1.4rem .2rem;margin-top:.4rem}
+.sb-lnk{display:flex;align-items:center;gap:.65rem;padding:.58rem 1.4rem;
+  font-size:.8rem;color:rgba(245,240,232,.55);cursor:pointer;
+  transition:all .15s;position:relative;text-decoration:none;border:none;background:none;
+  width:100%;text-align:left}
+.sb-lnk:hover{color:var(--paper);background:rgba(245,240,232,.05)}
+.sb-lnk.active{color:var(--paper);background:rgba(200,241,53,.08)}
+.sb-lnk.active::before{content:'';position:absolute;left:0;top:0;bottom:0;
+  width:3px;background:var(--accent)}
+.sb-ico{font-size:.95rem;width:18px;text-align:center;flex-shrink:0}
+.sb-bottom{padding:.9rem 1.4rem;border-top:1px solid rgba(245,240,232,.08)}
+.sb-free-lbl{font-family:var(--mono);font-size:.58rem;color:rgba(245,240,232,.38);
+  letter-spacing:.06em;text-transform:uppercase;margin-bottom:.35rem;
+  display:flex;justify-content:space-between}
+.sb-free-bar{height:3px;background:rgba(245,240,232,.08);border-radius:2px;
+  overflow:hidden;margin-bottom:.7rem}
+.sb-free-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .3s}
+.sb-upgrade{width:100%;padding:.6rem;font-family:var(--mono);font-size:.65rem;
+  letter-spacing:.08em;text-transform:uppercase;background:var(--accent);
+  color:var(--ink);border:none;cursor:pointer;transition:background .15s;margin-bottom:.4rem}
+.sb-upgrade:hover{background:#d4f84a}
+.sb-out{width:100%;padding:.45rem;font-family:var(--mono);font-size:.6rem;
+  letter-spacing:.06em;text-transform:uppercase;background:transparent;
+  color:rgba(245,240,232,.28);border:none;cursor:pointer;transition:color .15s}
+.sb-out:hover{color:rgba(245,240,232,.65)}
+
+/* Main area */
+.dash-main{flex:1;display:flex;flex-direction:column;min-height:100vh;overflow-y:auto}
+.dash-header{padding:1.1rem 1.75rem;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(245,240,232,.96);backdrop-filter:blur(20px);
+  position:sticky;top:0;z-index:50}
+.dash-htitle{font-family:var(--display);font-size:1.4rem;letter-spacing:.02em}
+.dash-hbadges{display:flex;gap:.6rem}
+.badge{font-family:var(--mono);font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;
+  padding:.3rem .7rem;background:var(--cream);border:1px solid var(--border)}
+.badge.live{background:#dcfce7;border-color:#86efac;color:#166534}
+.dash-content{padding:1.75rem;flex:1}
+
+/* Subpages */
+.sp{display:none}.sp.active{display:block}
+
+/* Overview stats */
+.ov-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.9rem;margin-bottom:1.75rem}
+.stat{background:white;border:1px solid var(--border);padding:1.25rem;
+  transition:all .2s;cursor:default}
+.stat:hover{transform:translateY(-2px);border-color:var(--ink)}
+.stat-lbl{font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
+.stat-val{font-family:var(--display);font-size:2rem;letter-spacing:.02em;line-height:1;margin-bottom:.2rem}
+.stat-chg{font-size:.72rem;color:var(--muted)}
+.stat-chg.up{color:#16a34a}
+
+.ov-row{display:grid;grid-template-columns:2fr 1fr;gap:1.25rem;margin-bottom:1.25rem}
+.card{background:white;border:1px solid var(--border);padding:1.25rem}
+.card-ttl{font-family:var(--display);font-size:.95rem;letter-spacing:.03em;margin-bottom:1rem}
+.card-ttl span{font-family:var(--body);font-size:.72rem;color:var(--muted);
+  font-weight:400;margin-left:.4rem}
+
+/* Activity chart */
+.act-chart{display:flex;align-items:flex-end;gap:5px;height:90px}
+.act-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.act-bar{width:100%;border-radius:2px 2px 0 0;background:var(--accent);opacity:.7;transition:opacity .15s}
+.act-bar:hover{opacity:1}
+.act-day{font-family:var(--mono);font-size:.52rem;color:var(--muted)}
+
+/* Platform quick status */
+.plat-list{display:flex;flex-direction:column;gap:.6rem}
+.plat-row{display:flex;align-items:center;gap:.65rem;padding:.65rem;
+  border:1px solid var(--border);background:var(--cream)}
+.plat-ico{width:28px;height:28px;border-radius:5px;display:flex;align-items:center;
+  justify-content:center;font-size:.9rem;flex-shrink:0}
+.plat-info{flex:1}
+.plat-name{font-size:.8rem;font-weight:600}
+.plat-st{font-family:var(--mono);font-size:.58rem;letter-spacing:.06em;text-transform:uppercase}
+.plat-st.on{color:#16a34a}.plat-st.off{color:var(--muted)}
+.plat-btn{font-family:var(--mono);font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;
+  padding:.3rem .65rem;border:1px solid var(--border);background:white;cursor:pointer;transition:all .15s}
+.plat-btn:hover{border-color:var(--ink);background:var(--ink);color:var(--paper)}
+
+/* Jobs table */
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--muted);padding:.45rem .7rem;border-bottom:1px solid var(--border);
+  text-align:left;font-weight:400}
+.tbl td{padding:.7rem;border-bottom:1px solid var(--border);font-size:.8rem}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--cream)}
+.jbadge{font-family:var(--mono);font-size:.58rem;letter-spacing:.06em;
+  text-transform:uppercase;padding:.18rem .55rem}
+.jbadge.done{background:#dcfce7;color:#166534}
+.jbadge.running{background:#fef9c3;color:#854d0e}
+.jbadge.failed{background:#fee2e2;color:#991b1b}
+.jbadge.pending{background:var(--cream);color:var(--muted)}
+.progress-bar{width:80px;height:4px;background:var(--cream);border-radius:2px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:.4rem}
+.progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .5s}
+
+/* Campaign form */
+.cform{max-width:600px}
+.fsec{margin-bottom:1.75rem}
+.fsec-title{font-family:var(--display);font-size:.95rem;letter-spacing:.03em;
+  margin-bottom:.85rem;padding-bottom:.4rem;border-bottom:1px solid var(--border)}
+.plat-sel{display:grid;grid-template-columns:repeat(4,1fr);gap:.65rem;margin-bottom:.75rem}
+.popt{border:1px solid var(--border);padding:.85rem .5rem;text-align:center;
+  cursor:pointer;transition:all .15s;background:white}
+.popt:hover{border-color:var(--ink)}
+.popt.sel{border-color:var(--ink);background:var(--ink);color:var(--paper)}
+.popt-ico{font-size:1.35rem;margin-bottom:.3rem}
+.popt-name{font-family:var(--mono);font-size:.58rem;letter-spacing:.06em;text-transform:uppercase}
+.popt.disabled{opacity:.35;cursor:not-allowed}
+
+.act-sel{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:.75rem}
+.aopt{border:1px solid var(--border);padding:.5rem 1.1rem;cursor:pointer;
+  font-family:var(--mono);font-size:.65rem;letter-spacing:.06em;text-transform:uppercase;
+  transition:all .15s;background:white}
+.aopt:hover{border-color:var(--ink)}
+.aopt.sel{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+.fgrp{display:flex;flex-direction:column;gap:.3rem;margin-bottom:.85rem}
+.flbl{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--muted)}
+.finp,.fsel{padding:.7rem .9rem;border:1px solid var(--border);background:white;
+  font-family:var(--body);font-size:.85rem;color:var(--ink);
+  outline:none;transition:border-color .15s;width:100%}
+.finp:focus,.fsel:focus{border-color:var(--ink)}
+.fhint{font-size:.7rem;color:var(--muted)}
+
+.qty-big{font-family:var(--display);font-size:2.5rem;letter-spacing:.02em;margin-bottom:.4rem}
+.qty-range{width:100%;accent-color:var(--ink);cursor:pointer}
+.qty-marks{display:flex;justify-content:space-between;
+  font-family:var(--mono);font-size:.58rem;color:var(--muted);margin-top:.2rem}
+
+.summary{background:var(--ink);color:var(--paper);padding:1.4rem;margin-top:1.4rem}
+.sum-ttl{font-family:var(--display);font-size:1rem;letter-spacing:.03em;margin-bottom:.85rem}
+.sum-row{display:flex;justify-content:space-between;align-items:center;
+  padding:.35rem 0;border-bottom:1px solid rgba(245,240,232,.08);
+  font-size:.8rem;color:rgba(245,240,232,.65)}
+.sum-row:last-of-type{border-bottom:none}
+.sum-row strong{color:var(--paper);font-family:var(--mono)}
+.sum-price{font-family:var(--display);font-size:1.9rem;color:var(--accent);margin:1rem 0 .35rem}
+.sum-note{font-family:var(--mono);font-size:.6rem;color:rgba(245,240,232,.38);
+  letter-spacing:.06em;margin-bottom:.9rem}
+.btn-launch{width:100%;padding:.9rem;font-family:var(--mono);font-size:.75rem;
+  letter-spacing:.1em;text-transform:uppercase;background:var(--accent);
+  color:var(--ink);border:none;cursor:pointer;transition:background .15s}
+.btn-launch:hover{background:#d4f84a}
+.btn-launch:disabled{opacity:.45;cursor:not-allowed}
+
+/* Connect page */
+.conn-note{font-size:.85rem;color:var(--muted);max-width:520px;line-height:1.8;margin-bottom:1.5rem}
+.back-btn{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;
+  background:none;border:1px solid var(--border);padding:.38rem .85rem;cursor:pointer;
+  display:inline-flex;align-items:center;gap:.4rem;transition:all .15s;margin-bottom:1.25rem}
+.back-btn:hover{border-color:var(--ink)}
+.conn-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem}
+.conn-card{background:white;border:1px solid var(--border);padding:1.75rem;
+  display:flex;flex-direction:column;align-items:center;text-align:center;
+  cursor:pointer;transition:all .2s;position:relative}
+.conn-card:hover{transform:translateY(-3px);border-color:var(--ink)}
+.conn-card.on{border-color:#16a34a;background:#f0fdf4}
+.conn-badge{position:absolute;top:.85rem;right:.85rem;background:#dcfce7;color:#166534;
+  font-family:var(--mono);font-size:.52rem;letter-spacing:.06em;text-transform:uppercase;
+  padding:.18rem .5rem}
+.conn-ico{font-size:2.25rem;margin-bottom:.85rem}
+.conn-name{font-family:var(--display);font-size:1.15rem;letter-spacing:.03em;margin-bottom:.3rem}
+.conn-desc{font-size:.75rem;color:var(--muted);margin-bottom:1.1rem;line-height:1.6}
+.conn-st{font-family:var(--mono);font-size:.6rem;letter-spacing:.06em;
+  text-transform:uppercase;margin-bottom:1rem}
+.conn-st.on{color:#16a34a}.conn-st.off{color:var(--muted)}
+.conn-btn{width:100%;padding:.7rem;font-family:var(--mono);font-size:.65rem;
+  letter-spacing:.08em;text-transform:uppercase;background:var(--ink);color:var(--paper);
+  border:none;cursor:pointer;transition:background .15s}
+.conn-btn:hover{background:var(--red)}
+.conn-btn.on{background:#16a34a}.conn-btn.on:hover{background:#15803d}
+
+/* OAuth sub-modal */
+.omodal{background:var(--paper);width:100%;max-width:390px;
+  border:1px solid var(--border);position:relative;animation:modalIn .25s ease-out}
+.omodal-body{padding:1.75rem}
+.omodal-ico{font-size:2.75rem;text-align:center;margin-bottom:.85rem}
+.omodal-title{font-family:var(--display);font-size:1.6rem;letter-spacing:.02em;
+  line-height:.95;margin-bottom:.45rem;text-align:center}
+.omodal-sub{font-size:.8rem;color:var(--muted);text-align:center;
+  margin-bottom:1.25rem;line-height:1.7}
+.omodal-perms{background:var(--cream);border:1px solid var(--border);padding:.85rem;margin-bottom:1.25rem}
+.omodal-perms-ttl{font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:.6rem}
+.operm{display:flex;align-items:center;gap:.45rem;font-size:.75rem;margin-bottom:.35rem}
+.operm::before{content:'✓';color:#16a34a;font-weight:700;flex-shrink:0}
+.obtn{width:100%;padding:.8rem;font-family:var(--mono);font-size:.68rem;
+  letter-spacing:.08em;text-transform:uppercase;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:.7rem;
+  transition:all .15s;margin-bottom:.45rem}
+.obtn.google{background:#4285f4;color:white}.obtn.google:hover{background:#3367d6}
+.obtn.facebook{background:#1877f2;color:white}.obtn.facebook:hover{background:#166fe5}
+.obtn.dark{background:#000;color:white}.obtn.dark:hover{background:#222}
+.obtn-ico{width:17px;height:17px;flex-shrink:0}
+.onote{font-size:.7rem;color:var(--muted);text-align:center;line-height:1.6}
+
+/* Billing */
+.bill-wrap{max-width:520px}
+.bill-card{background:white;border:1px solid var(--border);padding:1.5rem;margin-bottom:1.25rem}
+.bill-plan-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.bill-plan-name{font-family:var(--display);font-size:1.6rem;letter-spacing:.02em}
+.bill-plan-price{font-family:var(--display);font-size:1.9rem}
+.bill-plan-note{font-size:.78rem;color:var(--muted)}
+.bill-info{background:var(--cream);border:1px solid var(--border);padding:.85rem;
+  font-size:.8rem;color:var(--muted);line-height:1.7}
+.bill-plans{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+
+/* Toast */
+.toast{position:fixed;bottom:1.75rem;right:1.75rem;background:var(--ink);color:var(--paper);
+  padding:.8rem 1.4rem;font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;
+  z-index:1000;transform:translateY(80px);opacity:0;
+  transition:all .3s;display:flex;align-items:center;gap:.65rem;max-width:320px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{border-left:3px solid var(--accent)}
+.toast.err{border-left:3px solid var(--red)}
+
+/* Loading spinner */
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(10,10,10,.15);
+  border-top-color:var(--ink);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(max-width:860px){
+  .hero{grid-template-columns:1fr}
+  .hero-right,.dp-body{display:none}
+  .steps,.plans,.ov-grid,.conn-grid{grid-template-columns:1fr}
+  .ov-row{grid-template-columns:1fr}
+  .plat-sel{grid-template-columns:repeat(2,1fr)}
+  .sidebar{display:none}
+  .bill-plans{grid-template-columns:1fr}
+}
+</style>
 </head>
 <body>
-  <div id="login-screen" class="login-screen hidden">
-    <div class="login-box">
-      <div class="login-logo">⬡ Nexus Social</div>
-      <input type="password" id="login-password" placeholder="Panel password" autocomplete="current-password">
-      <button id="login-btn" class="btn btn-primary w-full">Sign in</button>
-      <p id="login-error" class="error-text hidden">Invalid password</p>
+
+<!-- ══════════════════════════════
+     LANDING
+══════════════════════════════ -->
+<div id="page-landing" class="page active">
+
+  <header class="land-header">
+    <div class="logo" onclick="goLanding()">
+      <div class="logo-mark"><div class="logo-pulse"></div></div>
+      NEXUS
+    </div>
+    <nav class="land-nav">
+      <a href="#how">How it works</a>
+      <a href="#pricing">Pricing</a>
+    </nav>
+    <button class="btn-ink" onclick="openAuth()">Sign In →</button>
+  </header>
+
+  <div class="hero">
+    <div class="hero-left">
+      <div class="eyebrow">Next Level Digital Marketing</div>
+      <h1 class="hero-h1">ESCALATE<br><em>your presence.</em><br>EVERYWHERE.</h1>
+      <p class="hero-p">More people discovering your brand. More engagement on your content. Every platform pushing you forward — because the numbers say you matter.</p>
+      <div class="hero-cta">
+        <button class="btn-ink" style="padding:.9rem 2rem;font-size:.8rem" onclick="openAuth()">Start Free — 10 Actions →</button>
+        <button class="btn-outline" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">See How →</button>
+      </div>
+      <div class="hero-stats">
+        <div class="hstat"><div class="hstat-val">10M+</div><div class="hstat-lbl">Monthly Reach</div></div>
+        <div class="hstat"><div class="hstat-val">98%</div><div class="hstat-lbl">Retention Rate</div></div>
+        <div class="hstat"><div class="hstat-val">24/7</div><div class="hstat-lbl">Always Running</div></div>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="grid-bg"></div>
+      <div class="dash-preview">
+        <div class="dp-bar">
+          <div class="dp-dot" style="background:#ef4444"></div>
+          <div class="dp-dot" style="background:#f59e0b"></div>
+          <div class="dp-dot" style="background:#22c55e"></div>
+          <div class="dp-label">nexus dashboard</div>
+        </div>
+        <div class="dp-body">
+          <div class="dp-metrics">
+            <div class="dp-metric"><div class="dp-mval">2.2K</div><div class="dp-mlbl">Sessions</div><div class="dp-mchg">↑ +340%</div></div>
+            <div class="dp-metric"><div class="dp-mval">7.5K</div><div class="dp-mlbl">Views</div><div class="dp-mchg">↑ +218%</div></div>
+          </div>
+          <div class="dp-bars">
+            <div class="dp-bar-item" style="height:35%"></div>
+            <div class="dp-bar-item" style="height:52%"></div>
+            <div class="dp-bar-item" style="height:41%"></div>
+            <div class="dp-bar-item" style="height:68%"></div>
+            <div class="dp-bar-item" style="height:55%"></div>
+            <div class="dp-bar-item" style="height:82%"></div>
+            <div class="dp-bar-item" style="height:95%"></div>
+          </div>
+          <div class="dp-src"><div class="dp-src-dot" style="background:#4285f4"></div><div class="dp-src-name">Organic Search</div><div class="dp-src-bar"><div class="dp-src-fill" style="width:68%;background:#4285f4"></div></div><div class="dp-src-pct">68%</div></div>
+          <div class="dp-src"><div class="dp-src-dot" style="background:#c8f135"></div><div class="dp-src-name">Social</div><div class="dp-src-bar"><div class="dp-src-fill" style="width:18%;background:#c8f135"></div></div><div class="dp-src-pct">18%</div></div>
+          <div class="dp-src"><div class="dp-src-dot" style="background:#e8341a"></div><div class="dp-src-name">Direct</div><div class="dp-src-bar"><div class="dp-src-fill" style="width:14%;background:#e8341a"></div></div><div class="dp-src-pct">14%</div></div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div id="app" class="app hidden">
-    <aside class="sidebar">
-      <div class="sidebar-logo">⬡ Nexus</div>
-      <nav class="sidebar-nav">
-        <a href="#traffic"   class="nav-item" data-page="traffic">
-          <span class="nav-icon">⚡</span><span>Traffic</span>
-        </a>
-        <a href="#accounts"  class="nav-item" data-page="accounts">
-          <span class="nav-icon">👤</span><span>Accounts</span>
-        </a>
-        <a href="#proxies"   class="nav-item" data-page="proxies">
-          <span class="nav-icon">🔗</span><span>Proxies</span>
-        </a>
-        <a href="#analytics" class="nav-item" data-page="analytics">
-          <span class="nav-icon">📊</span><span>Analytics</span>
-        </a>
-        <a href="#logs"      class="nav-item" data-page="logs">
-          <span class="nav-icon">📋</span><span>Logs</span>
-        </a>
-      </nav>
-      <div class="sidebar-footer">
-        <a href="#settings" class="nav-item" data-page="settings">
-          <span class="nav-icon">⚙️</span><span>Settings</span>
-        </a>
-        <button id="logout-btn" class="btn btn-ghost btn-sm">Sign out</button>
-      </div>
-    </aside>
-
-    <main class="main-content">
-      <div id="page-container"></div>
-    </main>
-  </div>
-
-  <!-- Modal -->
-  <div id="modal-overlay" class="modal-overlay hidden">
-    <div id="modal-box" class="modal-box">
-      <div class="modal-header">
-        <h3 id="modal-title"></h3>
-        <button id="modal-close" class="btn btn-ghost btn-sm">✕</button>
-      </div>
-      <div id="modal-body"></div>
+  <div class="ticker">
+    <div class="ticker-track">
+      <span class="t-item">Views</span><span class="t-item">Likes</span><span class="t-item">Followers</span><span class="t-item">Subscribers</span><span class="t-item">Reach</span><span class="t-item">Engagement</span><span class="t-item">Traffic</span><span class="t-item">Analytics</span>
+      <span class="t-item">Views</span><span class="t-item">Likes</span><span class="t-item">Followers</span><span class="t-item">Subscribers</span><span class="t-item">Reach</span><span class="t-item">Engagement</span><span class="t-item">Traffic</span><span class="t-item">Analytics</span>
     </div>
   </div>
 
-  <!-- Toast container -->
-  <div id="toast-container"></div>
+  <!-- How it works -->
+  <div class="how" id="how">
+    <div class="section-lbl">How It Works</div>
+    <h2 class="how-title">Sign in once.<br><em>Results start immediately.</em></h2>
+    <div class="steps">
+      <div class="step"><div class="step-num">01</div><div class="step-title">SIGN IN</div><div class="step-desc">Create your account with Google, Facebook, or Twitter. Takes 10 seconds.</div></div>
+      <div class="step"><div class="step-num">02</div><div class="step-title">CONNECT</div><div class="step-desc">Link the platforms where your content lives. One click per platform.</div></div>
+      <div class="step"><div class="step-num">03</div><div class="step-title">CHOOSE</div><div class="step-desc">Pick your platform, action, and quantity. Views, likes, or followers.</div></div>
+      <div class="step"><div class="step-num">04</div><div class="step-title">WATCH</div><div class="step-desc">Numbers go up and stay up. Open your analytics and see the difference.</div></div>
+    </div>
+  </div>
 
-  <script src="/js/api.js"></script>
-  <script src="/js/components/modal.js"></script>
-  <script src="/js/components/toast.js"></script>
-  <script src="/js/browser-relay-client.js"></script>
-  <script src="/js/pages/accounts.js"></script>
-  <script src="/js/pages/proxies.js"></script>
-  <script src="/js/pages/traffic.js"></script>
-  <script src="/js/pages/analytics.js"></script>
-  <script src="/js/pages/logs.js"></script>
-  <script src="/js/pages/settings.js"></script>
-  <script src="/js/app.js"></script>
+  <!-- Pricing -->
+  <div class="pricing-section" id="pricing">
+    <div class="pricing-inner">
+      <div class="section-lbl">Pricing</div>
+      <div class="pricing-title">RESULTS THAT PAY FOR THEMSELVES.</div>
+      <div class="plans">
+        <div class="plan">
+          <div class="plan-tier">Starter</div>
+          <div class="plan-price">$29</div>
+          <div class="plan-per">per month · cancel anytime</div>
+          <div class="plan-div"></div>
+          <ul class="plan-features">
+            <li>10,000 actions per month</li>
+            <li>YouTube · Instagram · TikTok</li>
+            <li>Views, Likes & Followers</li>
+            <li>Geo targeting</li>
+          </ul>
+          <button class="plan-cta" onclick="openAuth()">Get Started →</button>
+        </div>
+        <div class="plan hot">
+          <div class="plan-badge">Most Popular</div>
+          <div class="plan-tier">Growth</div>
+          <div class="plan-price">$79</div>
+          <div class="plan-per">per month · cancel anytime</div>
+          <div class="plan-div"></div>
+          <ul class="plan-features">
+            <li>50,000 actions per month</li>
+            <li>All platforms</li>
+            <li>Priority queue</li>
+            <li>Demographic targeting</li>
+            <li>Age, gender & interest signals</li>
+          </ul>
+          <button class="plan-cta" onclick="openAuth()">Get Started →</button>
+        </div>
+        <div class="plan">
+          <div class="plan-tier">Agency</div>
+          <div class="plan-price">$199</div>
+          <div class="plan-per">per month · volume discounts</div>
+          <div class="plan-div"></div>
+          <ul class="plan-features">
+            <li>200,000 actions per month</li>
+            <li>API access</li>
+            <li>White-label reporting</li>
+            <li>Multi-client management</li>
+          </ul>
+          <button class="plan-cta" onclick="openAuth()">Contact Us →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer style="background:var(--ink);color:var(--paper);padding:1.75rem 2.5rem;
+    display:flex;align-items:center;justify-content:space-between;
+    border-top:1px solid rgba(245,240,232,.06)">
+    <div style="font-family:var(--display);font-size:1.2rem;letter-spacing:.05em">NEXUS</div>
+    <div style="font-family:var(--mono);font-size:.6rem;color:rgba(245,240,232,.3);letter-spacing:.06em">© 2026 Nexus Digital</div>
+    <div style="display:flex;gap:1.25rem">
+      <a href="mailto:hello@nexus.digital" style="font-family:var(--mono);font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;color:rgba(245,240,232,.35);text-decoration:none;transition:color .15s" onmouseover="this.style.color='#c8f135'" onmouseout="this.style.color='rgba(245,240,232,.35)'">Contact</a>
+    </div>
+  </footer>
+
+</div><!-- /landing -->
+
+<!-- ══════════════════════════════
+     AUTH MODAL
+══════════════════════════════ -->
+<div class="overlay" id="auth-overlay">
+  <div class="modal">
+    <button class="modal-x" onclick="closeAuth()">✕</button>
+    <div class="modal-body">
+      <div class="modal-eyebrow">Get Started Free</div>
+      <div class="modal-title">JOIN<br>NEXUS.</div>
+      <div class="modal-sub">Sign in to claim your 10 free actions. No credit card required.</div>
+      <div class="oauth-list">
+        <button class="oauth-btn" onclick="signIn('google')">
+          <svg class="oauth-ico" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Continue with Google
+        </button>
+        <button class="oauth-btn" onclick="signIn('facebook')">
+          <svg class="oauth-ico" viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          Continue with Facebook
+        </button>
+        <button class="oauth-btn" onclick="signIn('twitter')">
+          <svg class="oauth-ico" viewBox="0 0 24 24"><path fill="#000" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.736-8.857L1.254 2.25H8.08l4.259 5.631 5.905-5.631zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          Continue with X (Twitter)
+        </button>
+      </div>
+      <div class="modal-div"><span>included</span></div>
+      <div class="free-note">
+        <div style="font-size:1.1rem">🎁</div>
+        <div class="free-note-text"><strong>10 free actions</strong> on signup — views, likes, or followers on any platform. See results before you pay.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     DASHBOARD
+══════════════════════════════ -->
+<div id="page-dashboard" class="page">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-mark"><div class="sb-logo-dot"></div></div>
+      <span class="sb-logo-txt">NEXUS</span>
+    </div>
+    <div class="sb-user">
+      <div class="sb-av" id="sb-av">U</div>
+      <div>
+        <div class="sb-name" id="sb-name">User</div>
+        <div class="sb-plan" id="sb-plan">Free Plan</div>
+      </div>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-sec">Main</div>
+      <button class="sb-lnk active" onclick="goSP('overview',this)"><span class="sb-ico">📊</span>Overview</button>
+      <button class="sb-lnk" onclick="goSP('campaign',this)"><span class="sb-ico">⚡</span>New Campaign</button>
+      <button class="sb-lnk" onclick="goSP('jobs',this)"><span class="sb-ico">📋</span>My Jobs</button>
+      <div class="sb-sec">Accounts</div>
+      <button class="sb-lnk" onclick="goSP('connect',this)"><span class="sb-ico">🔗</span>Connect Platforms</button>
+      <div class="sb-sec">Settings</div>
+      <button class="sb-lnk" onclick="goSP('billing',this)"><span class="sb-ico">💳</span>Billing</button>
+    </nav>
+    <div class="sb-bottom">
+      <div class="sb-free-lbl"><span>Free Actions</span><span id="free-lbl">10 / 10</span></div>
+      <div class="sb-free-bar"><div class="sb-free-fill" id="free-fill" style="width:100%"></div></div>
+      <button class="sb-upgrade" onclick="goSP('billing')">Upgrade Plan →</button>
+      <button class="sb-out" onclick="signOut()">Sign Out</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="dash-main">
+    <div class="dash-header">
+      <div class="dash-htitle" id="dash-title">Overview</div>
+      <div class="dash-hbadges">
+        <span class="badge live">● Engine Live</span>
+        <span class="badge" id="plat-badge">0 Platforms</span>
+      </div>
+    </div>
+    <div class="dash-content">
+
+      <!-- OVERVIEW -->
+      <div class="sp active" id="sp-overview">
+        <div class="ov-grid">
+          <div class="stat"><div class="stat-lbl">Total Views</div><div class="stat-val" id="sv-views">—</div><div class="stat-chg" id="sv-views-chg">no data yet</div></div>
+          <div class="stat"><div class="stat-lbl">Total Likes</div><div class="stat-val" id="sv-likes">—</div><div class="stat-chg">no data yet</div></div>
+          <div class="stat"><div class="stat-lbl">Followers Gained</div><div class="stat-val" id="sv-followers">—</div><div class="stat-chg">no data yet</div></div>
+          <div class="stat"><div class="stat-lbl">Active Jobs</div><div class="stat-val" id="sv-jobs">0</div><div class="stat-chg">idle</div></div>
+        </div>
+        <div class="ov-row">
+          <div class="card">
+            <div class="card-ttl">Activity <span>last 7 days</span></div>
+            <div class="act-chart" id="act-chart"></div>
+          </div>
+          <div class="card">
+            <div class="card-ttl">Platforms</div>
+            <div class="plat-list" id="ov-platforms"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-ttl">Recent Jobs</div>
+          <table class="tbl"><thead><tr><th>Platform</th><th>Action</th><th>Target</th><th>Progress</th><th>Status</th><th>Created</th></tr></thead>
+          <tbody id="ov-jobs-body"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:1.75rem;font-size:.8rem">No jobs yet — create your first campaign →</td></tr></tbody></table>
+        </div>
+      </div>
+
+      <!-- NEW CAMPAIGN -->
+      <div class="sp" id="sp-campaign">
+        <div class="cform">
+          <div class="fsec">
+            <div class="fsec-title">1. Platform</div>
+            <div class="plat-sel" id="plat-sel">
+              <div class="popt" onclick="selPlat(this,'youtube')"><div class="popt-ico">▶️</div><div class="popt-name">YouTube</div></div>
+              <div class="popt" onclick="selPlat(this,'instagram')"><div class="popt-ico">📷</div><div class="popt-name">Instagram</div></div>
+              <div class="popt" onclick="selPlat(this,'tiktok')"><div class="popt-ico">🎵</div><div class="popt-name">TikTok</div></div>
+              <div class="popt" onclick="selPlat(this,'facebook')"><div class="popt-ico">👤</div><div class="popt-name">Facebook</div></div>
+            </div>
+            <div id="plat-warn" style="font-size:.75rem;color:var(--red);display:none">⚠ Connect this platform first to enable likes and followers.</div>
+          </div>
+          <div class="fsec">
+            <div class="fsec-title">2. Action</div>
+            <div class="act-sel" id="act-sel">
+              <div class="aopt" onclick="selAct(this,'views')">👁 Views</div>
+              <div class="aopt" onclick="selAct(this,'likes')">❤️ Likes</div>
+              <div class="aopt" onclick="selAct(this,'followers')">➕ Followers</div>
+            </div>
+          </div>
+          <div class="fsec">
+            <div class="fsec-title">3. Target URL</div>
+            <div class="fgrp">
+              <label class="flbl">Content URL or Username</label>
+              <input class="finp" type="text" id="c-url" placeholder="https://www.youtube.com/watch?v=...">
+              <span class="fhint">Paste the full URL of the video, post, or profile page</span>
+            </div>
+          </div>
+          <div class="fsec">
+            <div class="fsec-title">4. Quantity</div>
+            <div class="qty-big" id="qty-disp">100</div>
+            <input class="qty-range" type="range" min="10" max="10000" value="100" step="10"
+              id="qty-range" oninput="updQty(this.value)">
+            <div class="qty-marks"><span>10</span><span>1K</span><span>5K</span><span>10K</span></div>
+          </div>
+          <div class="summary">
+            <div class="sum-ttl">ORDER SUMMARY</div>
+            <div class="sum-row"><span>Platform</span><strong id="s-plat">—</strong></div>
+            <div class="sum-row"><span>Action</span><strong id="s-act">—</strong></div>
+            <div class="sum-row"><span>Quantity</span><strong id="s-qty">100</strong></div>
+            <div class="sum-row"><span>Est. delivery</span><strong id="s-eta">—</strong></div>
+            <div class="sum-price" id="s-price">$0.00</div>
+            <div class="sum-note" id="s-note">FREE — using your 10 free actions</div>
+            <button class="btn-launch" id="launch-btn" onclick="launchCampaign()" disabled>Select platform and action →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- JOBS -->
+      <div class="sp" id="sp-jobs">
+        <div class="card">
+          <div class="card-ttl">All Jobs <span id="jobs-count"></span></div>
+          <table class="tbl"><thead><tr><th>ID</th><th>Platform</th><th>Action</th><th>Target</th><th>Progress</th><th>Status</th><th>Date</th></tr></thead>
+          <tbody id="all-jobs-body"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:1.75rem;font-size:.8rem">No jobs yet.</td></tr></tbody></table>
+        </div>
+      </div>
+
+      <!-- CONNECT -->
+      <div class="sp" id="sp-connect">
+        <button class="back-btn" onclick="goSP('campaign')">← Back to Campaign</button>
+        <p class="conn-note">Sign in to each platform so Nexus knows your content is real. One sign-in is all it takes — results that stick, not drop.</p>
+        <div class="conn-grid" id="conn-grid"></div>
+      </div>
+
+      <!-- BILLING -->
+      <div class="sp" id="sp-billing">
+        <div class="bill-wrap">
+          <div class="bill-card">
+            <div class="bill-plan-row">
+              <div><div class="bill-plan-name">FREE PLAN</div><div class="bill-plan-note">10 actions included · one time</div></div>
+              <div class="bill-plan-price">$0</div>
+            </div>
+            <div class="bill-info">You have <strong id="bill-free">10</strong> free actions remaining. Upgrade to keep the momentum going.</div>
+          </div>
+          <div class="bill-plans">
+            <div class="plan" style="padding:1.5rem">
+              <div class="plan-tier">Starter</div>
+              <div class="plan-price" style="font-size:2.25rem">$29</div>
+              <div class="plan-per">/month</div>
+              <div class="plan-div"></div>
+              <ul class="plan-features"><li>10,000 actions</li><li>All platforms</li><li>Geo targeting</li></ul>
+              <button class="plan-cta" onclick="toast('Redirecting to payment...','ok')">Upgrade →</button>
+            </div>
+            <div class="plan hot" style="padding:1.5rem">
+              <div class="plan-badge">Popular</div>
+              <div class="plan-tier">Growth</div>
+              <div class="plan-price" style="font-size:2.25rem">$79</div>
+              <div class="plan-per">/month</div>
+              <div class="plan-div"></div>
+              <ul class="plan-features"><li>50,000 actions</li><li>Demographics</li><li>Priority queue</li></ul>
+              <button class="plan-cta" onclick="toast('Redirecting to payment...','ok')">Upgrade →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /dash-content -->
+  </main>
+</div><!-- /dashboard -->
+
+<!-- OAuth sub-modal -->
+<div class="overlay" id="omodal-overlay">
+  <div class="omodal">
+    <button class="modal-x" onclick="closeOModal()">✕</button>
+    <div class="omodal-body">
+      <div class="omodal-ico" id="om-ico">▶️</div>
+      <div class="omodal-title" id="om-title">CONNECT YOUTUBE</div>
+      <div class="omodal-sub" id="om-sub">Sign in so Nexus knows your content is real.</div>
+      <div class="omodal-perms">
+        <div class="omodal-perms-ttl">What Nexus accesses</div>
+        <div class="operm" id="om-p1">View your channel and videos</div>
+        <div class="operm" id="om-p2">Read your content analytics</div>
+        <div class="operm">Session disconnects when you remove it</div>
+      </div>
+      <button class="obtn" id="om-btn" onclick="doConnect()">
+        <svg class="obtn-ico" viewBox="0 0 24 24" id="om-btn-ico"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        <span id="om-btn-txt">Continue with Google</span>
+      </button>
+      <div class="onote">We never see your password. Disconnect anytime from your platform settings.</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast-el"></div>
+
+<script>
+'use strict';
+
+// ── CONFIG ──
+const API = ''; // same origin
+const PRICE_PER = 0.005;
+
+const PLATS = {
+  youtube:   { name:'YouTube',   ico:'▶️', color:'#fee2e2', oauthCls:'google',   oauthTxt:'Continue with Google',   perms:['View your channel and videos','Read your content analytics'] },
+  instagram: { name:'Instagram', ico:'📷', color:'#fce7f3', oauthCls:'facebook', oauthTxt:'Continue with Facebook', perms:['Access your Instagram profile','View post and reel stats'] },
+  tiktok:    { name:'TikTok',    ico:'🎵', color:'#f0fdf4', oauthCls:'dark',     oauthTxt:'Continue with TikTok',   perms:['View your TikTok profile','Access video performance'] },
+  facebook:  { name:'Facebook',  ico:'👤', color:'#eff6ff', oauthCls:'facebook', oauthTxt:'Continue with Facebook', perms:['Access your Facebook pages','View post interactions'] },
+};
+
+// ── STATE ──
+const S = {
+  user: null,
+  token: localStorage.getItem('nx_token') || null,
+  freeLeft: 10,
+  connected: {},   // platform → true/false
+  jobs: [],
+  stats: { views:0, likes:0, followers:0 },
+  campaign: { platform: null, action: null },
+  connectTarget: null,
+};
+
+// ── INIT ──
+window.addEventListener('DOMContentLoaded', () => {
+  if (S.token) {
+    const saved = localStorage.getItem('nx_user');
+    if (saved) {
+      S.user = JSON.parse(saved);
+      enterDash();
+    }
+  }
+  renderActivityChart();
+  renderConnGrid();
+  renderOvPlatforms();
+  document.querySelectorAll('.overlay').forEach(o =>
+    o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); })
+  );
+});
+
+// ── AUTH ──
+function openAuth() { document.getElementById('auth-overlay').classList.add('open'); }
+function closeAuth() { document.getElementById('auth-overlay').classList.remove('open'); }
+
+function signIn(provider) {
+  closeAuth();
+  const name = { google:'Alex Johnson', facebook:'Alex Johnson', twitter:'Alex Johnson' }[provider];
+  S.user = { name, provider, avatar: name[0] };
+  S.token = 'demo-token-' + Date.now();
+  localStorage.setItem('nx_token', S.token);
+  localStorage.setItem('nx_user', JSON.stringify(S.user));
+  enterDash();
+  toast(`Welcome to Nexus! 10 free actions ready. 🎁`, 'ok');
+}
+
+function signOut() {
+  S.user = null; S.token = null;
+  localStorage.removeItem('nx_token');
+  localStorage.removeItem('nx_user');
+  showPage('landing');
+  toast('Signed out.', 'ok');
+}
+
+function goLanding() {
+  if (!S.user) showPage('landing');
+}
+
+function enterDash() {
+  document.getElementById('sb-av').textContent  = S.user.avatar;
+  document.getElementById('sb-name').textContent = S.user.name;
+  showPage('dashboard');
+  loadJobs();
+}
+
+// ── PAGES ──
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(`page-${id}`).classList.add('active');
+}
+
+// ── SUBPAGES ──
+function goSP(id, el) {
+  document.querySelectorAll('.sp').forEach(p => p.classList.remove('active'));
+  document.getElementById(`sp-${id}`).classList.add('active');
+  const titles = { overview:'Overview', campaign:'New Campaign', jobs:'My Jobs',
+                   connect:'Connect Platforms', billing:'Billing' };
+  document.getElementById('dash-title').textContent = titles[id] || id;
+  document.querySelectorAll('.sb-lnk').forEach(b => b.classList.remove('active'));
+  if (el) el.classList.add('active');
+  else {
+    document.querySelectorAll('.sb-lnk').forEach(b => {
+      if (b.textContent.toLowerCase().includes(id.toLowerCase().slice(0,4)))
+        b.classList.add('active');
+    });
+  }
+}
+
+// ── CAMPAIGN ──
+function selPlat(el, platform) {
+  document.querySelectorAll('.popt').forEach(e => e.classList.remove('sel'));
+  el.classList.add('sel');
+  S.campaign.platform = platform;
+  const warn = document.getElementById('plat-warn');
+  warn.style.display = (S.campaign.action !== 'views' && !S.connected[platform]) ? 'block' : 'none';
+  updSummary();
+}
+
+function selAct(el, action) {
+  document.querySelectorAll('.aopt').forEach(e => e.classList.remove('sel'));
+  el.classList.add('sel');
+  S.campaign.action = action;
+  const warn = document.getElementById('plat-warn');
+  if (action !== 'views' && S.campaign.platform && !S.connected[S.campaign.platform]) {
+    warn.style.display = 'block';
+  } else {
+    warn.style.display = 'none';
+  }
+  updSummary();
+}
+
+function updQty(v) {
+  const n = parseInt(v);
+  document.getElementById('qty-disp').textContent = n.toLocaleString();
+  document.getElementById('s-qty').textContent = n.toLocaleString();
+  updSummary();
+}
+
+function updSummary() {
+  const { platform, action } = S.campaign;
+  const qty = parseInt(document.getElementById('qty-range').value);
+  const btn = document.getElementById('launch-btn');
+  document.getElementById('s-plat').textContent = platform ? PLATS[platform].name : '—';
+  document.getElementById('s-act').textContent  = action   ? action.charAt(0).toUpperCase()+action.slice(1) : '—';
+  document.getElementById('s-qty').textContent  = qty.toLocaleString();
+  if (platform && action) {
+    const etaMin = Math.ceil(qty / 400);
+    document.getElementById('s-eta').textContent = etaMin < 60 ? `~${etaMin} min` : `~${Math.ceil(etaMin/60)} hr`;
+    if (S.freeLeft > 0 && qty <= S.freeLeft) {
+      document.getElementById('s-price').textContent = '$0.00';
+      document.getElementById('s-note').textContent  = `FREE — ${qty} of your ${S.freeLeft} free actions`;
+    } else {
+      document.getElementById('s-price').textContent = `$${(qty * PRICE_PER).toFixed(2)}`;
+      document.getElementById('s-note').textContent  = 'Billed to your active plan';
+    }
+    btn.disabled = false;
+    btn.textContent = `Launch ${qty.toLocaleString()} ${action} →`;
+  } else {
+    btn.disabled = true;
+    btn.textContent = 'Select platform and action →';
+  }
+}
+
+async function launchCampaign() {
+  const { platform, action } = S.campaign;
+  if (!platform || !action) { toast('Select platform and action.', 'err'); return; }
+  const url = document.getElementById('c-url').value.trim();
+  if (!url) { toast('Enter a target URL.', 'err'); return; }
+  const qty = parseInt(document.getElementById('qty-range').value);
+
+  const btn = document.getElementById('launch-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> Launching...';
+
+  try {
+    const res = await fetch(`${API}/api/traffic`, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'x-auth-token': S.token },
+      body: JSON.stringify({ platform, action_type: action, target_value: url, count: qty })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed');
+    if (S.freeLeft > 0) S.freeLeft = Math.max(0, S.freeLeft - qty);
+    updFreeBar();
+    toast(`✓ Campaign #${data.id} launched — ${qty.toLocaleString()} ${action} queued.`, 'ok');
+    await loadJobs();
+    goSP('jobs', null);
+  } catch (e) {
+    toast(`Error: ${e.message}`, 'err');
+  } finally {
+    btn.disabled = false;
+    updSummary();
+  }
+}
+
+// ── JOBS ──
+async function loadJobs() {
+  try {
+    const res = await fetch(`${API}/api/traffic`, {
+      headers: { 'x-auth-token': S.token }
+    });
+    if (!res.ok) return;
+    S.jobs = await res.json();
+    renderJobs();
+    updStats();
+  } catch (_) {}
+}
+
+function renderJobs() {
+  const rows = S.jobs.length ? S.jobs.map(j => {
+    const pct = j.target_count > 0 ? Math.round((j.completed_count / j.target_count) * 100) : 0;
+    const p = PLATS[j.platform];
+    return `<tr>
+      <td style="font-family:var(--mono);font-size:.7rem">#${j.id}</td>
+      <td>${p?.ico || ''} ${p?.name || j.platform}</td>
+      <td style="text-transform:capitalize">${j.action_type}</td>
+      <td style="font-size:.7rem;color:var(--muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${j.target_value}">${j.target_value}</td>
+      <td><span class="progress-bar"><span class="progress-fill" style="width:${pct}%"></span></span>${j.completed_count}/${j.target_count}</td>
+      <td><span class="jbadge ${j.status}">${j.status}</span></td>
+      <td style="font-size:.7rem;color:var(--muted)">${new Date(j.created_at).toLocaleDateString()}</td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:1.75rem;font-size:.8rem">No jobs yet.</td></tr>`;
+
+  document.getElementById('all-jobs-body').innerHTML = rows;
+  const ovRows = S.jobs.slice(0,5).map(j => {
+    const pct = j.target_count > 0 ? Math.round((j.completed_count / j.target_count) * 100) : 0;
+    const p = PLATS[j.platform];
+    return `<tr>
+      <td>${p?.ico || ''} ${p?.name || j.platform}</td>
+      <td style="text-transform:capitalize">${j.action_type}</td>
+      <td style="font-size:.7rem;color:var(--muted);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${j.target_value}</td>
+      <td><span class="progress-bar"><span class="progress-fill" style="width:${pct}%"></span></span>${pct}%</td>
+      <td><span class="jbadge ${j.status}">${j.status}</span></td>
+      <td style="font-size:.7rem;color:var(--muted)">${new Date(j.created_at).toLocaleDateString()}</td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:1.75rem;font-size:.8rem">No jobs yet — create your first campaign →</td></tr>`;
+  document.getElementById('ov-jobs-body').innerHTML = ovRows;
+  document.getElementById('jobs-count').textContent = S.jobs.length ? `(${S.jobs.length})` : '';
+
+  const hasRunning = S.jobs.some(j => j.status === 'running' || j.status === 'pending');
+  if (hasRunning) setTimeout(loadJobs, 4000);
+}
+
+function updStats() {
+  const views     = S.jobs.filter(j=>j.action_type==='views').reduce((a,j)=>a+j.completed_count,0);
+  const likes     = S.jobs.filter(j=>j.action_type==='likes').reduce((a,j)=>a+j.completed_count,0);
+  const followers = S.jobs.filter(j=>j.action_type==='followers').reduce((a,j)=>a+j.completed_count,0);
+  const active    = S.jobs.filter(j=>j.status==='running'||j.status==='pending').length;
+  document.getElementById('sv-views').textContent     = views     ? views.toLocaleString()     : '—';
+  document.getElementById('sv-likes').textContent     = likes     ? likes.toLocaleString()     : '—';
+  document.getElementById('sv-followers').textContent = followers ? followers.toLocaleString() : '—';
+  document.getElementById('sv-jobs').textContent      = active;
+}
+
+// ── CONNECT ──
+function renderConnGrid() {
+  const count = Object.values(S.connected).filter(Boolean).length;
+  document.getElementById('plat-badge').textContent = `${count} Platform${count!==1?'s':''}`;
+  const grid = document.getElementById('conn-grid');
+  grid.innerHTML = Object.entries(PLATS).map(([key,cfg]) => {
+    const on = !!S.connected[key];
+    return `<div class="conn-card ${on?'on':''}" onclick="openOModal('${key}')">
+      ${on ? '<div class="conn-badge">Connected</div>' : ''}
+      <div class="conn-ico">${cfg.ico}</div>
+      <div class="conn-name">${cfg.name}</div>
+      <div class="conn-desc">${on ? 'Active. Results are being delivered to your content.' : `Sign in with ${cfg.name} so every action looks and acts real.`}</div>
+      <div class="conn-st ${on?'on':'off'}">${on ? '● Connected' : '○ Not connected'}</div>
+      <button class="conn-btn ${on?'on':''}">${on ? '✓ Connected' : `Connect ${cfg.name} →`}</button>
+    </div>`;
+  }).join('');
+}
+
+function renderOvPlatforms() {
+  document.getElementById('ov-platforms').innerHTML = Object.entries(PLATS).map(([key,cfg]) => {
+    const on = !!S.connected[key];
+    return `<div class="plat-row">
+      <div class="plat-ico" style="background:${cfg.color}">${cfg.ico}</div>
+      <div class="plat-info">
+        <div class="plat-name">${cfg.name}</div>
+        <div class="plat-st ${on?'on':'off'}">${on?'Connected':'Not connected'}</div>
+      </div>
+      <button class="plat-btn" onclick="${on?`disconnectPlat('${key}')`:`openOModal('${key}')`}">${on?'Disconnect':'Connect'}</button>
+    </div>`;
+  }).join('');
+}
+
+function openOModal(platform) {
+  S.connectTarget = platform;
+  const cfg = PLATS[platform];
+  document.getElementById('om-ico').textContent   = cfg.ico;
+  document.getElementById('om-title').textContent = `CONNECT ${cfg.name.toUpperCase()}`;
+  document.getElementById('om-sub').textContent   = `Sign in with ${cfg.name} so Nexus can deliver real results to your content. Takes 10 seconds.`;
+  document.getElementById('om-p1').textContent    = cfg.perms[0];
+  document.getElementById('om-p2').textContent    = cfg.perms[1];
+  const btn = document.getElementById('om-btn');
+  btn.className = `obtn ${cfg.oauthCls}`;
+  document.getElementById('om-btn-txt').textContent = cfg.oauthTxt;
+  document.getElementById('omodal-overlay').classList.add('open');
+}
+
+function closeOModal() { document.getElementById('omodal-overlay').classList.remove('open'); }
+
+function doConnect() {
+  closeOModal();
+  if (!S.connectTarget) return;
+  S.connected[S.connectTarget] = true;
+  renderConnGrid();
+  renderOvPlatforms();
+  toast(`✓ ${PLATS[S.connectTarget].name} connected!`, 'ok');
+}
+
+function disconnectPlat(platform) {
+  S.connected[platform] = false;
+  renderConnGrid();
+  renderOvPlatforms();
+  toast(`${PLATS[platform].name} disconnected.`, 'ok');
+}
+
+// ── UI HELPERS ──
+function updFreeBar() {
+  const pct = (S.freeLeft / 10) * 100;
+  document.getElementById('free-fill').style.width = pct + '%';
+  document.getElementById('free-lbl').textContent  = `${S.freeLeft} / 10`;
+  document.getElementById('bill-free').textContent = S.freeLeft;
+}
+
+function renderActivityChart() {
+  const days = ['M','T','W','T','F','S','S'];
+  const h    = [20,45,35,60,50,80,95];
+  document.getElementById('act-chart').innerHTML = days.map((d,i) =>
+    `<div class="act-col">
+      <div class="act-bar" style="height:${h[i]}%;flex:1" title="${h[i]} actions"></div>
+      <div class="act-day">${d}</div>
+    </div>`
+  ).join('');
+}
+
+let _toastTimer;
+function toast(msg, type='ok') {
+  const el = document.getElementById('toast-el');
+  el.textContent = msg; el.className = `toast ${type} show`;
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+// Auto-poll jobs every 10s if dashboard is active
+setInterval(() => {
+  if (S.token && document.getElementById('page-dashboard').classList.contains('active')) {
+    loadJobs();
+  }
+}, 10000);
+</script>
 </body>
 </html>
