@@ -4,12 +4,15 @@ const fs     = require('fs');
 const path   = require('path');
 const { Router } = require('express');
 const { getDb }  = require('../../database/db');
+const { warmupAccount } = require('../../playwright-engine/warmup');
 
 const SESSION_DIR = process.env.SESSION_DIR ?? path.join(__dirname, '../../../data/sessions');
 
 const router = Router();
 
-// ── Cookie → Playwright storageState conversion ───────────────────────────────
+const VALID_PLATFORMS = ['youtube', 'instagram', 'tiktok', 'facebook', 'twitter', 'threads'];
+
+// ── Session helpers ───────────────────────────────────────────────────────────
 
 const SAME_SITE_MAP = {
   no_restriction: 'None', unspecified: 'None', lax: 'Lax', strict: 'Strict', none: 'None',
@@ -19,7 +22,6 @@ function cookiesToStorageState(raw) {
   let list;
   try { list = typeof raw === 'string' ? JSON.parse(raw) : raw; } catch { throw new Error('Invalid JSON'); }
   if (!Array.isArray(list)) throw new Error('Cookies must be a JSON array');
-
   const cookies = list.map(c => ({
     name:     String(c.name   || ''),
     value:    String(c.value  || ''),
@@ -30,7 +32,6 @@ function cookiesToStorageState(raw) {
     secure:   Boolean(c.secure),
     sameSite: SAME_SITE_MAP[(c.sameSite || '').toLowerCase()] ?? 'None',
   })).filter(c => c.name && c.domain);
-
   if (!cookies.length) throw new Error('No valid cookies found in JSON');
   return { cookies, origins: [] };
 }
@@ -43,6 +44,12 @@ function saveStorageState(accountId, state) {
   return file;
 }
 
+function _setWarmupStatus(id, status) {
+  getDb().prepare(
+    `UPDATE accounts SET warmup_status=?, last_warmup_at=? WHERE id=?`
+  ).run(status, status === 'warm' ? new Date().toISOString() : null, id);
+}
+
 // ── Routes ────────────────────────────────────────────────────────────────────
 
 // GET /api/accounts
@@ -51,15 +58,79 @@ router.get('/', (req, res) => {
     const { platform } = req.query;
     const db = getDb();
     const rows = platform
-      ? db.prepare(`SELECT id, platform, label, status, use_count, storage_state_path, created_at, last_used_at
+      ? db.prepare(`SELECT id, platform, label, status, use_count, warmup_status, last_warmup_at,
+                           storage_state_path, created_at, last_used_at
                     FROM accounts WHERE platform=? ORDER BY created_at DESC`).all(platform)
-      : db.prepare(`SELECT id, platform, label, status, use_count, storage_state_path, created_at, last_used_at
+      : db.prepare(`SELECT id, platform, label, status, use_count, warmup_status, last_warmup_at,
+                           storage_state_path, created_at, last_used_at
                     FROM accounts ORDER BY platform, created_at DESC`).all();
     res.json(rows);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// POST /api/accounts/import — add account via cookie paste from Cookie Editor extension
+// ── POST /api/accounts/connect ────────────────────────────────────────────────
+// Connect an account by logging in with credentials — Playwright handles login
+// headlessly, captures storageState, then auto-warms the session.
+// Body: { platform, email, password, label? }
+router.post('/connect', async (req, res) => {
+  const { platform, email, password, label } = req.body;
+  if (!platform || !email || !password) {
+    return res.status(400).json({ error: 'platform, email, and password required' });
+  }
+  if (!VALID_PLATFORMS.includes(platform)) {
+    return res.status(400).json({ error: `platform must be one of: ${VALID_PLATFORMS.join(', ')}` });
+  }
+
+  const db   = getDb();
+  const nick = label?.trim() || `${platform} — ${email.split('@')[0]}`;
+
+  // Create DB row first to get the ID for session path
+  const row = db.prepare(
+    `INSERT INTO accounts (platform, label, email, password, warmup_status) VALUES (?,?,?,?,'cold')`
+  ).run(platform, nick, email, '');   // password not stored — used once then discarded
+  const id = Number(row.lastInsertRowid);
+
+  // Respond immediately so UI doesn't hang — login + warmup run in background
+  res.status(202).json({ id, label: nick, status: 'connecting' });
+
+  // Background: login → capture session → warmup
+  setImmediate(async () => {
+    try {
+      const { chromium } = require('playwright');
+      const platformMod  = require(`../../playwright-engine/platforms/${platform}`);
+
+      const browser = await chromium.launch({ headless: true, args: ['--no-sandbox', '--disable-dev-shm-usage'] });
+      const context = await browser.newContext({ locale: 'en-US' });
+      const page    = await context.newPage();
+
+      const loginResult = await platformMod.login(page, { email, password, username: email });
+
+      if (!loginResult.success) {
+        await browser.close();
+        db.prepare(`UPDATE accounts SET status='expired' WHERE id=?`).run(id);
+        return;
+      }
+
+      const state    = await context.storageState();
+      const filePath = saveStorageState(id, state);
+      await browser.close();
+
+      db.prepare(
+        `UPDATE accounts SET storage_state_path=?, status='active', warmup_status='warming' WHERE id=?`
+      ).run(filePath, id);
+
+      // Warmup with the fresh session
+      const result = await warmupAccount(platform, filePath);
+      _setWarmupStatus(id, result.success ? 'warm' : 'cold');
+
+    } catch (err) {
+      db.prepare(`UPDATE accounts SET status='expired' WHERE id=?`).run(id);
+    }
+  });
+});
+
+// ── POST /api/accounts/import ────────────────────────────────────────────────
+// Add account via cookie paste (Cookie Editor extension export).
 // Body: { platform, label, cookies_json }
 router.post('/import', (req, res) => {
   try {
@@ -67,28 +138,50 @@ router.post('/import', (req, res) => {
     if (!platform || !cookies_json) {
       return res.status(400).json({ error: 'platform and cookies_json required' });
     }
-    const VALID = ['youtube', 'instagram', 'tiktok', 'facebook', 'twitter'];
-    if (!VALID.includes(platform)) {
-      return res.status(400).json({ error: `platform must be one of: ${VALID.join(', ')}` });
+    if (!VALID_PLATFORMS.includes(platform)) {
+      return res.status(400).json({ error: `platform must be one of: ${VALID_PLATFORMS.join(', ')}` });
     }
 
     const state = cookiesToStorageState(cookies_json);
-
-    const db   = getDb();
-    const nick = label?.trim() || `${platform} #${Date.now().toString(36)}`;
-    // email/password kept as empty for schema compat (not used in cookie-import model)
-    const r    = db.prepare(`INSERT INTO accounts (platform, label, email, password) VALUES (?,?,?,?)`)
-                   .run(platform, nick, '', '');
-    const id   = Number(r.lastInsertRowid);
+    const db    = getDb();
+    const nick  = label?.trim() || `${platform} #${Date.now().toString(36)}`;
+    const r     = db.prepare(
+      `INSERT INTO accounts (platform, label, email, password, warmup_status) VALUES (?,?,?,'','cold')`
+    ).run(platform, nick, '');
+    const id = Number(r.lastInsertRowid);
 
     const filePath = saveStorageState(id, state);
-    db.prepare('UPDATE accounts SET storage_state_path=? WHERE id=?').run(filePath, id);
+    db.prepare('UPDATE accounts SET storage_state_path=?, status=\'active\' WHERE id=?').run(filePath, id);
 
-    res.status(201).json({ id, label: nick, cookies: state.cookies.length });
+    // Auto-warmup in background
+    setImmediate(async () => {
+      db.prepare(`UPDATE accounts SET warmup_status='warming' WHERE id=?`).run(id);
+      const result = await warmupAccount(platform, filePath);
+      _setWarmupStatus(id, result.success ? 'warm' : 'cold');
+    });
+
+    res.status(201).json({ id, label: nick, cookies: state.cookies.length, warmup: 'started' });
   } catch (err) { res.status(400).json({ error: err.message }); }
 });
 
-// PATCH /api/accounts/:id/status
+// ── POST /api/accounts/:id/warmup ────────────────────────────────────────────
+// Manually trigger warmup (re-warm a cold or stale session).
+router.post('/:id/warmup', async (req, res) => {
+  const db   = getDb();
+  const acct = db.prepare('SELECT * FROM accounts WHERE id=?').get(req.params.id);
+  if (!acct) return res.status(404).json({ error: 'Account not found' });
+  if (!acct.storage_state_path) return res.status(400).json({ error: 'No session — connect first' });
+
+  db.prepare(`UPDATE accounts SET warmup_status='warming' WHERE id=?`).run(acct.id);
+  res.json({ ok: true, message: 'Warmup started' });
+
+  setImmediate(async () => {
+    const result = await warmupAccount(acct.platform, acct.storage_state_path);
+    _setWarmupStatus(acct.id, result.success ? 'warm' : 'cold');
+  });
+});
+
+// ── PATCH /api/accounts/:id/status ───────────────────────────────────────────
 router.patch('/:id/status', (req, res) => {
   try {
     const { status } = req.body;
@@ -100,7 +193,7 @@ router.patch('/:id/status', (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
-// DELETE /api/accounts/:id
+// ── DELETE /api/accounts/:id ─────────────────────────────────────────────────
 router.delete('/:id', (req, res) => {
   try {
     const db   = getDb();

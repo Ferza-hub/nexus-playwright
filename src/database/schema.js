@@ -83,6 +83,8 @@ function runMigrations(db) {
   addCol('accounts', 'status',             `TEXT NOT NULL DEFAULT 'active'`);
   addCol('accounts', 'use_count',          `INTEGER NOT NULL DEFAULT 0`);
   addCol('accounts', 'last_used_at',       `DATETIME`);
+  addCol('accounts', 'warmup_status',      `TEXT NOT NULL DEFAULT 'cold'`);
+  addCol('accounts', 'last_warmup_at',     `DATETIME`);
   // legacy columns kept so existing DBs don't break
   addCol('accounts', 'email',              `TEXT NOT NULL DEFAULT ''`);
   addCol('accounts', 'password',           `TEXT NOT NULL DEFAULT ''`);
