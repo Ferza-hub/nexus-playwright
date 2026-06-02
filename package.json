@@ -15,7 +15,8 @@
     "https-proxy-agent": "^7.0.4",
     "morgan": "^1.10.0",
     "node-cron": "^3.0.3",
-    "playwright": "^1.44.0"
+    "playwright": "^1.44.0",
+    "ws": "^8.21.0"
   },
   "engines": {
     "node": ">=18.0.0"

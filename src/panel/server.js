@@ -1,12 +1,14 @@
 'use strict';
 
 require('dotenv').config();
+const http    = require('http');
 const path    = require('path');
 const express = require('express');
 const cors    = require('cors');
 const morgan  = require('morgan');
 
 const { requireAuth, loginHandler, changePasswordHandler } = require('./middleware/auth');
+const { attachRelay } = require('./browser-relay');
 
 const app  = express();
 const PORT = process.env.PORT || 3001;
@@ -27,12 +29,15 @@ app.use('/api/settings',  requireAuth, require('./routes/settings'));
 app.use('/api/traffic',   requireAuth, require('./routes/traffic'));
 app.use('/api/accounts',  requireAuth, require('./routes/accounts'));
 app.use('/api/logs',      requireAuth, require('./routes/logs'));
+app.use('/api/relay',     requireAuth, require('./routes/relay'));
 
 // SPA fallback
 app.get('*', (_req, res) => res.sendFile(path.join(__dirname, '../../public/index.html')));
 
 function startPanel() {
-  app.listen(PORT, () => {
+  const server = http.createServer(app);
+  attachRelay(server); // WebSocket relay on /ws/relay
+  server.listen(PORT, () => {
     console.log(`[Panel] Running on http://localhost:${PORT}`);
   });
 }

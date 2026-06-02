@@ -1,4 +1,4 @@
-// Accounts — connect via credentials (no extension needed) or cookie paste.
+// Accounts — connect via browser relay (no extension needed) or cookie paste.
 // After connecting: session captured → auto-warmup → ready for actions.
 
 const AccountsPage = (() => {
@@ -12,7 +12,6 @@ const AccountsPage = (() => {
     threads:   { emoji: '🧵', label: 'Threads'    },
   };
 
-  // Warmup badge: cold → warming → warm
   function warmBadge(s) {
     const MAP = {
       cold:    { icon: '🥶', color: '#64748b', label: 'cold'    },
@@ -103,17 +102,18 @@ const AccountsPage = (() => {
       <div class="page-header">
         <h1 class="page-title">Accounts</h1>
         <div class="flex gap-1">
-          <button class="btn btn-ghost" onclick="AccountsPage.importCookies()">Import Cookies</button>
-          <button class="btn btn-primary" onclick="AccountsPage.connectAccount()">+ Connect Account</button>
+          <button class="btn btn-ghost" onclick="AccountsPage.importCookies()">Paste Cookies</button>
+          <button class="btn btn-primary" onclick="AccountsPage.connectViaBrowser()">+ Connect Account</button>
         </div>
       </div>
 
       <div class="card" style="padding:.9rem 1rem;margin-bottom:1.25rem;border-left:3px solid var(--primary)">
         <div class="flex gap-1" style="align-items:flex-start;gap:.75rem">
-          <span style="font-size:1.3rem">🤖</span>
+          <span style="font-size:1.3rem">🖥️</span>
           <div class="text-sm text-muted" style="line-height:1.7">
-            Connect your account → worker logs in, <strong>warms up 3-5 minutes</strong> (browses feed, watches content),
-            then stands by for actions. The more it trains, the more organic the session looks.
+            <strong>Connect Account</strong> opens a browser window on the server.
+            Log into any platform normally (including 2FA) — then click <strong>Capture Session</strong>.
+            The session is saved and your worker warms up automatically. No extension needed.
           </div>
         </div>
       </div>
@@ -132,7 +132,6 @@ const AccountsPage = (() => {
       const accounts = await API.get('/api/accounts');
       document.getElementById('accounts-list').innerHTML = renderTable(accounts);
 
-      // Auto-refresh while any account is warming
       const warming = accounts.some(a => a.warmup_status === 'warming');
       if (warming && !_reloadTimer) {
         _reloadTimer = setInterval(reload, 4000);
@@ -142,134 +141,67 @@ const AccountsPage = (() => {
     } catch (err) { Toast.error(err.message); }
   }
 
-  // Platforms that block headless login (Google OAuth) — redirect to cookie import
-  const OAUTH_ONLY = ['youtube', 'threads'];
+  // ── Connect via Browser relay ────────────────────────────────────────────────
 
-  function connectAccount() {
+  function connectViaBrowser() {
     const platOpts = Object.entries(PLATFORMS).map(([key, p], i) => `
       <button type="button"
         class="btn ${i === 0 ? 'btn-primary' : 'btn-ghost'} btn-sm"
-        data-cp="${key}"
-        onclick="AccountsPage._selPlatForm('${key}', this)"
+        data-plat="${key}"
+        onclick="AccountsPage._pickPlatform('${key}', this)"
         style="justify-content:center;gap:.3rem">
         ${p.emoji} ${p.label}
       </button>`).join('');
 
     Modal.open('Connect Account', `
       <div class="form-group">
-        <label>Platform</label>
+        <label>Choose platform</label>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.35rem;margin-top:.4rem">
           ${platOpts}
         </div>
-        <input type="hidden" id="cp-platform" value="youtube">
+        <input type="hidden" id="br-platform" value="youtube">
       </div>
 
-      <div id="cp-body"></div>
+      <div class="card" style="padding:.8rem 1rem;background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.25);margin:.75rem 0 0">
+        <div style="display:flex;gap:.6rem;align-items:flex-start">
+          <span style="font-size:1.1rem">🖥️</span>
+          <div class="text-sm" style="line-height:1.7;color:var(--text-muted)">
+            A browser will open on the server. Log into your account normally —
+            including any 2FA or captcha — then click <strong style="color:var(--text)">Launch Browser</strong> to start.
+          </div>
+        </div>
+      </div>
 
-      <div id="cp-footer" class="flex gap-1" style="justify-content:flex-end;margin-top:1rem">
+      <div class="flex gap-1" style="justify-content:flex-end;margin-top:1rem">
         <button class="btn btn-ghost" onclick="Modal.close()">Cancel</button>
-        <button class="btn btn-primary" onclick="AccountsPage._submitConnect()">Connect & Warm Up</button>
+        <button class="btn btn-primary" onclick="AccountsPage._launchRelay()">🖥️ Launch Browser</button>
       </div>
     `);
 
-    // Render initial platform form
-    AccountsPage._selPlatForm('youtube', document.querySelector('[data-cp="youtube"]'));
+    // Pre-select first platform button style
+    _pickPlatform('youtube', document.querySelector('[data-plat="youtube"]'));
   }
 
-  function _selPlatForm(key, btn) {
-    document.querySelectorAll('[data-cp]').forEach(b => {
-      b.className = b.dataset.cp === key ? 'btn btn-primary btn-sm' : 'btn btn-ghost btn-sm';
+  function _pickPlatform(key, btn) {
+    document.querySelectorAll('[data-plat]').forEach(b => {
+      b.className = b.dataset.plat === key ? 'btn btn-primary btn-sm' : 'btn btn-ghost btn-sm';
       b.style.cssText = 'justify-content:center;gap:.3rem';
     });
-    document.getElementById('cp-platform').value = key;
+    document.getElementById('br-platform').value = key;
+  }
 
-    const body   = document.getElementById('cp-body');
-    const footer = document.getElementById('cp-footer');
-
-    if (OAUTH_ONLY.includes(key)) {
-      // Google/Threads blocks headless login — guide to cookie import
-      const info = PLATFORMS[key];
-      body.innerHTML = `
-        <div class="card" style="padding:.85rem 1rem;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);margin-top:.25rem">
-          <div style="display:flex;gap:.6rem;align-items:flex-start">
-            <span style="font-size:1.2rem">⚠️</span>
-            <div class="text-sm" style="line-height:1.7">
-              <strong>${info.emoji} ${info.label} uses Google OAuth</strong> — automated login is blocked by Google's bot detection.<br>
-              Use <strong>Cookie Import</strong> instead:
-              <ol style="margin:.4rem 0 0;padding-left:1.2rem;color:var(--text-muted)">
-                <li>Open <strong>${info.label}</strong> in your browser and sign in</li>
-                <li>Install <strong>Cookie Editor</strong> extension</li>
-                <li>Click the extension → <strong>Export → Export as JSON</strong></li>
-                <li>Paste below and import — warmup starts automatically</li>
-              </ol>
-            </div>
-          </div>
-        </div>
-        <div class="form-group" style="margin-top:.9rem">
-          <label>Label <span class="text-muted text-sm">(optional)</span></label>
-          <input type="text" id="cp-label" placeholder="e.g. Client A — YouTube">
-        </div>
-        <div class="form-group">
-          <label>Cookies JSON</label>
-          <textarea id="cp-cookies" rows="6"
-            style="width:100%;box-sizing:border-box;font-family:monospace;font-size:.8rem"
-            placeholder='[{"name":"SID","value":"...","domain":".youtube.com",...}]'></textarea>
-        </div>`;
-      footer.innerHTML = `
-        <button class="btn btn-ghost" onclick="Modal.close()">Cancel</button>
-        <button class="btn btn-primary" onclick="AccountsPage._submitCookieConnect()">Import & Warm Up</button>`;
-    } else {
-      body.innerHTML = `
-        <div class="form-group" style="margin-top:.25rem">
-          <label>Email / Username</label>
-          <input type="text" id="cp-email" placeholder="your@email.com" autocomplete="off">
-        </div>
-        <div class="form-group">
-          <label>Password</label>
-          <input type="password" id="cp-password" placeholder="••••••••" autocomplete="off">
-          <div class="text-muted text-sm" style="margin-top:.3rem">
-            Used once to log in — not stored. Only the session cookie is saved.
-          </div>
-        </div>
-        <div class="form-group">
-          <label>Label <span class="text-muted text-sm">(optional)</span></label>
-          <input type="text" id="cp-label" placeholder="e.g. Client A — Instagram">
-        </div>`;
-      footer.innerHTML = `
-        <button class="btn btn-ghost" onclick="Modal.close()">Cancel</button>
-        <button class="btn btn-primary" onclick="AccountsPage._submitConnect()">Connect & Warm Up</button>`;
+  async function _launchRelay() {
+    const platform = document.getElementById('br-platform').value;
+    try {
+      const res = await API.post('/api/relay', { platform });
+      Modal.close();
+      BrowserRelay.open(res.sessionId, { onDone: reload });
+    } catch (err) {
+      Toast.error(err.message);
     }
   }
 
-  async function _submitCookieConnect() {
-    const platform     = document.getElementById('cp-platform').value;
-    const label        = document.getElementById('cp-label')?.value.trim();
-    const cookies_json = document.getElementById('cp-cookies')?.value.trim();
-    if (!cookies_json) { Toast.error('Paste cookies JSON first'); return; }
-    try {
-      const res = await API.post('/api/accounts/import', { platform, label, cookies_json });
-      Toast.success(`Imported ${res.cookies} cookies — warmup started`);
-      Modal.close();
-      await reload();
-    } catch (err) { Toast.error(err.message); }
-  }
-
-  async function _submitConnect() {
-    const platform = document.getElementById('cp-platform').value;
-    const email    = document.getElementById('cp-email').value.trim();
-    const password = document.getElementById('cp-password').value;
-    const label    = document.getElementById('cp-label').value.trim();
-    if (!email || !password) { Toast.error('Email and password required'); return; }
-
-    try {
-      await API.post('/api/accounts/connect', { platform, email, password, label });
-      Toast.success('Connecting & warming up — check Accounts list in a moment');
-      Modal.close();
-      await reload();
-    } catch (err) { Toast.error(err.message); }
-  }
-
-  // ── Import cookies (legacy / manual) ────────────────────────────────────────
+  // ── Cookie paste (fallback) ─────────────────────────────────────────────────
 
   function importCookies() {
     const platOpts = Object.entries(PLATFORMS).map(([key, p], i) => `
@@ -281,7 +213,7 @@ const AccountsPage = (() => {
         ${p.emoji} ${p.label}
       </button>`).join('');
 
-    Modal.open('Import Cookies (Cookie Editor)', `
+    Modal.open('Paste Cookies (Cookie Editor)', `
       <div class="form-group">
         <label>Platform</label>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.35rem;margin-top:.4rem">
@@ -357,8 +289,8 @@ const AccountsPage = (() => {
   }
 
   return {
-    render, destroy,
-    connectAccount, _selPlatForm, _submitConnect, _submitCookieConnect,
+    render, destroy, reload,
+    connectViaBrowser, _pickPlatform, _launchRelay,
     importCookies, _selPlat, _submitImport,
     rewarm, setStatus, remove,
   };
