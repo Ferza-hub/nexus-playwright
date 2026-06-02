@@ -817,27 +817,42 @@ body{background:var(--paper);color:var(--ink);font-family:var(--body);
   </main>
 </div><!-- /dashboard -->
 
-<!-- OAuth sub-modal -->
+<!-- Connect sub-modal -->
 <div class="overlay" id="omodal-overlay">
   <div class="omodal">
     <button class="modal-x" onclick="closeOModal()">✕</button>
     <div class="omodal-body">
       <div class="omodal-ico" id="om-ico">▶️</div>
       <div class="omodal-title" id="om-title">CONNECT YOUTUBE</div>
-      <div class="omodal-sub" id="om-sub">Sign in so Nexus knows your content is real.</div>
+      <div class="omodal-sub" id="om-sub">A browser will open on the server — log in normally, including any 2FA or captcha.</div>
       <div class="omodal-perms">
-        <div class="omodal-perms-ttl">What Nexus accesses</div>
-        <div class="operm" id="om-p1">View your channel and videos</div>
-        <div class="operm" id="om-p2">Read your content analytics</div>
-        <div class="operm">Session disconnects when you remove it</div>
+        <div class="omodal-perms-ttl">How it works</div>
+        <div class="operm">Browser opens on the server</div>
+        <div class="operm">You log in normally — password never stored</div>
+        <div class="operm">Click Capture Session when ready</div>
       </div>
-      <button class="obtn" id="om-btn" onclick="doConnect()">
-        <svg class="obtn-ico" viewBox="0 0 24 24" id="om-btn-ico"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-        <span id="om-btn-txt">Continue with Google</span>
+      <button class="obtn google" id="om-btn" onclick="doConnect()">
+        <span style="font-size:1.1rem">🖥️</span>
+        <span id="om-btn-txt">Launch Browser</span>
       </button>
-      <div class="onote">We never see your password. Disconnect anytime from your platform settings.</div>
+      <div class="onote">Session saved securely on the server. Disconnect anytime.</div>
     </div>
   </div>
+</div>
+
+<!-- Browser relay overlay -->
+<div id="relay-overlay" style="display:none;position:fixed;inset:0;background:#000;z-index:10000;flex-direction:column">
+  <div style="display:flex;align-items:center;gap:.6rem;padding:.5rem .85rem;background:#111;border-bottom:1px solid #2a2a2a;flex-shrink:0">
+    <span id="relay-plat-ico" style="font-size:1.1rem">🖥️</span>
+    <input id="relay-url-bar" style="flex:1;background:#1e1e1e;border:1px solid #383838;color:#aaa;padding:.35rem .65rem;border-radius:4px;font-size:.78rem;font-family:monospace" placeholder="Loading…" readonly>
+    <input id="relay-label" style="background:#1e1e1e;border:1px solid #383838;color:#ccc;padding:.35rem .65rem;border-radius:4px;font-size:.8rem;width:170px" placeholder="Label (e.g. My YouTube)">
+    <button onclick="RelayClient.capture()" style="padding:.38rem 1rem;background:#16a34a;color:white;border:none;border-radius:4px;cursor:pointer;font-size:.82rem;font-weight:600;white-space:nowrap">✓ Capture Session</button>
+    <button onclick="RelayClient.close()" style="padding:.38rem .75rem;background:#dc2626;color:white;border:none;border-radius:4px;cursor:pointer;font-size:.82rem">✕</button>
+  </div>
+  <div style="flex:1;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#0a0a0a">
+    <canvas id="relay-canvas" style="max-width:100%;max-height:100%;cursor:default;display:block"></canvas>
+  </div>
+  <div id="relay-status" style="padding:.25rem 1rem;background:#111;color:#666;font-size:.72rem;text-align:center;flex-shrink:0">Connecting…</div>
 </div>
 
 <div class="toast" id="toast-el"></div>
@@ -1125,24 +1140,30 @@ function openOModal(platform) {
   const cfg = PLATS[platform];
   document.getElementById('om-ico').textContent   = cfg.ico;
   document.getElementById('om-title').textContent = `CONNECT ${cfg.name.toUpperCase()}`;
-  document.getElementById('om-sub').textContent   = `Sign in with ${cfg.name} so Nexus can deliver real results to your content. Takes 10 seconds.`;
-  document.getElementById('om-p1').textContent    = cfg.perms[0];
-  document.getElementById('om-p2').textContent    = cfg.perms[1];
-  const btn = document.getElementById('om-btn');
-  btn.className = `obtn ${cfg.oauthCls}`;
-  document.getElementById('om-btn-txt').textContent = cfg.oauthTxt;
+  document.getElementById('om-sub').textContent   = `A browser will open on the server — log in to ${cfg.name} normally, including any 2FA or captcha.`;
+  document.getElementById('om-btn-txt').textContent = '🖥️ Launch Browser';
   document.getElementById('omodal-overlay').classList.add('open');
 }
 
 function closeOModal() { document.getElementById('omodal-overlay').classList.remove('open'); }
 
-function doConnect() {
+async function doConnect() {
   closeOModal();
   if (!S.connectTarget) return;
-  S.connected[S.connectTarget] = true;
-  renderConnGrid();
-  renderOvPlatforms();
-  toast(`✓ ${PLATS[S.connectTarget].name} connected!`, 'ok');
+  const platform = S.connectTarget;
+  toast('Opening browser…', 'ok');
+  try {
+    const res = await fetch('/api/relay', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-auth-token': S.token },
+      body: JSON.stringify({ platform }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to start relay');
+    RelayClient.open(data.sessionId, platform);
+  } catch (err) {
+    toast('Error: ' + err.message, 'err');
+  }
 }
 
 function disconnectPlat(platform) {
@@ -1185,6 +1206,134 @@ setInterval(() => {
     loadJobs();
   }
 }, 10000);
+
+// ── BROWSER RELAY CLIENT ──────────────────────────────────────────────────────
+const RelayClient = (() => {
+  let _ws = null, _sid = null, _plat = null, _canvas = null, _ctx = null, _lastMove = 0;
+
+  function _sx(x) { return x * (1280 / _canvas.offsetWidth); }
+  function _sy(y) { return y * (800  / _canvas.offsetHeight); }
+  function _send(obj) { if (_ws && _ws.readyState === 1) _ws.send(JSON.stringify(obj)); }
+
+  function open(sessionId, platform) {
+    _sid    = sessionId;
+    _plat   = platform;
+    _canvas = document.getElementById('relay-canvas');
+    _ctx    = _canvas.getContext('2d');
+    _canvas.width  = 1280;
+    _canvas.height = 800;
+
+    document.getElementById('relay-plat-ico').textContent = PLATS[platform]?.ico || '🌐';
+    document.getElementById('relay-label').value = '';
+    document.getElementById('relay-url-bar').value = 'Loading…';
+    document.getElementById('relay-status').textContent = 'Connecting…';
+    const overlay = document.getElementById('relay-overlay');
+    overlay.style.display = 'flex';
+
+    const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+    _ws = new WebSocket(`${proto}://${location.host}/ws/relay?s=${sessionId}`);
+    _ws.binaryType = 'arraybuffer';
+
+    _ws.onmessage = (e) => {
+      if (e.data instanceof ArrayBuffer) {
+        const v = new Uint8Array(e.data);
+        if (v[0] === 0x01) _drawFrame(e.data);
+      } else {
+        const msg = JSON.parse(e.data);
+        if (msg.type === 'url')    document.getElementById('relay-url-bar').value = msg.url;
+        if (msg.type === 'status') document.getElementById('relay-status').textContent =
+          msg.status === 'ready' ? '🟢 Ready — log in normally, then click Capture Session' : msg.status;
+        if (msg.type === 'error')  toast('Relay error: ' + msg.message, 'err');
+        if (msg.type === 'closed') close();
+      }
+    };
+    _ws.onclose = () => {
+      document.getElementById('relay-status').textContent = '🔴 Disconnected';
+    };
+
+    _canvas.addEventListener('click',     _onClick);
+    _canvas.addEventListener('dblclick',  _onDbl);
+    _canvas.addEventListener('mousemove', _onMove);
+    _canvas.addEventListener('wheel',     _onWheel, { passive: false });
+    document.addEventListener('keydown',  _onKey);
+  }
+
+  function _onClick(e) {
+    const r = _canvas.getBoundingClientRect();
+    _send({ type: 'click', x: _sx(e.clientX - r.left), y: _sy(e.clientY - r.top) });
+  }
+  function _onDbl(e) {
+    const r = _canvas.getBoundingClientRect();
+    _send({ type: 'dblclick', x: _sx(e.clientX - r.left), y: _sy(e.clientY - r.top) });
+  }
+  function _onMove(e) {
+    const now = Date.now(); if (now - _lastMove < 50) return; _lastMove = now;
+    const r = _canvas.getBoundingClientRect();
+    _send({ type: 'mousemove', x: _sx(e.clientX - r.left), y: _sy(e.clientY - r.top) });
+  }
+  function _onWheel(e) { e.preventDefault(); _send({ type: 'scroll', dy: e.deltaY }); }
+  function _onKey(e) {
+    const overlay = document.getElementById('relay-overlay');
+    if (!overlay || overlay.style.display === 'none') return;
+    if (e.key === 'Escape') { close(); return; }
+    const SPEC = new Set(['Enter','Backspace','Delete','Tab','ArrowUp','ArrowDown','ArrowLeft','ArrowRight',
+      'Home','End','PageUp','PageDown','F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12']);
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault(); _send({ type: 'keydown', key: `Control+${e.key}` });
+    } else if (SPEC.has(e.key)) {
+      e.preventDefault(); _send({ type: 'keydown', key: e.key });
+    } else if (e.key.length === 1) {
+      _send({ type: 'type', text: e.key });
+    }
+  }
+
+  function _drawFrame(buf) {
+    const blob = new Blob([buf.slice(1)], { type: 'image/jpeg' });
+    const url  = URL.createObjectURL(blob);
+    const img  = new Image();
+    img.onload = () => { _ctx.drawImage(img, 0, 0); URL.revokeObjectURL(url); };
+    img.src = url;
+  }
+
+  async function capture() {
+    const label = document.getElementById('relay-label').value.trim();
+    document.getElementById('relay-status').textContent = '⏳ Capturing session…';
+    try {
+      const res = await fetch(`/api/relay/${_sid}/capture`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-auth-token': S.token },
+        body: JSON.stringify({ label }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Capture failed');
+      S.connected[_plat] = true;
+      renderConnGrid();
+      renderOvPlatforms();
+      toast(`✓ ${PLATS[_plat]?.name || _plat} connected — warmup started!`, 'ok');
+      close();
+    } catch (err) {
+      document.getElementById('relay-status').textContent = '❌ ' + err.message;
+      toast('Error: ' + err.message, 'err');
+    }
+  }
+
+  function close() {
+    _canvas?.removeEventListener('click',     _onClick);
+    _canvas?.removeEventListener('dblclick',  _onDbl);
+    _canvas?.removeEventListener('mousemove', _onMove);
+    _canvas?.removeEventListener('wheel',     _onWheel);
+    document.removeEventListener('keydown',   _onKey);
+    const overlay = document.getElementById('relay-overlay');
+    if (overlay) overlay.style.display = 'none';
+    if (_ws) { _ws.close(); _ws = null; }
+    if (_sid) {
+      fetch(`/api/relay/${_sid}`, { method: 'DELETE', headers: { 'x-auth-token': S.token } }).catch(() => {});
+      _sid = null;
+    }
+  }
+
+  return { open, capture, close };
+})();
 </script>
 </body>
 </html>
