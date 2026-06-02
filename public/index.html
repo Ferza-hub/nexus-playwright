@@ -1240,110 +1240,19 @@ const RelayClient = (() => {
   function _sy(y) { return y * (800  / _canvas.offsetHeight); }
   function _send(obj) { if (_ws && _ws.readyState === 1) _ws.send(JSON.stringify(obj)); }
 
-  function open(sessionId, platform) {
-    _sid    = sessionId;
-    _plat   = platform;
-    _canvas = document.getElementById('relay-canvas');
-    _ctx    = _canvas.getContext('2d');
-    _canvas.width  = 1280;
-    _canvas.height = 800;
-
-    document.getElementById('relay-plat-ico').textContent = PLATS[platform]?.ico || '🌐';
-    document.getElementById('relay-label').value = '';
-    document.getElementById('relay-url-bar').value = 'Loading…';
-    document.getElementById('relay-status').textContent = 'Connecting…';
-    const overlay = document.getElementById('relay-overlay');
-    overlay.style.display = 'flex';
-
-    const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-    _ws = new WebSocket(`${proto}://${location.host}/ws/relay?s=${sessionId}`);
-    _ws.binaryType = 'arraybuffer';
-
-    _ws.onmessage = (e) => {
-      if (e.data instanceof ArrayBuffer) {
-        const v = new Uint8Array(e.data);
-        if (v[0] === 0x01) _drawFrame(e.data);
-      } else {
-        const msg = JSON.parse(e.data);
-        if (msg.type === 'url')    document.getElementById('relay-url-bar').value = msg.url;
-        if (msg.type === 'status') document.getElementById('relay-status').textContent =
-          msg.status === 'ready' ? '🟢 Ready — log in normally, then click Capture Session' : msg.status;
-        if (msg.type === 'error')  toast('Relay error: ' + msg.message, 'err');
-        if (msg.type === 'closed') close();
-      }
-    };
-    _ws.onclose = () => {
-      document.getElementById('relay-status').textContent = '🔴 Disconnected';
-    };
-
-    _canvas.addEventListener('click',      _onClick);
-    _canvas.addEventListener('dblclick',   _onDbl);
-    _canvas.addEventListener('mousemove',  _onMove);
-    _canvas.addEventListener('wheel',      _onWheel, { passive: false });
-    _canvas.addEventListener('touchstart', _onTouchStart, { passive: false });
-    _canvas.addEventListener('touchmove',  _onTouchMove,  { passive: false });
-    document.addEventListener('keydown',   _onKey);
-
-    // Mobile typing bar
-    const ti = document.getElementById('relay-type-input');
-    if (ti) {
-      ti.value = '';
-      ti._prev = '';
-      ti.addEventListener('input', () => {
-        const cur = ti.value;
-        const prev = ti._prev;
-        if (cur.length > prev.length) {
-          _send({ type: 'type', text: cur.slice(prev.length) });
-        } else if (cur.length < prev.length) {
-          const diff = prev.length - cur.length;
-          for (let i = 0; i < diff; i++) _send({ type: 'keydown', key: 'Backspace' });
-        }
-        ti._prev = cur;
-      });
-      ti.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') { e.preventDefault(); _send({ type: 'keydown', key: 'Enter' }); ti.value = ''; ti._prev = ''; }
-      });
-    }
-  }
-
-  function _onClick(e) {
+  // ── Unified pointer handlers (mouse + touch via Pointer Events API) ──
+  function _onPointerDown(e) {
+    e.preventDefault();
     const r = _canvas.getBoundingClientRect();
     _send({ type: 'click', x: _sx(e.clientX - r.left), y: _sy(e.clientY - r.top) });
   }
-  function _onDbl(e) {
-    const r = _canvas.getBoundingClientRect();
-    _send({ type: 'dblclick', x: _sx(e.clientX - r.left), y: _sy(e.clientY - r.top) });
-  }
-  function _onMove(e) {
-    const now = Date.now(); if (now - _lastMove < 50) return; _lastMove = now;
+  function _onPointerMove(e) {
+    if (e.buttons === 0 && e.pointerType === 'mouse') return; // only move when pressed on desktop
+    const now = Date.now(); if (now - _lastMove < 60) return; _lastMove = now;
     const r = _canvas.getBoundingClientRect();
     _send({ type: 'mousemove', x: _sx(e.clientX - r.left), y: _sy(e.clientY - r.top) });
   }
   function _onWheel(e) { e.preventDefault(); _send({ type: 'scroll', dy: e.deltaY }); }
-  let _tapTimer = null, _tapX = 0, _tapY = 0;
-  function _onTouchStart(e) {
-    e.preventDefault();
-    const t = e.touches[0];
-    const r = _canvas.getBoundingClientRect();
-    const x = _sx(t.clientX - r.left), y = _sy(t.clientY - r.top);
-    if (_tapTimer && Math.abs(x - _tapX) < 20 && Math.abs(y - _tapY) < 20) {
-      clearTimeout(_tapTimer); _tapTimer = null;
-      _send({ type: 'dblclick', x, y });
-    } else {
-      _tapX = x; _tapY = y;
-      _tapTimer = setTimeout(() => {
-        _send({ type: 'click', x: _tapX, y: _tapY });
-        _tapTimer = null;
-      }, 220);
-    }
-  }
-  function _onTouchMove(e) {
-    e.preventDefault();
-    const now = Date.now(); if (now - _lastMove < 80) return; _lastMove = now;
-    const t = e.touches[0];
-    const r = _canvas.getBoundingClientRect();
-    _send({ type: 'mousemove', x: _sx(t.clientX - r.left), y: _sy(t.clientY - r.top) });
-  }
   function _onKey(e) {
     const overlay = document.getElementById('relay-overlay');
     if (!overlay || overlay.style.display === 'none') return;
@@ -1365,6 +1274,80 @@ const RelayClient = (() => {
     const img  = new Image();
     img.onload = () => { _ctx.drawImage(img, 0, 0); URL.revokeObjectURL(url); };
     img.src = url;
+  }
+
+  function open(sessionId, platform) {
+    _sid    = sessionId;
+    _plat   = platform;
+    _canvas = document.getElementById('relay-canvas');
+    _ctx    = _canvas.getContext('2d');
+    _canvas.width  = 1280;
+    _canvas.height = 800;
+    _canvas.style.touchAction  = 'none';
+    _canvas.style.userSelect   = 'none';
+    _canvas.style.webkitUserSelect = 'none';
+
+    document.getElementById('relay-plat-ico').textContent = PLATS[platform]?.ico || '🌐';
+    document.getElementById('relay-label').value = '';
+    document.getElementById('relay-url-bar').value = 'Loading…';
+    document.getElementById('relay-status').textContent = 'Connecting…';
+    document.getElementById('relay-overlay').style.display = 'flex';
+
+    const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+    _ws = new WebSocket(`${proto}://${location.host}/ws/relay?s=${sessionId}`);
+    _ws.binaryType = 'arraybuffer';
+    _ws.onmessage = (e) => {
+      if (e.data instanceof ArrayBuffer) {
+        const v = new Uint8Array(e.data);
+        if (v[0] === 0x01) _drawFrame(e.data);
+      } else {
+        const msg = JSON.parse(e.data);
+        if (msg.type === 'url')    document.getElementById('relay-url-bar').value = msg.url;
+        if (msg.type === 'status') document.getElementById('relay-status').textContent =
+          msg.status === 'ready' ? '🟢 Tap the screen to interact — type in the bar below' : msg.status;
+        if (msg.type === 'error')  toast('Relay: ' + msg.message, 'err');
+        if (msg.type === 'closed') close();
+      }
+    };
+    _ws.onclose = () => { document.getElementById('relay-status').textContent = '🔴 Disconnected'; };
+
+    _canvas.addEventListener('pointerdown', _onPointerDown);
+    _canvas.addEventListener('pointermove', _onPointerMove);
+    _canvas.addEventListener('wheel',       _onWheel, { passive: false });
+    document.addEventListener('keydown',    _onKey);
+
+    // Typing bar — send characters directly as they're typed
+    const ti = document.getElementById('relay-type-input');
+    if (ti) {
+      ti.value = '';
+      ti.oninput = null;
+      ti.onkeydown = null;
+      ti.addEventListener('keydown', _onTypeKey);
+      ti.addEventListener('input',   _onTypeInput);
+      ti._sent = 0;
+    }
+  }
+
+  let _typeBuffer = '';
+  function _onTypeInput(e) {
+    const ti = e.target;
+    const val = ti.value;
+    // Send any newly appended characters
+    if (val.length > ti._sent) {
+      _send({ type: 'type', text: val.slice(ti._sent) });
+      ti._sent = val.length;
+    } else if (val.length < ti._sent) {
+      const diff = ti._sent - val.length;
+      for (let i = 0; i < diff; i++) _send({ type: 'keydown', key: 'Backspace' });
+      ti._sent = val.length;
+    }
+  }
+  function _onTypeKey(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      _send({ type: 'keydown', key: 'Enter' });
+      e.target.value = ''; e.target._sent = 0;
+    }
   }
 
   async function capture() {
@@ -1393,15 +1376,13 @@ const RelayClient = (() => {
   function sendBackspace() { _send({ type: 'keydown', key: 'Backspace' }); }
 
   function close() {
-    _canvas?.removeEventListener('click',      _onClick);
-    _canvas?.removeEventListener('dblclick',   _onDbl);
-    _canvas?.removeEventListener('mousemove',  _onMove);
-    _canvas?.removeEventListener('wheel',      _onWheel);
-    _canvas?.removeEventListener('touchstart', _onTouchStart);
-    _canvas?.removeEventListener('touchmove',  _onTouchMove);
-    document.removeEventListener('keydown',    _onKey);
-    const overlay = document.getElementById('relay-overlay');
-    if (overlay) overlay.style.display = 'none';
+    _canvas?.removeEventListener('pointerdown', _onPointerDown);
+    _canvas?.removeEventListener('pointermove', _onPointerMove);
+    _canvas?.removeEventListener('wheel',       _onWheel);
+    document.removeEventListener('keydown',     _onKey);
+    const ti = document.getElementById('relay-type-input');
+    if (ti) { ti.removeEventListener('keydown', _onTypeKey); ti.removeEventListener('input', _onTypeInput); ti.value = ''; ti._sent = 0; }
+    document.getElementById('relay-overlay').style.display = 'none';
     if (_ws) { _ws.close(); _ws = null; }
     if (_sid) {
       fetch(`/api/relay/${_sid}`, { method: 'DELETE', headers: { 'x-auth-token': S.token } }).catch(() => {});
