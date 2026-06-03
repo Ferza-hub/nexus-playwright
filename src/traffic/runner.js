@@ -107,8 +107,9 @@ async function runJob(jobId) {
   };
 
   const worker = async () => {
+    let streak = 0; // per-worker streak — shared streak caused all workers to bail simultaneously
     while (_active.has(jobId) && done < job.target_count) {
-      if (streak >= 5) break;
+      if (streak >= 8) break;
 
       // Daily cap — pause workers until midnight if limit reached
       if (_todayCount(db) >= DAILY_LIMIT) {
@@ -133,26 +134,22 @@ async function runJob(jobId) {
       if (result.success) {
         done++;
         streak = 0;
-        db.prepare('UPDATE traffic_jobs SET completed_count=?, updated_at=? WHERE id=?')
-          .run(done, new Date().toISOString(), jobId);
+        db.prepare('UPDATE traffic_jobs SET completed_count=completed_count+1, updated_at=? WHERE id=?')
+          .run(new Date().toISOString(), jobId);
         logEntry('success', null);
         log.debug('Action done', { jobId, done, target: job.target_count });
       } else if (result.reason === 'no_ghost_available' || result.reason === 'no_key_account') {
         logEntry('skipped', result.reason);
-        // Short wait — with rotating proxy, slot frees up quickly as workers cycle
         await delay(randInt(2_000, 5_000));
       } else {
         streak++;
         const isTimeout = /timeout|ETIMEDOUT|net::/i.test(result.reason ?? '');
         logEntry('failed', result.reason ?? result.error ?? null);
         log.debug('Action failed', { jobId, streak, reason: result.reason });
-        // Exponential backoff for timeouts — network blocks need cool-down, not rapid retry
-        if (isTimeout) await delay(randInt(30_000, 60_000) * streak);
+        if (isTimeout) await delay(randInt(30_000, 60_000) * Math.min(streak, 3));
       }
 
       if (_active.has(jobId) && done < job.target_count) {
-        // Short inter-action gap — rotating proxy gives fresh IP each connection,
-        // so no cool-down needed between views from the same worker.
         await delay(randInt(500, 1500));
       }
     }

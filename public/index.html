@@ -994,6 +994,22 @@ function enterDash() {
   document.getElementById('sb-name').textContent = S.user.name;
   showPage('dashboard');
   loadJobs();
+  loadConnected();
+}
+
+async function loadConnected() {
+  try {
+    const accounts = await fetch('/api/accounts', {
+      headers: { 'x-auth-token': S.token }
+    }).then(r => r.json());
+    // Reset then mark each platform that has at least one active account
+    Object.keys(PLATS).forEach(p => { S.connected[p] = false; });
+    accounts.forEach(a => {
+      if (a.status === 'active' && PLATS[a.platform]) S.connected[a.platform] = true;
+    });
+    renderConnGrid();
+    renderOvPlatforms();
+  } catch (_) {}
 }
 
 // ── PAGES ──
