@@ -54,26 +54,29 @@ function _todayCount(db) {
 //   that wall off content behind login (Facebook, Instagram, TikTok).
 // ----------------------------------------------------------------
 
+// minWatchMs — minimum milliseconds the video must have played for the platform
+// to register the view in analytics. Only view/watch actions carry this field.
+// The engine returns result.watchMs; if undefined (action not a video), skip the check.
 const TRAFFIC_ACTIONS = {
   youtube: {
-    views:     { type: 'view',   ghostPlatform: 'youtube'                                                                    },
+    views:     { type: 'view',   ghostPlatform: 'youtube',   minWatchMs: 31_000                                              },
     likes:     { type: 'action', ghostPlatform: 'youtube',   action: 'like_video',    buildParams: v => ({ videoUrl: v })   },
     subscribe: { type: 'action', ghostPlatform: 'youtube',   action: 'subscribe',     buildParams: v => ({ channelUrl: v }) },
   },
   instagram: {
-    views:     { type: 'action', ghostPlatform: 'instagram', action: 'watch_reel',    buildParams: v => ({ reelUrl: v })    },
+    views:     { type: 'action', ghostPlatform: 'instagram', action: 'watch_reel',    buildParams: v => ({ reelUrl: v }),    minWatchMs: 5_000  },
     likes:     { type: 'action', ghostPlatform: 'instagram', action: 'like_post',     buildParams: v => ({ postUrl: v })    },
     follow:    { type: 'action', ghostPlatform: 'instagram', action: 'follow',        buildParams: v => ({ username: v })   },
   },
   tiktok: {
-    views:     { type: 'action', ghostPlatform: 'tiktok',    action: 'watch_video',   buildParams: v => ({ videoUrl: v })   },
+    views:     { type: 'action', ghostPlatform: 'tiktok',    action: 'watch_video',   buildParams: v => ({ videoUrl: v }),   minWatchMs: 5_000  },
     likes:     { type: 'action', ghostPlatform: 'tiktok',    action: 'like_video',    buildParams: v => ({ videoUrl: v })   },
     follow:    { type: 'action', ghostPlatform: 'tiktok',    action: 'follow',        buildParams: v => ({ username: v })   },
   },
   facebook: {
     // Facebook requires login to load video content — anonymous ghost hits a login wall.
     // watch_video uses an authenticated account session and navigates to the specific URL.
-    views:     { type: 'action', ghostPlatform: 'facebook',  action: 'watch_video',   buildParams: v => ({ videoUrl: v })   },
+    views:     { type: 'action', ghostPlatform: 'facebook',  action: 'watch_video',   buildParams: v => ({ videoUrl: v }),   minWatchMs: 10_000 },
     likes:     { type: 'action', ghostPlatform: 'facebook',  action: 'like_post',     buildParams: v => ({ postUrl: v })    },
     follow:    { type: 'action', ghostPlatform: 'facebook',  action: 'follow_page',   buildParams: v => ({ profileUrl: v }) },
   },
@@ -152,6 +155,15 @@ async function runJob(jobId) {
       }
 
       if (result.success) {
+        // Only count views that the platform will actually register.
+        // result.watchMs is set by view/watch engine calls; undefined means a
+        // non-video action (like, follow) where no watch threshold applies.
+        const minMs = actionDef.minWatchMs;
+        if (minMs && result.watchMs !== undefined && result.watchMs < minMs) {
+          logEntry('skipped', `watch_too_short:${result.watchMs}ms`);
+          await delay(randInt(500, 1500));
+          continue;
+        }
         done++;
         streak = 0;
         db.prepare('UPDATE traffic_jobs SET completed_count=completed_count+1, updated_at=? WHERE id=?')

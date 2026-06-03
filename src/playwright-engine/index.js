@@ -205,11 +205,20 @@ async function executeGhostView(platform, url) {
     session = await launchEphemeral();
     const { page, proxyId } = session;
 
+    // Convert YouTube Shorts URLs to the standard watch page.
+    // /shorts/ loads a vertical swipe UI that headless Chromium can't interact
+    // with reliably; the /watch?v= page plays the same video and supports JS autoplay.
+    let navUrl = url;
+    if (platform === 'youtube' && /\/shorts\//i.test(url)) {
+      const m = url.match(/\/shorts\/([A-Za-z0-9_-]+)/);
+      if (m) navUrl = `https://www.youtube.com/watch?v=${m[1]}`;
+    }
+
     // Social referrer — makes platform see organic share traffic, not direct
     const referer = _pickReferrer(platform) ?? undefined;
 
     // Navigate with referrer baked into the HTTP request
-    await page.goto(url, { waitUntil: 'commit', timeout: 60000, referer });
+    await page.goto(navUrl, { waitUntil: 'commit', timeout: 60000, referer });
     await page.waitForLoadState('domcontentloaded', { timeout: 30000 }).catch(() => {});
 
     // Dismiss consent / cookie banners (Google, GDPR, platform-specific)
@@ -262,16 +271,15 @@ async function executeGhostView(platform, url) {
       }
     }
 
-    // Watch — minimum threshold that platforms count
-    const isShorts = platform === 'youtube' && /\/shorts\//i.test(url);
-    const watchMs  = platform === 'youtube'
-      ? (isShorts ? _ri(5_000, 15_000) : _ri(35_000, 65_000))  // regular: 35-65s
-      : _ri(15_000, 35_000);
+    // Watch — YouTube requires 30 s+ for a view to register in analytics.
+    // All URLs are now standard watch pages (Shorts converted above), so we
+    // always use the full 35-65 s range. Non-YT platforms have lower thresholds.
+    const watchMs = platform === 'youtube' ? _ri(35_000, 65_000) : _ri(15_000, 35_000);
 
     await _delay(watchMs);
 
     log.info('View delivered', { platform, ms: watchMs, referer: referer ?? 'direct', proxy: proxyId ?? 'none' });
-    return { success: true };
+    return { success: true, watchMs };
 
   } catch (err) {
     if (/timeout|net::|ECONNREFUSED|ERR_/i.test(err.message) && session?.proxyId) {

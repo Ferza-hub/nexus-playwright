@@ -762,7 +762,7 @@ body{background:var(--paper);color:var(--ink);font-family:var(--body);
       <div class="sp" id="sp-jobs">
         <div class="card">
           <div class="card-ttl">All Jobs <span id="jobs-count"></span></div>
-          <table class="tbl"><thead><tr><th>ID</th><th>Platform</th><th>Action</th><th>Target</th><th>Progress</th><th>Status</th><th>Date</th><th></th></tr></thead>
+          <table class="tbl"><thead><tr><th>ID</th><th>Platform</th><th>Action</th><th>Target</th><th title="Only views that met the platform watch threshold are counted here">Verified ✓</th><th>Status</th><th>Date</th><th></th></tr></thead>
           <tbody id="all-jobs-body"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.75rem;font-size:.8rem">No jobs yet.</td></tr></tbody></table>
         </div>
       </div>
@@ -1158,7 +1158,7 @@ function renderJobs() {
       <td>${p?.ico || ''} ${p?.name || j.platform}</td>
       <td style="text-transform:capitalize">${j.action_type}</td>
       <td style="font-size:.7rem;color:var(--muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${j.target_value}">${j.target_value}</td>
-      <td><span class="progress-bar"><span class="progress-fill" style="width:${pct}%"></span></span>${j.completed_count}/${j.target_count}</td>
+      <td title="Counts only views that met the platform watch threshold (30 s+ for YouTube)"><span class="progress-bar"><span class="progress-fill" style="width:${pct}%"></span></span>${j.completed_count}/${j.target_count}</td>
       <td><span class="jbadge ${j.status}">${j.status}</span></td>
       <td style="font-size:.7rem;color:var(--muted)">${new Date(j.created_at).toLocaleDateString()}</td>
       <td style="white-space:nowrap">${_jobBtns(j)}</td>
