@@ -12,27 +12,45 @@ const router = Router();
 
 const VALID_PLATFORMS = ['youtube', 'instagram', 'tiktok', 'facebook', 'twitter', 'threads'];
 
+// Domains that are relevant per platform — cookies outside these are discarded
+const PLATFORM_DOMAINS = {
+  youtube:   ['youtube.com', 'google.com', 'google.co'],
+  instagram: ['instagram.com', 'facebook.com', 'fbcdn.net'],
+  tiktok:    ['tiktok.com', 'musical.ly'],
+  facebook:  ['facebook.com', 'fbcdn.net', 'fb.com'],
+  twitter:   ['twitter.com', 'x.com', 'twimg.com'],
+  threads:   ['threads.net', 'instagram.com', 'facebook.com'],
+};
+
+function _domainMatches(cookieDomain, platform) {
+  const allowed = PLATFORM_DOMAINS[platform] || [];
+  const d = cookieDomain.replace(/^\./, '').toLowerCase();
+  return allowed.some(a => d === a || d.endsWith('.' + a) || d.endsWith(a));
+}
+
 // ── Session helpers ───────────────────────────────────────────────────────────
 
 const SAME_SITE_MAP = {
   no_restriction: 'None', unspecified: 'None', lax: 'Lax', strict: 'Strict', none: 'None',
 };
 
-function cookiesToStorageState(raw) {
+function cookiesToStorageState(raw, platform) {
   let list;
   try { list = typeof raw === 'string' ? JSON.parse(raw) : raw; } catch { throw new Error('Invalid JSON'); }
   if (!Array.isArray(list)) throw new Error('Cookies must be a JSON array');
-  const cookies = list.map(c => ({
-    name:     String(c.name   || ''),
-    value:    String(c.value  || ''),
-    domain:   String(c.domain || ''),
-    path:     String(c.path   || '/'),
-    expires:  c.expirationDate ?? c.expires ?? -1,
-    httpOnly: Boolean(c.httpOnly),
-    secure:   Boolean(c.secure),
-    sameSite: SAME_SITE_MAP[(c.sameSite || '').toLowerCase()] ?? 'None',
-  })).filter(c => c.name && c.domain);
-  if (!cookies.length) throw new Error('No valid cookies found in JSON');
+  const cookies = list
+    .map(c => ({
+      name:     String(c.name   || ''),
+      value:    String(c.value  || ''),
+      domain:   String(c.domain || ''),
+      path:     String(c.path   || '/'),
+      expires:  c.expirationDate ?? c.expires ?? -1,
+      httpOnly: Boolean(c.httpOnly),
+      secure:   Boolean(c.secure),
+      sameSite: SAME_SITE_MAP[(c.sameSite || '').toLowerCase()] ?? 'None',
+    }))
+    .filter(c => c.name && c.domain && (!platform || _domainMatches(c.domain, platform)));
+  if (!cookies.length) throw new Error('No relevant cookies found — make sure you exported from the right site');
   return { cookies, origins: [] };
 }
 
@@ -142,7 +160,7 @@ router.post('/import', (req, res) => {
       return res.status(400).json({ error: `platform must be one of: ${VALID_PLATFORMS.join(', ')}` });
     }
 
-    const state = cookiesToStorageState(cookies_json);
+    const state = cookiesToStorageState(cookies_json, platform);
     const db    = getDb();
     const nick  = label?.trim() || `${platform} #${Date.now().toString(36)}`;
     const r     = db.prepare(
