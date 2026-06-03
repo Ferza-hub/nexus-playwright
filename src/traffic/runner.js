@@ -208,7 +208,14 @@ async function runJob(jobId) {
 }
 
 function stopJob(jobId) {
+  if (!_active.has(jobId)) return;
   _active.delete(jobId);
+  // Update DB immediately so the UI reflects 'paused' on the next poll,
+  // without waiting for in-flight workers to finish their current action.
+  try {
+    getDb().prepare(`UPDATE traffic_jobs SET status='paused', updated_at=? WHERE id=?`)
+      .run(new Date().toISOString(), jobId);
+  } catch (_) {}
 }
 
 function isRunning(jobId) {
