@@ -734,8 +734,12 @@ body{background:var(--paper);color:var(--ink);font-family:var(--body);
             <div class="fsec-title">3. Target URL</div>
             <div class="fgrp">
               <label class="flbl">Content URL or Username</label>
-              <input class="finp" type="text" id="c-url" placeholder="https://www.youtube.com/watch?v=...">
+              <input class="finp" type="text" id="c-url" placeholder="https://www.youtube.com/watch?v=..." oninput="onUrlInput(this.value)">
               <span class="fhint">Paste the full URL of the video, post, or profile page</span>
+              <div id="url-preview" style="display:none;align-items:center;gap:10px;padding:9px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;margin-top:8px">
+                <img id="prev-img" src="" alt="" style="width:52px;height:52px;object-fit:cover;border-radius:6px;flex-shrink:0;background:#e2e8f0">
+                <span id="prev-cap" style="font-size:.8rem;color:#334155;font-weight:500;line-height:1.4;word-break:break-word"></span>
+              </div>
             </div>
           </div>
           <div class="fsec">
@@ -1056,6 +1060,43 @@ function selAct(el, action) {
     warn.style.display = 'none';
   }
   updSummary();
+}
+
+// ── URL Preview ──
+const _prevCache = {};
+let   _prevTimer  = null;
+
+function _trunc(s, n) { return s && s.length > n ? s.slice(0, n) + '...' : (s || ''); }
+
+function _showPreview(data) {
+  const box = document.getElementById('url-preview');
+  if (!data || (!data.image && !data.title && !data.description)) {
+    box.style.display = 'none'; return;
+  }
+  const cap = _trunc(data.description || data.title, 20);
+  document.getElementById('prev-img').src          = data.image || '';
+  document.getElementById('prev-img').style.display = data.image ? '' : 'none';
+  document.getElementById('prev-cap').textContent  = cap;
+  box.style.display = 'flex';
+}
+
+function onUrlInput(val) {
+  clearTimeout(_prevTimer);
+  if (!val.startsWith('http')) { document.getElementById('url-preview').style.display = 'none'; return; }
+  if (_prevCache[val]) { _showPreview(_prevCache[val]); return; }
+  document.getElementById('url-preview').style.display = 'none';
+  _prevTimer = setTimeout(async () => {
+    try {
+      const r = await fetch(`${API}/api/preview?url=${encodeURIComponent(val)}`, {
+        headers: { 'x-auth-token': S.token }
+      });
+      if (!r.ok) return;
+      const d = await r.json();
+      _prevCache[val] = d;
+      // Only show if user hasn't changed the input
+      if (document.getElementById('c-url').value === val) _showPreview(d);
+    } catch (_) {}
+  }, 600);
 }
 
 function updQty(v) {

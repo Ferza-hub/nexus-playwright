@@ -30,6 +30,7 @@ app.use('/api/traffic',   requireAuth, require('./routes/traffic'));
 app.use('/api/accounts',  requireAuth, require('./routes/accounts'));
 app.use('/api/logs',      requireAuth, require('./routes/logs'));
 app.use('/api/relay',     requireAuth, require('./routes/relay'));
+app.use('/api/preview',   requireAuth, require('./routes/preview'));
 
 // SPA fallback
 app.get('*', (_req, res) => res.sendFile(path.join(__dirname, '../../public/index.html')));
