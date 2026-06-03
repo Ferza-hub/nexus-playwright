@@ -16,6 +16,21 @@ const DAILY_LIMIT = parseInt(process.env.DAILY_VIEW_LIMIT ?? '10000', 10);
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 
+// Global semaphore — caps total concurrent Playwright browsers across ALL active jobs.
+// Without this, N concurrent jobs × MAX_CONCURRENT workers = N×8 browsers → OOM.
+class Semaphore {
+  constructor(n) { this._n = n; this._q = []; }
+  acquire() {
+    if (this._n > 0) { this._n--; return Promise.resolve(); }
+    return new Promise(r => this._q.push(r));
+  }
+  release() {
+    const r = this._q.shift();
+    if (r) r(); else this._n++;
+  }
+}
+const _sem = new Semaphore(MAX_CONCURRENT);
+
 function _todayCount(db) {
   const midnight = new Date();
   midnight.setHours(0, 0, 0, 0);
@@ -31,18 +46,14 @@ function _todayCount(db) {
 // Action definitions — all traffic goes through the ghost pool.
 //
 // type 'view'   → executeGhostView(ghostPlatform, targetValue)
-//   Ghost is matched by platform (anonymous for youtube, authenticated
-//   for all others).
+//   Anonymous proxy-only browser. Only works for platforms that
+//   allow unauthenticated access (YouTube).
 //
 // type 'action' → executeGhostAction(ghostPlatform, action, params)
-//   Ghost must have credentials_json (authenticated session).
-//   buildParams maps the raw target_value string to the right param key.
+//   Loads an imported account session. Required for all platforms
+//   that wall off content behind login (Facebook, Instagram, TikTok).
 // ----------------------------------------------------------------
 
-// Proxy-based anonymous views + session-based actions.
-// views (anon)  → executeGhostView  — proxy only, no account needed
-// views (session) → executeGhostAction watch_reel/watch_video
-// likes / follow / subscribe → executeGhostAction — requires imported account session
 const TRAFFIC_ACTIONS = {
   youtube: {
     views:     { type: 'view',   ghostPlatform: 'youtube'                                                                    },
@@ -60,7 +71,9 @@ const TRAFFIC_ACTIONS = {
     follow:    { type: 'action', ghostPlatform: 'tiktok',    action: 'follow',        buildParams: v => ({ username: v })   },
   },
   facebook: {
-    views:     { type: 'view',   ghostPlatform: 'facebook'                                                                   },
+    // Facebook requires login to load video content — anonymous ghost hits a login wall.
+    // watch_video uses an authenticated account session and navigates to the specific URL.
+    views:     { type: 'action', ghostPlatform: 'facebook',  action: 'watch_video',   buildParams: v => ({ videoUrl: v })   },
     likes:     { type: 'action', ghostPlatform: 'facebook',  action: 'like_post',     buildParams: v => ({ postUrl: v })    },
     follow:    { type: 'action', ghostPlatform: 'facebook',  action: 'follow_page',   buildParams: v => ({ profileUrl: v }) },
   },
@@ -74,7 +87,9 @@ const TRAFFIC_ACTIONS = {
 const _active = new Map();
 
 // ----------------------------------------------------------------
-// Main runner — called async, does not block server
+// Main runner — called async, does not block server.
+// Safe to call again on a paused job (resume): done is seeded from
+// completed_count so delivery continues from where it left off.
 // ----------------------------------------------------------------
 
 async function runJob(jobId) {
@@ -89,13 +104,14 @@ async function runJob(jobId) {
     return;
   }
 
-  db.prepare(`UPDATE traffic_jobs SET status='running', started_at=?, updated_at=? WHERE id=?`)
+  // Preserve original started_at when resuming a paused job
+  db.prepare(`UPDATE traffic_jobs SET status='running', started_at=COALESCE(started_at,?), updated_at=? WHERE id=?`)
     .run(new Date().toISOString(), new Date().toISOString(), jobId);
 
   _active.set(jobId, true);
 
-  let done   = 0;
-  let streak = 0; // consecutive non-success results
+  // Resume from the count already delivered rather than restarting from zero
+  let done = job.completed_count ?? 0;
 
   const logEntry = (status, message) => {
     try {
@@ -107,7 +123,7 @@ async function runJob(jobId) {
   };
 
   const worker = async () => {
-    let streak = 0; // per-worker streak — shared streak caused all workers to bail simultaneously
+    let streak = 0; // per-worker consecutive failure count
     while (_active.has(jobId) && done < job.target_count) {
       if (streak >= 8) break;
 
@@ -119,6 +135,8 @@ async function runJob(jobId) {
         continue;
       }
 
+      // Acquire a global browser slot before launching Playwright
+      await _sem.acquire();
       let result;
       try {
         if (actionDef.type === 'view') {
@@ -129,6 +147,8 @@ async function runJob(jobId) {
         }
       } catch (err) {
         result = { success: false, reason: err.message };
+      } finally {
+        _sem.release();
       }
 
       if (result.success) {
@@ -162,7 +182,7 @@ async function runJob(jobId) {
   }
 
   if (_active.has(jobId)) {
-    const status = done >= job.target_count ? 'completed' : (streak >= 10 ? 'failed' : 'paused');
+    const status = done >= job.target_count ? 'completed' : 'paused';
     db.prepare(`UPDATE traffic_jobs SET status=?, completed_at=?, updated_at=? WHERE id=?`)
       .run(status, new Date().toISOString(), new Date().toISOString(), jobId);
     _active.delete(jobId);

@@ -762,8 +762,8 @@ body{background:var(--paper);color:var(--ink);font-family:var(--body);
       <div class="sp" id="sp-jobs">
         <div class="card">
           <div class="card-ttl">All Jobs <span id="jobs-count"></span></div>
-          <table class="tbl"><thead><tr><th>ID</th><th>Platform</th><th>Action</th><th>Target</th><th>Progress</th><th>Status</th><th>Date</th></tr></thead>
-          <tbody id="all-jobs-body"><tr><td colspan="7" style="text-align:center;color:var(--muted);padding:1.75rem;font-size:.8rem">No jobs yet.</td></tr></tbody></table>
+          <table class="tbl"><thead><tr><th>ID</th><th>Platform</th><th>Action</th><th>Target</th><th>Progress</th><th>Status</th><th>Date</th><th></th></tr></thead>
+          <tbody id="all-jobs-body"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.75rem;font-size:.8rem">No jobs yet.</td></tr></tbody></table>
         </div>
       </div>
 
@@ -1073,8 +1073,10 @@ function updSummary() {
   document.getElementById('s-act').textContent  = action   ? action.charAt(0).toUpperCase()+action.slice(1) : '—';
   document.getElementById('s-qty').textContent  = qty.toLocaleString();
   if (platform && action) {
-    const etaMin = Math.ceil(qty / 400);
-    document.getElementById('s-eta').textContent = etaMin < 60 ? `~${etaMin} min` : `~${Math.ceil(etaMin/60)} hr`;
+    // Realistic throughput with MAX_CONCURRENT=8 workers, accounting for watch time + failures
+    const ACTION_HOURLY = { views: 400, likes: 650, subscribe: 500, follow: 500 };
+    const etaMins = Math.ceil((qty / (ACTION_HOURLY[action] || 400)) * 60);
+    document.getElementById('s-eta').textContent = etaMins < 60 ? `~${etaMins} min` : `~${(etaMins/60).toFixed(1)} hr`;
     if (S.freeLeft > 0 && qty <= S.freeLeft) {
       document.getElementById('s-price').textContent = '$0.00';
       document.getElementById('s-note').textContent  = `FREE — ${qty} of your ${S.freeLeft} free actions`;
@@ -1135,6 +1137,18 @@ async function loadJobs() {
   } catch (_) {}
 }
 
+function _jobBtns(j) {
+  const s = 'font-size:.7rem;padding:.2rem .55rem;border-radius:4px;cursor:pointer;border:1px solid;line-height:1.4;';
+  if (j.status === 'running' || j.status === 'pending') {
+    return `<button onclick="jobAction(${j.id},'stop')" style="${s}background:#fee2e2;border-color:#fca5a5;color:#991b1b">Stop</button>`;
+  }
+  if (j.status === 'paused' || j.status === 'failed') {
+    return `<button onclick="jobAction(${j.id},'resume')" style="${s}background:#dcfce7;border-color:#86efac;color:#166534;margin-right:4px">Resume</button>`
+         + `<button onclick="jobAction(${j.id},'delete')" style="${s}background:#f1f5f9;border-color:#cbd5e1;color:#64748b">Del</button>`;
+  }
+  return `<button onclick="jobAction(${j.id},'delete')" style="${s}background:#f1f5f9;border-color:#cbd5e1;color:#64748b">Del</button>`;
+}
+
 function renderJobs() {
   const rows = S.jobs.length ? S.jobs.map(j => {
     const pct = j.target_count > 0 ? Math.round((j.completed_count / j.target_count) * 100) : 0;
@@ -1147,8 +1161,9 @@ function renderJobs() {
       <td><span class="progress-bar"><span class="progress-fill" style="width:${pct}%"></span></span>${j.completed_count}/${j.target_count}</td>
       <td><span class="jbadge ${j.status}">${j.status}</span></td>
       <td style="font-size:.7rem;color:var(--muted)">${new Date(j.created_at).toLocaleDateString()}</td>
+      <td style="white-space:nowrap">${_jobBtns(j)}</td>
     </tr>`;
-  }).join('') : `<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:1.75rem;font-size:.8rem">No jobs yet.</td></tr>`;
+  }).join('') : `<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.75rem;font-size:.8rem">No jobs yet.</td></tr>`;
 
   document.getElementById('all-jobs-body').innerHTML = rows;
   const ovRows = S.jobs.slice(0,5).map(j => {
@@ -1168,6 +1183,18 @@ function renderJobs() {
 
   const hasRunning = S.jobs.some(j => j.status === 'running' || j.status === 'pending');
   if (hasRunning) setTimeout(loadJobs, 4000);
+}
+
+async function jobAction(id, action) {
+  try {
+    if (action === 'delete') {
+      if (!confirm('Delete this job and its logs?')) return;
+      await fetch(`${API}/api/traffic/${id}`, { method: 'DELETE', headers: { 'x-auth-token': S.token } });
+    } else {
+      await fetch(`${API}/api/traffic/${id}/${action}`, { method: 'POST', headers: { 'x-auth-token': S.token } });
+    }
+    await loadJobs();
+  } catch (e) { toast('Error: ' + e.message, 'err'); }
 }
 
 function updStats() {
