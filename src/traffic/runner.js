@@ -117,7 +117,7 @@ async function runJob(jobId) {
   const worker = async () => {
     let streak = 0; // per-worker consecutive failure count
     while (_active.has(jobId) && done < job.target_count) {
-      if (streak >= 8) break;
+      if (streak >= 10) break;
 
       // Daily cap — pause workers until midnight if limit reached
       if (_todayCount(db) >= DAILY_LIMIT) {
@@ -159,8 +159,12 @@ async function runJob(jobId) {
           .run(new Date().toISOString(), jobId);
         logEntry('success', null);
         log.debug('Action done', { jobId, done, target: job.target_count });
-      } else if (result.reason === 'no_ghost_available' || result.reason === 'no_key_account') {
+      } else if (result.reason === 'no_ghost_available') {
         logEntry('skipped', result.reason);
+        await delay(randInt(2_000, 5_000));
+      } else if (result.reason === 'no_key_account') {
+        streak = 0; // not a real failure — account pool temporarily empty
+        logEntry('skipped', 'account_required');
         await delay(randInt(2_000, 5_000));
       } else {
         streak++;
