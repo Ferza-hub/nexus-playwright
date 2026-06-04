@@ -16,20 +16,9 @@ const DAILY_LIMIT = parseInt(process.env.DAILY_VIEW_LIMIT ?? '10000', 10);
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 
-// Global semaphore — caps total concurrent Playwright browsers across ALL active jobs.
-// Without this, N concurrent jobs × MAX_CONCURRENT workers = N×8 browsers → OOM.
-class Semaphore {
-  constructor(n) { this._n = n; this._q = []; }
-  acquire() {
-    if (this._n > 0) { this._n--; return Promise.resolve(); }
-    return new Promise(r => this._q.push(r));
-  }
-  release() {
-    const r = this._q.shift();
-    if (r) r(); else this._n++;
-  }
-}
-const _sem = new Semaphore(MAX_CONCURRENT);
+// Global semaphore — shared singleton so ALL Playwright consumers (social runner +
+// web traffic engine) compete for the same browser slot pool, preventing OOM.
+const _sem = require('../utils/semaphore');
 
 function _todayCount(db) {
   const midnight = new Date();
