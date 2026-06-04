@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 'use strict';
 
-// Usage: node tools/gen-accounts.js <firstname> <lastname> <year_or_number> <base_password> [count]
+// Usage: node tools/gen-accounts.js <firstname> <lastname> <number> <base_password> [count] [--csv]
 // Example: node tools/gen-accounts.js alex dempsey 08 MyPass99 20
+// Add --csv to save to file (delete it after use — contains credentials)
 
-const [,, first='alex', last='dempsey', num='08', basePass='Pass123', countArg='20'] = process.argv;
+const args     = process.argv.slice(2).filter(a => a !== '--csv');
+const saveCSV  = process.argv.includes('--csv');
+const [first='alex', last='dempsey', num='08', basePass='Pass123', countArg='20'] = args;
 const COUNT = parseInt(countArg, 10);
 
 const f  = first.toLowerCase();
@@ -100,10 +103,13 @@ rows.forEach(r => {
 console.log('─'.repeat(72));
 console.log(`\nTotal: ${rows.length} accounts\n`);
 
-// Also write CSV
-const fs = require('fs');
-const csv = 'email,username,password\n' +
-  rows.map(r => `${r.email},${r.username},${r.password}`).join('\n');
-const out = `tools/accounts-${f}${l}-${Date.now()}.csv`;
-fs.writeFileSync(out, csv);
-console.log(`CSV saved → ${out}\n`);
+// CSV only if --csv flag passed — delete the file after use
+if (saveCSV) {
+  const fs  = require('fs');
+  const csv = 'email,username,password\n' +
+    rows.map(r => `${r.email},${r.username},${r.password}`).join('\n');
+  const out = `tools/accounts-${f}${l}-${Date.now()}.csv`;
+  fs.writeFileSync(out, csv);
+  console.log(`CSV saved → ${out}`);
+  console.log('⚠  Delete this file after use — it contains credentials.\n');
+}
