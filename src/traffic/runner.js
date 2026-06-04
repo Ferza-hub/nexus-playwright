@@ -65,7 +65,7 @@ const TRAFFIC_ACTIONS = {
   facebook: {
     // Facebook requires login to load video content — anonymous ghost hits a login wall.
     // watch_video uses an authenticated account session and navigates to the specific URL.
-    views:     { type: 'action', ghostPlatform: 'facebook',  action: 'watch_video',   buildParams: v => ({ videoUrl: v }),   minWatchMs: 10_000 },
+    views:     { type: 'action', ghostPlatform: 'facebook',  action: 'watch_reel',    buildParams: v => ({ reelUrl: v }),    minWatchMs: 5_000  },
     likes:     { type: 'action', ghostPlatform: 'facebook',  action: 'like_post',     buildParams: v => ({ postUrl: v })    },
     follow:    { type: 'action', ghostPlatform: 'facebook',  action: 'follow_page',   buildParams: v => ({ profileUrl: v }) },
   },
