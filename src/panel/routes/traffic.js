@@ -83,8 +83,8 @@ router.post('/:id/resume', (req, res) => {
     if (isRunning(id)) return res.json({ ok: true, message: 'already running' });
     const job = getDb().prepare("SELECT status FROM traffic_jobs WHERE id=?").get(id);
     if (!job) return res.status(404).json({ error: 'Job not found' });
-    if (!['paused', 'failed'].includes(job.status)) {
-      return res.status(400).json({ error: 'Job is not paused or failed' });
+    if (!['paused', 'failed', 'running'].includes(job.status)) {
+      return res.status(400).json({ error: 'Job cannot be resumed' });
     }
     runJob(id).catch(err => console.error('[TrafficRunner] unhandled:', err.message));
     res.json({ ok: true });

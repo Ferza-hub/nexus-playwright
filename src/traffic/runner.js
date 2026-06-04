@@ -208,10 +208,9 @@ async function runJob(jobId) {
 }
 
 function stopJob(jobId) {
-  if (!_active.has(jobId)) return;
   _active.delete(jobId);
-  // Update DB immediately so the UI reflects 'paused' on the next poll,
-  // without waiting for in-flight workers to finish their current action.
+  // Always write to DB — even if jobId wasn't in _active (e.g. stale from
+  // a previous process after pm2 restart). This ensures Stop always works.
   try {
     getDb().prepare(`UPDATE traffic_jobs SET status='paused', updated_at=? WHERE id=?`)
       .run(new Date().toISOString(), jobId);
@@ -222,4 +221,16 @@ function isRunning(jobId) {
   return _active.has(jobId);
 }
 
-module.exports = { runJob, stopJob, isRunning, TRAFFIC_ACTIONS };
+// Reset any jobs left in running/pending state from a previous process.
+// Called once at startup — after pm2 restart those jobs are no longer
+// actually running so they must be paused so the user can resume them.
+function resetStaleJobs() {
+  try {
+    const n = getDb().prepare(
+      `UPDATE traffic_jobs SET status='paused', updated_at=? WHERE status IN ('running','pending')`
+    ).run(new Date().toISOString()).changes;
+    if (n > 0) log.info(`Reset ${n} stale running job(s) to paused on startup`);
+  } catch (_) {}
+}
+
+module.exports = { runJob, stopJob, isRunning, resetStaleJobs, TRAFFIC_ACTIONS };
