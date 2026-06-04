@@ -177,12 +177,14 @@ async function login(page, account) {
 //    Otherwise: browse facebook.com/reels/ feed for N reels.
 // ----------------------------------------------------------------
 
-async function watchReel(page, { reelUrl = null, reelCount = null, maxMs = null } = {}) {
+async function watchReel(page, { reelUrl = null, reelCount = null, maxMs = null, referer = null } = {}) {
   // ── Single specific reel URL ──────────────────────────────────────────────
   if (reelUrl) {
-    log.debug('watchReel (direct)', { reelUrl });
+    log.debug('watchReel (direct)', { reelUrl, referer });
 
-    await page.goto(reelUrl, { waitUntil: 'domcontentloaded', timeout: 25000 });
+    const gotoOpts = { waitUntil: 'domcontentloaded', timeout: 25000 };
+    if (referer) gotoOpts.referer = referer;
+    await page.goto(reelUrl, gotoOpts);
     await h.waitForLoad(page);
     await h.preAction();
     await _dismissPopups(page);

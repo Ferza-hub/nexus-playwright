@@ -23,38 +23,38 @@ const PLATFORMS = { instagram, tiktok, twitter, youtube, threads, facebook };
 
 const ACTION_MAP = {
   instagram: {
-    watch_reel:  { fn: 'watchReel',    args: p => [p.reelUrl]             },
-    like_post:   { fn: 'likePost',     args: p => [p.postUrl]             },
-    follow:      { fn: 'followUser',   args: p => [p.username]            },
-    unfollow:    { fn: 'unfollowUser', args: p => [p.username]            },
-    comment:     { fn: 'commentPost',  args: p => [p.postUrl, p.text]     },
+    watch_reel:  { fn: 'watchReel',    args: p => [p.reelUrl, { referer: p.referer }]  },
+    like_post:   { fn: 'likePost',     args: p => [p.postUrl]                           },
+    follow:      { fn: 'followUser',   args: p => [p.username]                          },
+    unfollow:    { fn: 'unfollowUser', args: p => [p.username]                          },
+    comment:     { fn: 'commentPost',  args: p => [p.postUrl, p.text]                   },
   },
   tiktok: {
-    watch_video: { fn: 'watchVideo',   args: p => [p.videoUrl]            },
-    like_video:  { fn: 'likeVideo',    args: p => [p.videoUrl]            },
-    follow:      { fn: 'followUser',   args: p => [p.username]            },
-    comment:     { fn: 'commentVideo', args: p => [p.videoUrl, p.text]    },
+    watch_video: { fn: 'watchVideo',   args: p => [p.videoUrl, { referer: p.referer }]  },
+    like_video:  { fn: 'likeVideo',    args: p => [p.videoUrl]                           },
+    follow:      { fn: 'followUser',   args: p => [p.username]                           },
+    comment:     { fn: 'commentVideo', args: p => [p.videoUrl, p.text]                   },
   },
   twitter: {
-    like_post:   { fn: 'likePost',     args: p => [p.tweetUrl]            },
-    follow:      { fn: 'followUser',   args: p => [p.username]            },
+    like_post:   { fn: 'likePost',     args: p => [p.tweetUrl]                           },
+    follow:      { fn: 'followUser',   args: p => [p.username]                           },
   },
   youtube: {
-    watch_video: { fn: 'watchVideo',   args: p => [youtube.cleanUrl(p.videoUrl), p] },
-    like_video:  { fn: 'likeVideo',    args: p => [p.videoUrl]            },
-    subscribe:   { fn: 'subscribeChannel', args: p => [p.channelUrl]      },
-    comment:     { fn: 'commentVideo', args: p => [p.videoUrl, p.text]    },
+    watch_video: { fn: 'watchVideo',   args: p => [youtube.cleanUrl(p.videoUrl), p]      },
+    like_video:  { fn: 'likeVideo',    args: p => [p.videoUrl]                           },
+    subscribe:   { fn: 'subscribeChannel', args: p => [p.channelUrl]                     },
+    comment:     { fn: 'commentVideo', args: p => [p.videoUrl, p.text]                   },
   },
   threads: {
-    like_post:   { fn: 'likePost',     args: p => [p.postUrl]             },
-    follow:      { fn: 'followUser',   args: p => [p.username]            },
+    like_post:   { fn: 'likePost',     args: p => [p.postUrl]                            },
+    follow:      { fn: 'followUser',   args: p => [p.username]                           },
   },
   facebook: {
-    watch_video: { fn: 'watchVideo',   args: p => [p.videoUrl]            },
-    watch_reel:  { fn: 'watchReel',    args: p => [p]                     },
-    like_post:   { fn: 'likePost',     args: p => [p.postUrl]             },
-    follow_page: { fn: 'followPage',   args: p => [p.profileUrl]          },
-    comment:     { fn: 'comment',      args: p => [p.postUrl, p.text]     },
+    watch_video: { fn: 'watchVideo',   args: p => [p.videoUrl, { referer: p.referer }]  },
+    watch_reel:  { fn: 'watchReel',    args: p => [p]                                    },
+    like_post:   { fn: 'likePost',     args: p => [p.postUrl]                            },
+    follow_page: { fn: 'followPage',   args: p => [p.profileUrl]                         },
+    comment:     { fn: 'comment',      args: p => [p.postUrl, p.text]                    },
   },
 };
 
@@ -339,9 +339,10 @@ async function executeGhostAction(platform, action, params = {}) {
       _saveSession(account.id, state);
     }
 
-    const fn     = platformModule[actionDef.fn];
-    const args   = actionDef.args(params);
-    const result = await fn(page, ...args);
+    const fn             = platformModule[actionDef.fn];
+    const enrichedParams = { ...params, referer: _pickReferrer(platform) };
+    const args           = actionDef.args(enrichedParams);
+    const result         = await fn(page, ...args);
 
     if (!result.success && result.event) {
       log.warn('Ghost action detection', { accountId: account.id, platform, action, event: result.event });
