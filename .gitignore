@@ -4,3 +4,4 @@ data/
 *.db
 *.log
 .DS_Store
+tools/accounts-*.csv
