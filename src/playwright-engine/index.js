@@ -162,31 +162,36 @@ function _delay(ms)    { return new Promise(r => setTimeout(r, ms)); }
 async function _checkLoggedIn(page, platform) {
   try {
     if (platform === 'instagram') {
-      await page.goto('https://www.instagram.com/', { waitUntil: 'domcontentloaded', timeout: 15_000 });
+      await page.goto('https://www.instagram.com/', { waitUntil: 'domcontentloaded', timeout: 20_000 });
       return !page.url().includes('/accounts/login') && !page.url().includes('/challenge');
     }
     if (platform === 'tiktok') {
-      await page.goto('https://www.tiktok.com/', { waitUntil: 'domcontentloaded', timeout: 15_000 });
+      await page.goto('https://www.tiktok.com/', { waitUntil: 'domcontentloaded', timeout: 20_000 });
       return !(await page.$('a[href*="/login"]'));
     }
     if (platform === 'twitter') {
-      await page.goto('https://x.com/home', { waitUntil: 'domcontentloaded', timeout: 15_000 });
+      await page.goto('https://x.com/home', { waitUntil: 'domcontentloaded', timeout: 20_000 });
       return !page.url().includes('/flow/login') && !page.url().includes('/login');
     }
     if (platform === 'youtube') {
-      await page.goto('https://www.youtube.com/', { waitUntil: 'domcontentloaded', timeout: 15_000 });
+      await page.goto('https://www.youtube.com/', { waitUntil: 'domcontentloaded', timeout: 30_000 });
       return !!(await page.$('button#avatar-btn, #avatar-container'));
     }
     if (platform === 'threads') {
-      await page.goto('https://www.threads.net/', { waitUntil: 'domcontentloaded', timeout: 15_000 });
+      await page.goto('https://www.threads.net/', { waitUntil: 'domcontentloaded', timeout: 20_000 });
       return !page.url().includes('/login');
     }
     if (platform === 'facebook') {
-      await page.goto('https://www.facebook.com/', { waitUntil: 'domcontentloaded', timeout: 15_000 });
+      await page.goto('https://www.facebook.com/', { waitUntil: 'domcontentloaded', timeout: 20_000 });
       return !page.url().includes('/login') && !page.url().includes('login.php');
     }
     return true;
-  } catch (_) { return false; }
+  } catch (err) {
+    // Re-throw network/timeout errors — proxy failure should not be misread as
+    // "session expired", which would incorrectly trigger a re-login attempt.
+    if (/timeout|ETIMEDOUT|net::|ERR_|ECONNREFUSED/i.test(err.message)) throw err;
+    return false;
+  }
 }
 
 // ----------------------------------------------------------------
