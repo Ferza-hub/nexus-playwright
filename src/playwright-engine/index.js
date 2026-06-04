@@ -315,6 +315,13 @@ async function executeGhostAction(platform, action, params = {}) {
 
     const loggedIn = await _checkLoggedIn(page, platform);
     if (!loggedIn) {
+      // Cookie-imported accounts have no email/password — cannot re-login automatically.
+      // Mark expired so the user knows to re-import the session.
+      if (!account.email) {
+        log.warn('Session expired, no credentials for re-login — marking expired', { accountId: account.id, platform });
+        getDb().prepare("UPDATE accounts SET status='expired' WHERE id=?").run(account.id);
+        return { success: false, reason: 'session_expired' };
+      }
       log.info('Key account session expired — re-logging in', { accountId: account.id, platform });
       const creds = { email: account.email, password: account.password, username: account.email };
       const loginR = await platformModule.login(page, creds);

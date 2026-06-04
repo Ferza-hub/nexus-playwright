@@ -259,12 +259,12 @@ async function watchVideo(page, videoUrl, { watchMs: watchMsOverride = null, ref
   await _ensurePlaying(page);
   await h.delay(h.randInt(1000, 2000)); // let it buffer
 
-  let watchMs;
+  let watchMs, duration, pct;
   if (watchMsOverride !== null) {
     watchMs = watchMsOverride;
   } else {
-    const duration = await _getDuration(page);
-    const pct      = h.randInt(55, 85) / 100;
+    duration = await _getDuration(page);
+    pct      = h.randInt(55, 85) / 100;
     if (duration) {
       watchMs = Math.round(duration * pct * 1000);
       watchMs = Math.min(watchMs, 300_000);
