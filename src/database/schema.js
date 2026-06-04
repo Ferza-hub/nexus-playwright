@@ -64,6 +64,44 @@ CREATE TABLE IF NOT EXISTS traffic_logs (
 
 CREATE INDEX IF NOT EXISTS idx_traffic_jobs_status ON traffic_jobs(status, created_at);
 CREATE INDEX IF NOT EXISTS idx_traffic_logs_job    ON traffic_logs(job_id, created_at);
+
+-- ---------------------------------------------------------------
+-- web_campaigns + web_visits — website traffic engine
+-- ---------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS web_campaigns (
+  id                INTEGER PRIMARY KEY AUTOINCREMENT,
+  name              TEXT    NOT NULL,
+  target_url        TEXT    NOT NULL,
+  pages             TEXT    NOT NULL DEFAULT '[]',
+  visits_total      INTEGER NOT NULL,
+  visits_sent       INTEGER NOT NULL DEFAULT 0,
+  visits_failed     INTEGER NOT NULL DEFAULT 0,
+  traffic_source    TEXT    NOT NULL DEFAULT 'organic',
+  device            TEXT    NOT NULL DEFAULT 'mixed',
+  persona           TEXT    NOT NULL DEFAULT 'mixed',
+  bounce_rate       INTEGER NOT NULL DEFAULT 40,
+  pages_per_session INTEGER NOT NULL DEFAULT 3,
+  status            TEXT    NOT NULL DEFAULT 'pending'
+                            CHECK(status IN ('pending','running','paused','completed','failed','cancelled')),
+  created_at        DATETIME DEFAULT CURRENT_TIMESTAMP,
+  completed_at      DATETIME
+);
+
+CREATE TABLE IF NOT EXISTS web_visits (
+  id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  campaign_id  INTEGER NOT NULL REFERENCES web_campaigns(id) ON DELETE CASCADE,
+  proxy_id     INTEGER,
+  status       TEXT    NOT NULL DEFAULT 'sent' CHECK(status IN ('sent','failed')),
+  duration     INTEGER,
+  pages        INTEGER DEFAULT 1,
+  persona      TEXT,
+  device       TEXT,
+  user_agent   TEXT,
+  created_at   DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_web_campaigns_status ON web_campaigns(status, created_at);
+CREATE INDEX IF NOT EXISTS idx_web_visits_campaign  ON web_visits(campaign_id, created_at);
 `;
 
 function runMigrations(db) {
@@ -88,6 +126,10 @@ function runMigrations(db) {
   // legacy columns kept so existing DBs don't break
   addCol('accounts', 'email',              `TEXT NOT NULL DEFAULT ''`);
   addCol('accounts', 'password',           `TEXT NOT NULL DEFAULT ''`);
+
+  // web-traffic engine — extra proxy tracking columns
+  addCol('proxies', 'visits_count',         'INTEGER NOT NULL DEFAULT 0');
+  addCol('proxies', 'last_used_at_traffic', 'DATETIME');
 }
 
 module.exports = { runMigrations };

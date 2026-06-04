@@ -16,6 +16,7 @@
     "morgan": "^1.10.0",
     "node-cron": "^3.0.3",
     "playwright": "^1.44.0",
+    "uuid": "^9.0.0",
     "ws": "^8.21.0"
   },
   "engines": {

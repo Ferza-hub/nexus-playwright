@@ -660,6 +660,7 @@ body{background:var(--paper);color:var(--ink);font-family:var(--body);
       <button class="sb-lnk active" onclick="goSP('overview',this)"><span class="sb-ico">📊</span>Overview</button>
       <button class="sb-lnk" onclick="goSP('campaign',this)"><span class="sb-ico">⚡</span>New Campaign</button>
       <button class="sb-lnk" onclick="goSP('jobs',this)"><span class="sb-ico">📋</span>My Jobs</button>
+      <button class="sb-lnk" onclick="goSP('web-traffic',this)"><span class="sb-ico">🌐</span>Web Traffic</button>
       <div class="sb-sec">Accounts</div>
       <button class="sb-lnk" onclick="goSP('connect',this)"><span class="sb-ico">🔗</span>Connect Platforms</button>
       <div class="sb-sec">Settings</div>
@@ -768,6 +769,86 @@ body{background:var(--paper);color:var(--ink);font-family:var(--body);
           <div class="card-ttl">All Jobs <span id="jobs-count"></span></div>
           <table class="tbl"><thead><tr><th>ID</th><th>Platform</th><th>Action</th><th>Target</th><th title="Only views that met the platform watch threshold are counted here">Verified ✓</th><th>Status</th><th>Date</th><th></th></tr></thead>
           <tbody id="all-jobs-body"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.75rem;font-size:.8rem">No jobs yet.</td></tr></tbody></table>
+        </div>
+      </div>
+
+      <!-- WEB TRAFFIC -->
+      <div class="sp" id="sp-web-traffic">
+        <!-- New Campaign Card -->
+        <div class="card" style="margin-bottom:1.25rem">
+          <div class="card-ttl">New Web Traffic Campaign</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.85rem 1.25rem;margin-top:.75rem">
+            <div style="grid-column:span 2">
+              <label style="font-size:.78rem;font-weight:600;color:var(--ink);display:block;margin-bottom:.3rem">Campaign Name</label>
+              <input type="text" id="wt-name" placeholder="e.g. Blog Post Boost"
+                style="width:100%;box-sizing:border-box;padding:.55rem .8rem;border:1.5px solid var(--border);border-radius:6px;font-size:.875rem">
+            </div>
+            <div style="grid-column:span 2">
+              <label style="font-size:.78rem;font-weight:600;color:var(--ink);display:block;margin-bottom:.3rem">Target URL</label>
+              <input type="url" id="wt-url" placeholder="https://yoursite.com/page"
+                style="width:100%;box-sizing:border-box;padding:.55rem .8rem;border:1.5px solid var(--border);border-radius:6px;font-size:.875rem">
+            </div>
+            <div>
+              <label style="font-size:.78rem;font-weight:600;color:var(--ink);display:block;margin-bottom:.3rem">Visits</label>
+              <input type="number" id="wt-visits" value="100" min="1" max="100000"
+                style="width:100%;box-sizing:border-box;padding:.55rem .8rem;border:1.5px solid var(--border);border-radius:6px;font-size:.875rem">
+            </div>
+            <div>
+              <label style="font-size:.78rem;font-weight:600;color:var(--ink);display:block;margin-bottom:.3rem">Traffic Source</label>
+              <select id="wt-source"
+                style="width:100%;box-sizing:border-box;padding:.55rem .8rem;border:1.5px solid var(--border);border-radius:6px;font-size:.875rem;background:var(--cream)">
+                <option value="organic">Organic (Google/Bing)</option>
+                <option value="social">Social (Facebook/Instagram)</option>
+                <option value="referral">Referral (Reddit/Medium)</option>
+                <option value="direct">Direct</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:.78rem;font-weight:600;color:var(--ink);display:block;margin-bottom:.3rem">Device</label>
+              <select id="wt-device"
+                style="width:100%;box-sizing:border-box;padding:.55rem .8rem;border:1.5px solid var(--border);border-radius:6px;font-size:.875rem;background:var(--cream)">
+                <option value="mixed">Mixed</option>
+                <option value="desktop">Desktop</option>
+                <option value="mobile">Mobile</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:.78rem;font-weight:600;color:var(--ink);display:block;margin-bottom:.3rem">Persona</label>
+              <select id="wt-persona"
+                style="width:100%;box-sizing:border-box;padding:.55rem .8rem;border:1.5px solid var(--border);border-radius:6px;font-size:.875rem;background:var(--cream)">
+                <option value="mixed">Mixed</option>
+                <option value="quick_scanner">Quick Scanner</option>
+                <option value="engaged_reader">Engaged Reader</option>
+                <option value="window_shopper">Window Shopper</option>
+                <option value="power_user">Power User</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:.78rem;font-weight:600;color:var(--ink);display:block;margin-bottom:.3rem">Bounce Rate: <span id="wt-bounce-val">40</span>%</label>
+              <input type="range" id="wt-bounce" min="0" max="80" value="40"
+                oninput="document.getElementById('wt-bounce-val').textContent=this.value"
+                style="width:100%">
+            </div>
+            <div>
+              <label style="font-size:.78rem;font-weight:600;color:var(--ink);display:block;margin-bottom:.3rem">Pages/Session: <span id="wt-pages-val">3</span></label>
+              <input type="range" id="wt-pages" min="1" max="8" value="3"
+                oninput="document.getElementById('wt-pages-val').textContent=this.value"
+                style="width:100%">
+            </div>
+          </div>
+          <button onclick="launchWebCampaign()"
+            style="width:100%;margin-top:1rem;padding:.85rem;background:var(--ink);color:var(--cream);border:none;border-radius:6px;font-size:.95rem;font-weight:700;cursor:pointer;letter-spacing:.03em">
+            Launch Campaign →
+          </button>
+        </div>
+
+        <!-- Campaigns Table -->
+        <div class="card">
+          <div class="card-ttl">Campaigns <button onclick="loadWebCampaigns()" style="font-size:.72rem;font-weight:500;border:1px solid var(--border);background:var(--surface);padding:.15rem .5rem;border-radius:4px;cursor:pointer;margin-left:.5rem">↻ Refresh</button></div>
+          <table class="tbl">
+            <thead><tr><th>ID</th><th>Name</th><th>Target</th><th>Progress</th><th>Status</th><th></th></tr></thead>
+            <tbody id="wt-campaigns-body"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:1.75rem;font-size:.8rem">No campaigns yet.</td></tr></tbody>
+          </table>
         </div>
       </div>
 
@@ -1027,7 +1108,8 @@ function goSP(id, el) {
   document.querySelectorAll('.sp').forEach(p => p.classList.remove('active'));
   document.getElementById(`sp-${id}`).classList.add('active');
   const titles = { overview:'Overview', campaign:'New Campaign', jobs:'My Jobs',
-                   connect:'Connect Platforms', billing:'Billing' };
+                   connect:'Connect Platforms', billing:'Billing',
+                   'web-traffic':'Web Traffic' };
   document.getElementById('dash-title').textContent = titles[id] || id;
   document.querySelectorAll('.sb-lnk').forEach(b => b.classList.remove('active'));
   if (el) el.classList.add('active');
@@ -1037,6 +1119,7 @@ function goSP(id, el) {
         b.classList.add('active');
     });
   }
+  if (id === 'web-traffic') loadWebCampaigns();
 }
 
 // ── CAMPAIGN ──
@@ -1235,6 +1318,117 @@ async function jobAction(id, action) {
       await fetch(`${API}/api/traffic/${id}/${action}`, { method: 'POST', headers: { 'x-auth-token': S.token } });
     }
     await loadJobs();
+  } catch (e) { toast('Error: ' + e.message, 'err'); }
+}
+
+// ── WEB TRAFFIC ──
+async function loadWebCampaigns() {
+  try {
+    const res = await fetch(`${API}/api/web-traffic/campaigns`, {
+      headers: { 'x-auth-token': S.token }
+    });
+    if (!res.ok) return;
+    const campaigns = await res.json();
+    renderWebCampaigns(campaigns);
+  } catch (_) {}
+}
+
+function renderWebCampaigns(campaigns) {
+  const s = 'font-size:.7rem;padding:.2rem .55rem;border-radius:4px;cursor:pointer;border:1px solid;line-height:1.4;';
+  const rows = campaigns.length ? campaigns.map(c => {
+    const pct = c.visits_total > 0 ? Math.round((c.visits_sent / c.visits_total) * 100) : 0;
+    let btns = '';
+    if (c.status === 'pending' || c.status === 'paused' || c.status === 'failed') {
+      btns += `<button onclick="webCampaignAction(${c.id},'start')" style="${s}background:#dcfce7;border-color:#86efac;color:#166534;margin-right:4px">Start</button>`;
+    }
+    if (c.status === 'running') {
+      btns += `<button onclick="webCampaignAction(${c.id},'pause')" style="${s}background:#fef9c3;border-color:#fde047;color:#713f12;margin-right:4px">Pause</button>`;
+    }
+    if (c.status !== 'running') {
+      btns += `<button onclick="webCampaignAction(${c.id},'delete')" style="${s}background:#f1f5f9;border-color:#cbd5e1;color:#64748b">Del</button>`;
+    }
+    return `<tr>
+      <td style="font-family:var(--mono);font-size:.7rem">#${c.id}</td>
+      <td>${c.name}</td>
+      <td style="font-size:.7rem;color:var(--muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${c.target_url}">${c.target_url}</td>
+      <td><span class="progress-bar"><span class="progress-fill" style="width:${pct}%"></span></span>${c.visits_sent}/${c.visits_total}</td>
+      <td><span class="jbadge ${c.status}">${c.status}</span></td>
+      <td style="white-space:nowrap">${btns}</td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:1.75rem;font-size:.8rem">No campaigns yet.</td></tr>`;
+
+  document.getElementById('wt-campaigns-body').innerHTML = rows;
+
+  // Auto-poll while any campaign is running
+  const hasRunning = campaigns.some(c => c.status === 'running');
+  if (hasRunning) setTimeout(loadWebCampaigns, 4000);
+}
+
+async function launchWebCampaign() {
+  const name    = document.getElementById('wt-name').value.trim();
+  const url     = document.getElementById('wt-url').value.trim();
+  const visits  = parseInt(document.getElementById('wt-visits').value);
+  const source  = document.getElementById('wt-source').value;
+  const device  = document.getElementById('wt-device').value;
+  const persona = document.getElementById('wt-persona').value;
+  const bounce  = parseInt(document.getElementById('wt-bounce').value);
+  const pages   = parseInt(document.getElementById('wt-pages').value);
+
+  if (!name) { toast('Enter a campaign name.', 'err'); return; }
+  if (!url)  { toast('Enter a target URL.', 'err');   return; }
+  if (!visits || visits < 1) { toast('Enter a valid visit count.', 'err'); return; }
+
+  try {
+    const res = await fetch(`${API}/api/web-traffic/campaigns`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-auth-token': S.token },
+      body: JSON.stringify({
+        name, target_url: url, visits_total: visits,
+        traffic_source: source, device, persona,
+        bounce_rate: bounce, pages_per_session: pages,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Failed to create campaign');
+
+    // Immediately start it
+    await fetch(`${API}/api/web-traffic/campaigns/${data.id}/start`, {
+      method: 'POST',
+      headers: { 'x-auth-token': S.token },
+    });
+
+    toast(`Campaign #${data.id} launched!`, 'ok');
+    document.getElementById('wt-name').value = '';
+    document.getElementById('wt-url').value  = '';
+    await loadWebCampaigns();
+  } catch (e) { toast('Error: ' + e.message, 'err'); }
+}
+
+async function webCampaignAction(id, action) {
+  try {
+    if (action === 'delete') {
+      if (!confirm('Delete this campaign and all its visit logs?')) return;
+      await fetch(`${API}/api/web-traffic/campaigns/${id}`, {
+        method: 'DELETE', headers: { 'x-auth-token': S.token }
+      });
+    } else if (action === 'start') {
+      await fetch(`${API}/api/web-traffic/campaigns/${id}/start`, {
+        method: 'POST', headers: { 'x-auth-token': S.token }
+      });
+    } else if (action === 'pause') {
+      await fetch(`${API}/api/web-traffic/campaigns/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-auth-token': S.token },
+        body: JSON.stringify({ status: 'paused' }),
+      });
+    } else if (action === 'cancel') {
+      await fetch(`${API}/api/web-traffic/campaigns/${id}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-auth-token': S.token },
+        body: JSON.stringify({ status: 'cancelled' }),
+      });
+    }
+    await loadWebCampaigns();
   } catch (e) { toast('Error: ' + e.message, 'err'); }
 }
 
