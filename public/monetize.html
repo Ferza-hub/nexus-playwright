@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nexus — Your Growth Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0a0a0a;--paper:#f5f0e8;--cream:#ede8dc;
+  --accent:#c8f135;--red:#e8341a;--muted:#6b6560;--green:#16a34a;
+  --border:rgba(10,10,10,.1);
+  --mono:'DM Mono',monospace;--display:'Bebas Neue',sans-serif;
+  --serif:'DM Serif Display',serif;--body:'Inter',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.6}
+.wrap{display:flex;min-height:100vh}
+
+/* Sidebar */
+.sidebar{width:230px;background:var(--ink);color:var(--paper);display:flex;flex-direction:column;height:100vh;position:sticky;top:0;flex-shrink:0}
+.sb-logo{padding:1.1rem 1.4rem;border-bottom:1px solid rgba(245,240,232,.08);display:flex;align-items:center;gap:.55rem}
+.sb-mark{width:26px;height:26px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center}
+.sb-dot{width:9px;height:9px;background:var(--ink);border-radius:50%;animation:pulse 2.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.4);opacity:.5}}
+.sb-txt{font-family:var(--display);font-size:1.2rem;letter-spacing:.05em}
+.sb-nav{padding:.6rem 0;flex:1}
+.sb-sec{font-family:var(--mono);font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(245,240,232,.22);padding:.5rem 1.4rem .25rem;margin-top:.4rem}
+.sb-lnk{display:flex;align-items:center;gap:.65rem;padding:.6rem 1.4rem;font-size:.82rem;color:rgba(245,240,232,.55);cursor:pointer;transition:all .15s;position:relative;border:none;background:none;width:100%;text-align:left}
+.sb-lnk:hover{color:var(--paper);background:rgba(245,240,232,.05)}
+.sb-lnk.active{color:var(--paper);background:rgba(200,241,53,.08)}
+.sb-lnk.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent)}
+.sb-ico{font-size:.95rem;width:18px;text-align:center}
+.sb-bottom{padding:1rem 1.4rem;border-top:1px solid rgba(245,240,232,.08)}
+.sb-cta{width:100%;padding:.7rem;font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;background:var(--accent);color:var(--ink);border:none;cursor:pointer;transition:.15s;margin-bottom:.5rem}
+.sb-cta:hover{background:#d4f84a}
+.sb-out{width:100%;padding:.4rem;font-family:var(--mono);font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;background:transparent;color:rgba(245,240,232,.28);border:none;cursor:pointer;transition:color .15s}
+.sb-out:hover{color:rgba(245,240,232,.65)}
+
+/* Main */
+.main{flex:1;overflow-y:auto;height:100vh}
+.topbar{padding:1.1rem 2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:rgba(245,240,232,.96);backdrop-filter:blur(20px);position:sticky;top:0;z-index:50}
+.topbar-title{font-family:var(--display);font-size:1.5rem;letter-spacing:.02em}
+.topbar-sub{font-size:.75rem;color:var(--muted)}
+.content{padding:2rem}
+
+/* Account tabs */
+.acct-tabs{display:flex;gap:.75rem;margin-bottom:2rem;flex-wrap:wrap}
+.acct-tab{display:flex;align-items:center;gap:.7rem;padding:.7rem 1.1rem;border:1px solid var(--border);background:white;cursor:pointer;transition:all .2s;min-width:190px}
+.acct-tab:hover{border-color:var(--ink)}
+.acct-tab.active{border-color:var(--ink);background:var(--ink);color:var(--paper)}
+.acct-tab-ico{width:34px;height:34px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+.acct-tab-name{font-size:.82rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acct-tab-plat{font-family:var(--mono);font-size:.58rem;letter-spacing:.06em;text-transform:uppercase;opacity:.6}
+.acct-tab.add{justify-content:center;min-width:auto;color:var(--muted);border-style:dashed}
+.acct-tab.add:hover{color:var(--ink)}
+
+/* Monetize hero */
+.hero{background:var(--ink);color:var(--paper);padding:2.5rem;margin-bottom:1.5rem;position:relative;overflow:hidden}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(200,241,53,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(200,241,53,.05) 1px,transparent 1px);background-size:40px 40px}
+.hero-body{position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr;gap:3rem}
+.hero-left{}
+.hero-eyebrow{font-family:var(--mono);font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:1rem;display:flex;align-items:center;gap:.6rem}
+.hero-eyebrow::before{content:'';width:24px;height:1px;background:var(--accent)}
+.hero-status{font-family:var(--display);font-size:clamp(2rem,4vw,3rem);line-height:.95;letter-spacing:.02em;margin-bottom:.5rem}
+.hero-status em{font-family:var(--serif);font-style:italic;color:var(--accent)}
+.hero-eta{font-size:.88rem;color:rgba(245,240,232,.6);margin-bottom:2rem}
+.hero-eta strong{color:var(--accent);font-family:var(--mono)}
+.req-list{display:flex;flex-direction:column;gap:1.1rem}
+.req-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:.4rem}
+.req-label{font-size:.82rem;font-weight:500;display:flex;align-items:center;gap:.45rem}
+.req-check{width:15px;height:15px;border-radius:50%;border:1.5px solid rgba(245,240,232,.3);display:flex;align-items:center;justify-content:center;font-size:.55rem;flex-shrink:0}
+.req-check.done{background:var(--accent);border-color:var(--accent);color:var(--ink)}
+.req-nums{font-family:var(--mono);font-size:.8rem}
+.req-nums .cur{color:var(--accent)}
+.req-nums .tgt{color:rgba(245,240,232,.35)}
+.req-track{height:6px;background:rgba(245,240,232,.08);border-radius:3px;overflow:hidden}
+.req-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent),#9dd119);transition:width 1.2s cubic-bezier(.2,.8,.2,1)}
+.req-fill.done{background:linear-gradient(90deg,var(--green),#22c55e)}
+.req-sub{font-family:var(--mono);font-size:.58rem;color:rgba(245,240,232,.3);margin-top:.25rem;text-align:right}
+
+/* Benchmark panel (right side of hero) */
+.hero-right{}
+.bench-label{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(245,240,232,.35);margin-bottom:.75rem}
+.pct-display{margin-bottom:1.25rem}
+.pct-num{font-family:var(--display);font-size:3.5rem;line-height:1;color:var(--accent)}
+.pct-desc{font-size:.78rem;color:rgba(245,240,232,.55);margin-top:.2rem;line-height:1.5}
+.narrative{display:flex;flex-direction:column;gap:.5rem}
+.narr-line{font-size:.78rem;color:rgba(245,240,232,.6);line-height:1.6;padding-left:.75rem;border-left:2px solid rgba(200,241,53,.25)}
+
+/* Stats row */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
+.stat{background:white;border:1px solid var(--border);padding:1.25rem;transition:.2s;cursor:default}
+.stat:hover{transform:translateY(-2px);border-color:var(--ink)}
+.stat-lbl{font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+.stat-val{font-family:var(--display);font-size:2.1rem;letter-spacing:.02em;line-height:1}
+.stat-delta{font-size:.72rem;margin-top:.35rem;display:flex;align-items:center;gap:.3rem}
+.stat-delta.up{color:var(--green)}
+.stat-delta.pending{color:var(--muted)}
+
+/* Rivals table */
+.panel{background:white;border:1px solid var(--border);padding:1.5rem;margin-bottom:1.5rem}
+.panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
+.panel-title{font-family:var(--display);font-size:1.1rem;letter-spacing:.03em}
+.panel-title span{font-family:var(--body);font-size:.72rem;color:var(--muted);font-weight:400;margin-left:.5rem}
+.panel-action{font-family:var(--mono);font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;background:none;border:1px solid var(--border);padding:.35rem .8rem;cursor:pointer;transition:all .15s}
+.panel-action:hover{border-color:var(--ink);background:var(--ink);color:var(--paper)}
+
+.rival-row{display:flex;align-items:center;gap:1rem;padding:.85rem 0;border-bottom:1px solid var(--border)}
+.rival-row:last-child{border-bottom:none}
+.rival-rank{font-family:var(--mono);font-size:.65rem;color:var(--muted);width:20px;flex-shrink:0}
+.rival-info{flex:1;min-width:0}
+.rival-name{font-size:.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rival-cat{font-family:var(--mono);font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.rival-subs{font-family:var(--display);font-size:1.1rem;letter-spacing:.02em;text-align:right;flex-shrink:0;width:70px}
+.rival-gap{text-align:right;flex-shrink:0;width:100px}
+.rival-gap-num{font-family:var(--mono);font-size:.72rem;color:var(--red)}
+.rival-gap-eta{font-family:var(--mono);font-size:.6rem;color:var(--muted)}
+.rival-earn{text-align:right;flex-shrink:0;width:80px}
+.rival-earn-num{font-size:.8rem;font-weight:600;color:var(--green)}
+.rival-earn-lbl{font-family:var(--mono);font-size:.55rem;color:var(--muted)}
+.rival-badge{font-family:var(--mono);font-size:.55rem;letter-spacing:.06em;text-transform:uppercase;padding:.15rem .45rem;border-radius:2px;background:var(--cream);color:var(--muted);flex-shrink:0}
+.rival-badge.nearest{background:#fef9c3;color:#854d0e}
+
+/* Growth chart */
+.chart-wrap{position:relative;height:180px}
+.chart-svg{width:100%;height:100%;overflow:visible}
+.proj-legend{display:flex;gap:1.5rem;margin-top:1rem;font-size:.72rem;color:var(--muted)}
+.proj-legend span{display:flex;align-items:center;gap:.4rem}
+.proj-line{width:16px;height:2px;flex-shrink:0}
+
+/* Add rival input */
+.rival-input-row{display:flex;gap:.65rem;margin-top:1rem}
+.rival-inp{flex:1;padding:.6rem .85rem;border:1px solid var(--border);font-family:var(--body);font-size:.82rem;outline:none;transition:border-color .15s}
+.rival-inp:focus{border-color:var(--ink)}
+.rival-add-btn{padding:.6rem 1.1rem;font-family:var(--mono);font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;background:var(--ink);color:var(--paper);border:none;cursor:pointer;transition:.15s;white-space:nowrap}
+.rival-add-btn:hover{background:var(--red)}
+
+/* Utility */
+.empty{text-align:center;padding:2.5rem;color:var(--muted);font-size:.85rem;line-height:1.8}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(10,10,10,.12);border-top-color:var(--ink);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--ink);color:var(--paper);padding:.75rem 1.25rem;font-family:var(--mono);font-size:.68rem;letter-spacing:.06em;z-index:1000;transform:translateY(60px);opacity:0;transition:all .3s;border-left:3px solid var(--accent)}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.err{border-left-color:var(--red)}
+
+@media(max-width:900px){
+  .sidebar{display:none}
+  .hero-body{grid-template-columns:1fr}
+  .stats-row{grid-template-columns:1fr 1fr}
+  .acct-tab{min-width:150px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside class="sidebar">
+    <div class="sb-logo"><div class="sb-mark"><div class="sb-dot"></div></div><span class="sb-txt">NEXUS</span></div>
+    <nav class="sb-nav">
+      <div class="sb-sec">Your Channels</div>
+      <button class="sb-lnk active"><span class="sb-ico">🎯</span>Growth Dashboard</button>
+      <button class="sb-lnk"><span class="sb-ico">📊</span>Analytics</button>
+      <div class="sb-sec">Settings</div>
+      <button class="sb-lnk"><span class="sb-ico">🔗</span>Connected Accounts</button>
+      <button class="sb-lnk"><span class="sb-ico">💳</span>Billing</button>
+    </nav>
+    <div class="sb-bottom">
+      <button class="sb-cta" onclick="addAccount()">+ Connect Channel</button>
+      <button class="sb-out" onclick="signOut()">Sign Out</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div><div class="topbar-title" id="page-title">Growth Dashboard</div><div class="topbar-sub" id="page-sub">Loading your channels…</div></div>
+    </div>
+    <div class="content">
+      <div class="acct-tabs" id="acct-tabs"></div>
+      <div id="goal-view"><div class="empty"><span class="spin"></span><br><br>Loading…</div></div>
+    </div>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+const API   = '';
+const TOKEN = localStorage.getItem('nx_token') || '';
+const PLAT_ICO = { youtube:'▶️', facebook:'👤', instagram:'📷', tiktok:'🎵' };
+const PLAT_BG  = { youtube:'#fee2e2', facebook:'#eff6ff', instagram:'#fce7f3', tiktok:'#f0fdf4' };
+let goals=[], benchmarks={}, activeId=null;
+
+async function api(path, opts={}){
+  const r = await fetch(API+path,{...opts,headers:{'Content-Type':'application/json','x-auth-token':TOKEN,...(opts.headers||{})}});
+  if(!r.ok) throw new Error((await r.json().catch(()=>({}))).error||r.statusText);
+  return r.json();
+}
+
+async function load(){
+  try {
+    goals = await api('/api/goals');
+    if(!goals.length){ renderEmpty(); return; }
+    if(!activeId||!goals.find(g=>g.goal.id===activeId)) activeId=goals[0].goal.id;
+    // Load benchmark for active goal
+    try { benchmarks[activeId] = await api(`/api/benchmark/${activeId}`); } catch(_){}
+    renderTabs(); renderGoalView();
+  } catch(e){
+    document.getElementById('goal-view').innerHTML=`<div class="empty">Could not load data: ${e.message}</div>`;
+  }
+}
+
+function renderEmpty(){
+  document.getElementById('acct-tabs').innerHTML=`<div class="acct-tab add" onclick="addAccount()">+ Connect Your First Channel</div>`;
+  document.getElementById('goal-view').innerHTML=`<div class="empty">Connect a YouTube or Facebook account to start tracking your path to monetization.</div>`;
+  document.getElementById('page-sub').textContent='No channels connected yet';
+}
+
+function renderTabs(){
+  document.getElementById('acct-tabs').innerHTML =
+    goals.map(g=>`<div class="acct-tab ${g.goal.id===activeId?'active':''}" onclick="selectGoal(${g.goal.id})">
+      <div class="acct-tab-ico" style="background:${PLAT_BG[g.goal.platform]||'#eee'}">${PLAT_ICO[g.goal.platform]||'🌐'}</div>
+      <div><div class="acct-tab-name">${g.goal.channel_label||'Channel'}</div>
+      <div class="acct-tab-plat">${g.goal.platform} · ${g.overallPct}%</div></div>
+    </div>`).join('') + `<div class="acct-tab add" onclick="addAccount()">+</div>`;
+}
+
+async function selectGoal(id){
+  activeId=id;
+  renderTabs();
+  if(!benchmarks[id]){ try{ benchmarks[id]=await api(`/api/benchmark/${id}`); }catch(_){} }
+  renderGoalView();
+}
+
+function renderGoalView(){
+  const g = goals.find(x=>x.goal.id===activeId);
+  if(!g) return;
+  const bm = benchmarks[activeId];
+  document.getElementById('page-title').textContent = g.goal.channel_label||'Channel';
+  document.getElementById('page-sub').textContent   = g.platformLabel+' · '+g.goal.category;
+
+  const fmt  = n => n>=1000000?`${(n/1000000).toFixed(1)}M`:n>=1000?`${(n/1000).toFixed(1)}K`:String(Math.round(n));
+  const fmtH = h => h>=1000?`${(h/1000).toFixed(1)}K`:Math.round(h).toLocaleString();
+
+  // ETA logic — don't show if insufficient data
+  const etaText = g.reached ? '' :
+    g.etaDays==null ? 'Building baseline — check back in a few days' :
+    g.etaDays===0   ? 'Finalizing…' :
+    `est. <strong>${g.etaDays} days</strong> at current rate`;
+
+  const reqsHtml = g.reqs.map(r=>`
+    <div class="req">
+      <div class="req-head">
+        <div class="req-label"><span class="req-check ${r.done?'done':''}">${r.done?'✓':'○'}</span>${r.label}</div>
+        <div class="req-nums"><span class="cur">${r.key==='watch_hr'?fmtH(r.current):fmt(r.current)}</span> <span class="tgt">/ ${r.key==='watch_hr'?fmtH(r.target):fmt(r.target)}</span></div>
+      </div>
+      <div class="req-track"><div class="req-fill ${r.done?'done':''}" style="width:${r.pct}%"></div></div>
+      <div class="req-sub">${r.pct}%${r.done?' · done':(r.remaining>0?` · ${r.key==='watch_hr'?fmtH(r.remaining):fmt(r.remaining)} to go`:'')}</div>
+    </div>`).join('');
+
+  // Benchmark right panel
+  let benchHtml = '';
+  if(bm?.percentile?.percentile!=null){
+    benchHtml = `
+      <div class="pct-display">
+        <div class="pct-num">${bm.percentile.percentile}<span style="font-size:1.5rem;opacity:.6">%</span></div>
+        <div class="pct-desc">faster than other ${bm.category} channels<br>in your cohort</div>
+      </div>
+      <div class="narrative">${(bm.narrative||[]).map(l=>`<div class="narr-line">${l}</div>`).join('')}</div>`;
+  } else if(bm?.percentile?.needsMoreData){
+    benchHtml=`<div class="narr-line" style="margin-top:1rem">Building your benchmark — we'll compare you to similar channels once we have enough data.</div>`;
+  } else {
+    benchHtml=`<div class="narr-line" style="margin-top:1rem;opacity:.5">Benchmark data syncing…</div>`;
+  }
+
+  // Rival rows
+  const rivals = bm?.rivals||[];
+  const rivalRows = rivals.length ? rivals.map((r,i)=>`
+    <div class="rival-row">
+      <div class="rival-rank">#${i+1}</div>
+      <div class="rival-info">
+        <div class="rival-name">${r.label||r.channelId}</div>
+        <div class="rival-cat">${r.category||''}</div>
+      </div>
+      <div class="rival-subs">${fmt(r.subs)}</div>
+      <div class="rival-gap">
+        <div class="rival-gap-num">+${fmt(r.gapSubs)}</div>
+        <div class="rival-gap-eta">${r.catchUpDays?r.catchUpDays+' days':'—'}</div>
+      </div>
+      <div class="rival-earn">
+        <div class="rival-earn-num">${r.estMonthlyUSD?'$'+r.estMonthlyUSD:'-'}</div>
+        <div class="rival-earn-lbl">/month est.</div>
+      </div>
+      ${i===0?'<div class="rival-badge nearest">Nearest</div>':'<div class="rival-badge">Rival</div>'}
+    </div>`).join('') :
+    `<div style="padding:1rem 0;font-size:.8rem;color:var(--muted)">No rivals found yet — add one manually or wait for more channels to join your cohort.</div>`;
+
+  // Stats
+  const delivered = g.delivered||0;
+  const estMo     = bm?.estMonthlyUSD||0;
+
+  document.getElementById('goal-view').innerHTML = `
+    <div class="hero">
+      <div class="hero-grid"></div>
+      <div class="hero-body">
+        <div class="hero-left">
+          <div class="hero-eyebrow">${g.platformLabel}</div>
+          <div class="hero-status">${g.reached?'YOU\'RE<br><em>monetized.</em>':`${g.overallPct}% TO<br><em>monetized.</em>`}</div>
+          ${!g.reached&&etaText?`<div class="hero-eta">${etaText}</div>`:''}
+          <div class="req-list">${reqsHtml}</div>
+        </div>
+        <div class="hero-right">
+          <div class="bench-label">Your Cohort Standing</div>
+          ${benchHtml}
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat"><div class="stat-lbl">Delivered by Nexus</div><div class="stat-val">${fmt(delivered)}</div><div class="stat-delta ${delivered>0?'up':'pending'}">${delivered>0?'▲ since last sync':'engine running'}</div></div>
+      <div class="stat"><div class="stat-lbl">Est. Monthly Revenue</div><div class="stat-val">${estMo?'$'+estMo:'—'}</div><div class="stat-delta pending">${g.goal.platform==='youtube'?'after monetize':''}</div></div>
+      <div class="stat"><div class="stat-lbl">Nearest Rival Gap</div><div class="stat-val">${rivals[0]?fmt(rivals[0].gapSubs):'—'}</div><div class="stat-delta ${rivals[0]?.catchUpDays?'up':'pending'}">${rivals[0]?.catchUpDays?'~'+rivals[0].catchUpDays+' days':''}</div></div>
+      <div class="stat"><div class="stat-lbl">Cohort Rank</div><div class="stat-val">${bm?.percentile?.percentile!=null?'Top '+(100-bm.percentile.percentile)+'%':'—'}</div><div class="stat-delta pending">${bm?.percentile?.sampleSize?bm.percentile.sampleSize+' channels':''}</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Your Rivals <span>channels slightly ahead of you</span></div>
+        <button class="panel-action" onclick="showRivalInput()">+ Add Rival</button>
+      </div>
+      ${rivalRows}
+      <div id="rival-input" style="display:none">
+        <div class="rival-input-row">
+          <input class="rival-inp" type="text" id="rival-url" placeholder="https://www.youtube.com/@channelname">
+          <button class="rival-add-btn" onclick="addRival()">Add →</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">Growth Trajectory <span>path to threshold</span></div></div>
+      <div class="chart-wrap"><svg class="chart-svg" id="chart" viewBox="0 0 800 180" preserveAspectRatio="none"></svg></div>
+      <div class="proj-legend">
+        <span><span class="proj-line" style="background:var(--ink)"></span>Actual (from platform API)</span>
+        <span><span class="proj-line" style="background:var(--accent);border-top:2px dashed var(--accent);height:0"></span>Projected</span>
+        <span><span class="proj-line" style="background:var(--red);border-top:1px dashed var(--red);height:0"></span>Threshold</span>
+      </div>
+    </div>`;
+
+  drawChart(g);
+}
+
+function drawChart(g){
+  const svg=document.getElementById('chart'); if(!svg) return;
+  const W=800,H=180,pad=12;
+  const key    = g.reqs[0].key==='subs'?'subs':'followers';
+  const target = g.reqs[0].target;
+  const traj   = g.trajectory||[];
+  const vals   = traj.length ? traj.map(t=>t[key]??0) : [g.reqs[0].current];
+  const cur    = vals[vals.length-1];
+  const proj   = [cur];
+  if(g.etaDays&&g.etaDays>0&&cur<target){
+    const step=(target-cur)/g.etaDays;
+    for(let i=1;i<=g.etaDays;i++) proj.push(Math.min(target,Math.round(cur+step*i)));
+  }
+  const total = vals.length+proj.length-1;
+  const maxV  = Math.max(target*1.06,...vals,...proj);
+  const x=i=>pad+(i/Math.max(1,total))*(W-2*pad);
+  const y=v=>H-pad-(v/maxV)*(H-2*pad);
+  let el='';
+  const ty=y(target);
+  el+=`<line x1="${pad}" y1="${ty}" x2="${W-pad}" y2="${ty}" stroke="#e8341a" stroke-width="1" stroke-dasharray="5 4" opacity="0.5"/>`;
+  el+=`<text x="${W-pad-4}" y="${ty-5}" text-anchor="end" font-family="DM Mono" font-size="9" fill="#e8341a">${target.toLocaleString()}</text>`;
+  let dA=`M ${x(0)} ${y(vals[0])}`;
+  vals.forEach((v,i)=>dA+=` L ${x(i)} ${y(v)}`);
+  el+=`<path d="${dA} L ${x(vals.length-1)} ${H-pad} L ${x(0)} ${H-pad} Z" fill="rgba(10,10,10,0.04)"/>`;
+  el+=`<path d="${dA}" fill="none" stroke="#0a0a0a" stroke-width="2"/>`;
+  if(proj.length>1){
+    let dP=`M ${x(vals.length-1)} ${y(proj[0])}`;
+    proj.forEach((v,i)=>dP+=` L ${x(vals.length-1+i)} ${y(v)}`);
+    el+=`<path d="${dP}" fill="none" stroke="#c8f135" stroke-width="2" stroke-dasharray="6 4"/>`;
+    el+=`<circle cx="${x(total)}" cy="${y(target)}" r="4" fill="#c8f135" stroke="#0a0a0a" stroke-width="1.5"/>`;
+  }
+  el+=`<circle cx="${x(vals.length-1)}" cy="${y(cur)}" r="4" fill="#0a0a0a"/>`;
+  svg.innerHTML=el;
+}
+
+function showRivalInput(){
+  const el=document.getElementById('rival-input');
+  if(el) el.style.display=el.style.display==='none'?'block':'none';
+}
+
+async function addRival(){
+  const url=document.getElementById('rival-url')?.value?.trim();
+  if(!url){ toast('Enter a channel URL','err'); return; }
+  try {
+    await api(`/api/benchmark/${activeId}/rival`,{method:'POST',body:JSON.stringify({channelUrl:url})});
+    benchmarks[activeId]=await api(`/api/benchmark/${activeId}`);
+    renderGoalView();
+    toast('Rival added ✓');
+  } catch(e){ toast(e.message,'err'); }
+}
+
+function addAccount(){
+  const p=prompt('Platform? (youtube / facebook)');
+  if(!p) return;
+  window.location.href=`/api/goals/auth/${p.trim().toLowerCase()}`;
+}
+
+function signOut(){
+  localStorage.removeItem('nx_token');
+  window.location.href='/';
+}
+
+let _toastT;
+function toast(msg,type='ok'){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className=`toast ${type} show`;
+  clearTimeout(_toastT); _toastT=setTimeout(()=>el.classList.remove('show'),3000);
+}
+
+load();
+setInterval(load, 30000);
+</script>
+</body>
+</html>
