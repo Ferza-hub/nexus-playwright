@@ -1,8 +1,9 @@
 'use strict';
 
 const { executeGhostView, executeGhostAction } = require('../playwright-engine/index');
-const { getDb }      = require('../database/db');
-const { makeLogger } = require('../utils/logger');
+const { getDb }        = require('../database/db');
+const { makeLogger }   = require('../utils/logger');
+const { recordDelivery } = require('./goals');
 
 const log = makeLogger('TrafficRunner');
 
@@ -132,9 +133,9 @@ async function runJob(jobId) {
       let result;
       try {
         if (actionDef.type === 'view') {
-          result = await executeGhostView(actionDef.ghostPlatform, job.target_value);
+          result = await executeGhostView(actionDef.ghostPlatform, pickTargetUrl(job));
         } else {
-          const params = actionDef.buildParams(job.target_value);
+          const params = actionDef.buildParams(pickTargetUrl(job));
           result = await executeGhostAction(actionDef.ghostPlatform, actionDef.action, params);
         }
       } catch (err) {
@@ -159,6 +160,9 @@ async function runJob(jobId) {
           .run(new Date().toISOString(), jobId);
         logEntry('success', null);
         log.debug('Action done', { jobId, done, target: job.target_count });
+        if (job.goal_id) {
+          try { rollupToGoal(job, result); } catch (_) {}
+        }
       } else if (result.reason === 'no_ghost_available') {
         logEntry('skipped', result.reason);
         await delay(randInt(2_000, 5_000));
@@ -224,6 +228,41 @@ function resetStaleJobs() {
     ).run(new Date().toISOString()).changes;
     if (n > 0) log.info(`Reset ${n} stale running job(s) to paused on startup`);
   } catch (_) {}
+}
+
+// Auto-distribute delivery across the channel's video list.
+// Newest video gets priority; cycles through all videos so watch hours
+// accumulate naturally across content (mirrors real audience behavior).
+function pickTargetUrl(job) {
+  if (!job.goal_id) return job.target_value;
+  try {
+    const goal   = getDb().prepare('SELECT video_list FROM growth_goals WHERE id=?').get(job.goal_id);
+    const videos = JSON.parse(goal?.video_list || '[]');
+    if (!videos.length) return job.target_value;
+    const weights = videos.map((_, i) => Math.max(1, videos.length - i));
+    const total   = weights.reduce((s, w) => s + w, 0);
+    let r = Math.random() * total;
+    for (let i = 0; i < videos.length; i++) {
+      r -= weights[i];
+      if (r <= 0) return videos[i].url;
+    }
+    return videos[0].url;
+  } catch (_) { return job.target_value; }
+}
+
+// Map a validated delivery to its monetization metric and roll up to goal.
+function rollupToGoal(job, result) {
+  const patch = { delivered: 1 };
+  if (job.platform === 'youtube') {
+    if (job.action_type === 'views')     patch.watch_hr = (result.watchMs ?? 0) / 3_600_000;
+    else if (job.action_type === 'subscribe') patch.subs = 1;
+  } else if (job.platform === 'facebook') {
+    if (job.action_type === 'views')     patch.views_60d = 1;
+    if (job.action_type === 'follow')    patch.followers  = 1;
+  } else if (['instagram', 'tiktok'].includes(job.platform)) {
+    if (job.action_type === 'follow')    patch.followers = 1;
+  }
+  recordDelivery(job.goal_id, patch);
 }
 
 module.exports = { runJob, stopJob, isRunning, resetStaleJobs, TRAFFIC_ACTIONS };

@@ -130,6 +130,13 @@ function runMigrations(db) {
   // web-traffic engine — extra proxy tracking columns
   addCol('proxies', 'visits_count',         'INTEGER NOT NULL DEFAULT 0');
   addCol('proxies', 'last_used_at_traffic', 'DATETIME');
+
+  // monetization goals + benchmark
+  applyGoalSchema(db);
+  applyBenchmarkSchema(db);
 }
+
+const { applyGoalSchema }      = require('./schema-goals');
+const { applyBenchmarkSchema } = require('./schema-benchmark');
 
 module.exports = { runMigrations };
