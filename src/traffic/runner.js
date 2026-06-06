@@ -85,6 +85,16 @@ const _active = new Map();
 // completed_count so delivery continues from where it left off.
 // ----------------------------------------------------------------
 
+// Returns off-peak extra delay to mimic natural audience viewing patterns.
+// Peak window: 10:00-22:00 UTC (~17:00-05:00 WIB, ~03:00-15:00 PST).
+function _naturalPacing() {
+  const hour = new Date().getUTCHours();
+  const inPeak = hour >= 10 && hour < 22;
+  return inPeak
+    ? { extraDelay: 0 }
+    : { extraDelay: randInt(3000, 8000) };
+}
+
 async function runJob(jobId) {
   const db  = getDb();
   const job = db.prepare('SELECT * FROM traffic_jobs WHERE id=?').get(jobId);
@@ -179,7 +189,8 @@ async function runJob(jobId) {
       }
 
       if (_active.has(jobId) && done < job.target_count) {
-        await delay(randInt(500, 1500));
+        const pacing = _naturalPacing();
+        await delay(randInt(500, 1500) + pacing.extraDelay);
       }
     }
   };
