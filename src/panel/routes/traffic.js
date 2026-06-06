@@ -76,6 +76,21 @@ router.post('/:id/stop', (req, res) => {
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// POST /api/traffic/:id/resume
+router.post('/:id/resume', (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (isRunning(id)) return res.json({ ok: true, message: 'already running' });
+    const job = getDb().prepare("SELECT status FROM traffic_jobs WHERE id=?").get(id);
+    if (!job) return res.status(404).json({ error: 'Job not found' });
+    if (!['paused', 'failed', 'running'].includes(job.status)) {
+      return res.status(400).json({ error: 'Job cannot be resumed' });
+    }
+    runJob(id).catch(err => console.error('[TrafficRunner] unhandled:', err.message));
+    res.json({ ok: true });
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 // DELETE /api/traffic/:id
 router.delete('/:id', (req, res) => {
   try {

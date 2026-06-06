@@ -42,6 +42,8 @@ class RelaySession {
     this.accountId  = null;
     this._timer     = null;
     this._ttlTimer  = setTimeout(() => this.destroy(), SESSION_TTL_MS);
+    this._queue     = [];   // serialized input queue
+    this._draining  = false;
   }
 
   async start() {
@@ -54,6 +56,9 @@ class RelaySession {
         '--disable-dev-shm-usage',
         '--disable-gpu',
         '--window-size=1280,800',
+        '--disable-blink-features=AutomationControlled',
+        '--disable-features=IsolateOrigins,site-per-process',
+        '--lang=en-US',
       ],
     });
 
@@ -61,6 +66,20 @@ class RelaySession {
       viewport: { width: 1280, height: 800 },
       locale:   'en-US',
       userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+      extraHTTPHeaders: { 'Accept-Language': 'en-US,en;q=0.9' },
+    });
+
+    // Remove automation fingerprints that Google detects
+    await this.context.addInitScript(() => {
+      Object.defineProperty(navigator, 'webdriver',  { get: () => undefined });
+      Object.defineProperty(navigator, 'languages',  { get: () => ['en-US', 'en'] });
+      Object.defineProperty(navigator, 'plugins',    { get: () => ({ length: 3 }) });
+      Object.defineProperty(navigator, 'platform',   { get: () => 'Win32' });
+      window.chrome = { runtime: {} };
+      // Remove cdc_ automation marker
+      delete window.cdc_adoQpoasnfa76pfcZLmcfl_Array;
+      delete window.cdc_adoQpoasnfa76pfcZLmcfl_Promise;
+      delete window.cdc_adoQpoasnfa76pfcZLmcfl_Symbol;
     });
 
     this.page = await this.context.newPage();
@@ -69,6 +88,8 @@ class RelaySession {
       if (frame === this.page.mainFrame()) {
         this.currentUrl = frame.url();
         this._broadcast({ type: 'url', url: this.currentUrl });
+        // Auto-focus first visible input after navigation
+        setTimeout(() => this._autoFocusInput(), 1200);
       }
     });
 
@@ -77,6 +98,18 @@ class RelaySession {
     this.status = 'ready';
     this._broadcast({ type: 'status', status: 'ready' });
     this._startCapture();
+    // Auto-focus first input on initial load
+    setTimeout(() => this._autoFocusInput(), 1500);
+  }
+
+  async _autoFocusInput() {
+    if (!this.page) return;
+    try {
+      await this.page.evaluate(() => {
+        const el = document.querySelector('input:not([type="hidden"]):not([type="submit"]):not([type="button"])');
+        if (el) { el.focus(); el.click(); }
+      });
+    } catch (_) {}
   }
 
   _startCapture() {
@@ -107,10 +140,17 @@ class RelaySession {
     ws.send(JSON.stringify({ type: 'status', status: this.status }));
     if (this.currentUrl) ws.send(JSON.stringify({ type: 'url', url: this.currentUrl }));
 
-    ws.on('message', async (data) => {
+    ws.on('message', (data) => {
       try {
-        if (data instanceof Buffer && data[0] !== 0x00) return; // not a JSON message
-        await this._handleInput(JSON.parse(data.toString()));
+        if (data instanceof Buffer && data[0] === 0x01) return; // binary frame, skip
+        const msg = JSON.parse(data.toString());
+        // Skip high-frequency mousemove to avoid queue buildup
+        if (msg.type === 'mousemove') {
+          this._handleInput(msg).catch(() => {});
+          return;
+        }
+        this._queue.push(msg);
+        this._drainQueue();
       } catch (_) {}
     });
 
@@ -118,13 +158,32 @@ class RelaySession {
     ws.on('error', () => this.clients.delete(ws));
   }
 
+  async _drainQueue() {
+    if (this._draining) return;
+    this._draining = true;
+    while (this._queue.length > 0) {
+      const msg = this._queue.shift();
+      await this._handleInput(msg).catch(() => {});
+    }
+    this._draining = false;
+  }
+
   async _handleInput(msg) {
     if (!this.page) return;
     try {
       switch (msg.type) {
-        case 'click':
+        case 'click': {
           await this.page.mouse.click(msg.x, msg.y);
+          // Wait for page JS to process click, then force-focus the element
+          await new Promise(r => setTimeout(r, 300));
+          await this.page.evaluate(({x, y}) => {
+            const el = document.elementFromPoint(x, y);
+            if (!el) return;
+            const target = el.closest('input, textarea, [contenteditable]') || el;
+            if (target !== document.activeElement && target.focus) target.focus();
+          }, { x: msg.x, y: msg.y }).catch(() => {});
           break;
+        }
         case 'dblclick':
           await this.page.mouse.dblclick(msg.x, msg.y);
           break;
@@ -135,11 +194,10 @@ class RelaySession {
           await this.page.mouse.wheel(0, msg.dy);
           break;
         case 'keydown':
-          // Supports plain keys ('Enter') and combos ('Control+a')
           await this.page.keyboard.press(msg.key);
           break;
         case 'type':
-          await this.page.keyboard.type(msg.text, { delay: 20 });
+          await this.page.keyboard.type(msg.text, { delay: 30 });
           break;
         case 'navigate':
           if (msg.url) {

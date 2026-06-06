@@ -1,8 +1,9 @@
 'use strict';
 
 const { executeGhostView, executeGhostAction } = require('../playwright-engine/index');
-const { getDb }      = require('../database/db');
-const { makeLogger } = require('../utils/logger');
+const { getDb }        = require('../database/db');
+const { makeLogger }   = require('../utils/logger');
+const { recordDelivery } = require('./goals');
 
 const log = makeLogger('TrafficRunner');
 
@@ -15,6 +16,10 @@ const DAILY_LIMIT = parseInt(process.env.DAILY_VIEW_LIMIT ?? '10000', 10);
 
 function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+// Global semaphore — shared singleton so ALL Playwright consumers (social runner +
+// web traffic engine) compete for the same browser slot pool, preventing OOM.
+const _sem = require('../utils/semaphore');
 
 function _todayCount(db) {
   const midnight = new Date();
@@ -31,36 +36,37 @@ function _todayCount(db) {
 // Action definitions — all traffic goes through the ghost pool.
 //
 // type 'view'   → executeGhostView(ghostPlatform, targetValue)
-//   Ghost is matched by platform (anonymous for youtube, authenticated
-//   for all others).
+//   Anonymous proxy-only browser. Only works for platforms that
+//   allow unauthenticated access (YouTube).
 //
 // type 'action' → executeGhostAction(ghostPlatform, action, params)
-//   Ghost must have credentials_json (authenticated session).
-//   buildParams maps the raw target_value string to the right param key.
+//   Loads an imported account session. Required for all platforms
+//   that wall off content behind login (Facebook, Instagram, TikTok).
 // ----------------------------------------------------------------
 
-// Proxy-based anonymous views + session-based actions.
-// views (anon)  → executeGhostView  — proxy only, no account needed
-// views (session) → executeGhostAction watch_reel/watch_video
-// likes / follow / subscribe → executeGhostAction — requires imported account session
+// minWatchMs — minimum milliseconds the video must have played for the platform
+// to register the view in analytics. Only view/watch actions carry this field.
+// The engine returns result.watchMs; if undefined (action not a video), skip the check.
 const TRAFFIC_ACTIONS = {
   youtube: {
-    views:     { type: 'view',   ghostPlatform: 'youtube'                                                                    },
+    views:     { type: 'view',   ghostPlatform: 'youtube',   minWatchMs: 31_000                                              },
     likes:     { type: 'action', ghostPlatform: 'youtube',   action: 'like_video',    buildParams: v => ({ videoUrl: v })   },
     subscribe: { type: 'action', ghostPlatform: 'youtube',   action: 'subscribe',     buildParams: v => ({ channelUrl: v }) },
   },
   instagram: {
-    views:     { type: 'action', ghostPlatform: 'instagram', action: 'watch_reel',    buildParams: v => ({ reelUrl: v })    },
+    views:     { type: 'action', ghostPlatform: 'instagram', action: 'watch_reel',    buildParams: v => ({ reelUrl: v }),    minWatchMs: 5_000  },
     likes:     { type: 'action', ghostPlatform: 'instagram', action: 'like_post',     buildParams: v => ({ postUrl: v })    },
     follow:    { type: 'action', ghostPlatform: 'instagram', action: 'follow',        buildParams: v => ({ username: v })   },
   },
   tiktok: {
-    views:     { type: 'action', ghostPlatform: 'tiktok',    action: 'watch_video',   buildParams: v => ({ videoUrl: v })   },
+    views:     { type: 'action', ghostPlatform: 'tiktok',    action: 'watch_video',   buildParams: v => ({ videoUrl: v }),   minWatchMs: 5_000  },
     likes:     { type: 'action', ghostPlatform: 'tiktok',    action: 'like_video',    buildParams: v => ({ videoUrl: v })   },
     follow:    { type: 'action', ghostPlatform: 'tiktok',    action: 'follow',        buildParams: v => ({ username: v })   },
   },
   facebook: {
-    views:     { type: 'view',   ghostPlatform: 'facebook'                                                                   },
+    // Facebook requires login to load video content — anonymous ghost hits a login wall.
+    // watch_video uses an authenticated account session and navigates to the specific URL.
+    views:     { type: 'action', ghostPlatform: 'facebook',  action: 'watch_reel',    buildParams: v => ({ reelUrl: v }),    minWatchMs: 5_000  },
     likes:     { type: 'action', ghostPlatform: 'facebook',  action: 'like_post',     buildParams: v => ({ postUrl: v })    },
     follow:    { type: 'action', ghostPlatform: 'facebook',  action: 'follow_page',   buildParams: v => ({ profileUrl: v }) },
   },
@@ -74,8 +80,20 @@ const TRAFFIC_ACTIONS = {
 const _active = new Map();
 
 // ----------------------------------------------------------------
-// Main runner — called async, does not block server
+// Main runner — called async, does not block server.
+// Safe to call again on a paused job (resume): done is seeded from
+// completed_count so delivery continues from where it left off.
 // ----------------------------------------------------------------
+
+// Returns off-peak extra delay to mimic natural audience viewing patterns.
+// Peak window: 10:00-22:00 UTC (~17:00-05:00 WIB, ~03:00-15:00 PST).
+function _naturalPacing() {
+  const hour = new Date().getUTCHours();
+  const inPeak = hour >= 10 && hour < 22;
+  return inPeak
+    ? { extraDelay: 0 }
+    : { extraDelay: randInt(3000, 8000) };
+}
 
 async function runJob(jobId) {
   const db  = getDb();
@@ -89,13 +107,14 @@ async function runJob(jobId) {
     return;
   }
 
-  db.prepare(`UPDATE traffic_jobs SET status='running', started_at=?, updated_at=? WHERE id=?`)
+  // Preserve original started_at when resuming a paused job
+  db.prepare(`UPDATE traffic_jobs SET status='running', started_at=COALESCE(started_at,?), updated_at=? WHERE id=?`)
     .run(new Date().toISOString(), new Date().toISOString(), jobId);
 
   _active.set(jobId, true);
 
-  let done   = 0;
-  let streak = 0; // consecutive non-success results
+  // Resume from the count already delivered rather than restarting from zero
+  let done = job.completed_count ?? 0;
 
   const logEntry = (status, message) => {
     try {
@@ -107,8 +126,9 @@ async function runJob(jobId) {
   };
 
   const worker = async () => {
+    let streak = 0; // per-worker consecutive failure count
     while (_active.has(jobId) && done < job.target_count) {
-      if (streak >= 5) break;
+      if (streak >= 10) break;
 
       // Daily cap — pause workers until midnight if limit reached
       if (_todayCount(db) >= DAILY_LIMIT) {
@@ -118,42 +138,59 @@ async function runJob(jobId) {
         continue;
       }
 
+      // Acquire a global browser slot before launching Playwright
+      await _sem.acquire();
       let result;
       try {
         if (actionDef.type === 'view') {
-          result = await executeGhostView(actionDef.ghostPlatform, job.target_value);
+          result = await executeGhostView(actionDef.ghostPlatform, pickTargetUrl(job));
         } else {
-          const params = actionDef.buildParams(job.target_value);
+          const params = actionDef.buildParams(pickTargetUrl(job));
           result = await executeGhostAction(actionDef.ghostPlatform, actionDef.action, params);
         }
       } catch (err) {
         result = { success: false, reason: err.message };
+      } finally {
+        _sem.release();
       }
 
       if (result.success) {
+        // Only count views that the platform will actually register.
+        // result.watchMs is set by view/watch engine calls; undefined means a
+        // non-video action (like, follow) where no watch threshold applies.
+        const minMs = actionDef.minWatchMs;
+        if (minMs && result.watchMs !== undefined && result.watchMs < minMs) {
+          logEntry('skipped', `watch_too_short:${result.watchMs}ms`);
+          await delay(randInt(500, 1500));
+          continue;
+        }
         done++;
         streak = 0;
-        db.prepare('UPDATE traffic_jobs SET completed_count=?, updated_at=? WHERE id=?')
-          .run(done, new Date().toISOString(), jobId);
+        db.prepare('UPDATE traffic_jobs SET completed_count=completed_count+1, updated_at=? WHERE id=?')
+          .run(new Date().toISOString(), jobId);
         logEntry('success', null);
         log.debug('Action done', { jobId, done, target: job.target_count });
-      } else if (result.reason === 'no_ghost_available' || result.reason === 'no_key_account') {
+        if (job.goal_id) {
+          try { rollupToGoal(job, result); } catch (_) {}
+        }
+      } else if (result.reason === 'no_ghost_available') {
         logEntry('skipped', result.reason);
-        // Short wait — with rotating proxy, slot frees up quickly as workers cycle
+        await delay(randInt(2_000, 5_000));
+      } else if (result.reason === 'no_key_account') {
+        streak = 0; // not a real failure — account pool temporarily empty
+        logEntry('skipped', 'account_required');
         await delay(randInt(2_000, 5_000));
       } else {
         streak++;
         const isTimeout = /timeout|ETIMEDOUT|net::/i.test(result.reason ?? '');
         logEntry('failed', result.reason ?? result.error ?? null);
         log.debug('Action failed', { jobId, streak, reason: result.reason });
-        // Exponential backoff for timeouts — network blocks need cool-down, not rapid retry
-        if (isTimeout) await delay(randInt(30_000, 60_000) * streak);
+        if (isTimeout) await delay(randInt(30_000, 60_000) * Math.min(streak, 3));
       }
 
       if (_active.has(jobId) && done < job.target_count) {
-        // Short inter-action gap — rotating proxy gives fresh IP each connection,
-        // so no cool-down needed between views from the same worker.
-        await delay(randInt(500, 1500));
+        const pacing = _naturalPacing();
+        await delay(randInt(500, 1500) + pacing.extraDelay);
       }
     }
   };
@@ -165,7 +202,7 @@ async function runJob(jobId) {
   }
 
   if (_active.has(jobId)) {
-    const status = done >= job.target_count ? 'completed' : (streak >= 10 ? 'failed' : 'paused');
+    const status = done >= job.target_count ? 'completed' : 'paused';
     db.prepare(`UPDATE traffic_jobs SET status=?, completed_at=?, updated_at=? WHERE id=?`)
       .run(status, new Date().toISOString(), new Date().toISOString(), jobId);
     _active.delete(jobId);
@@ -180,10 +217,63 @@ async function runJob(jobId) {
 
 function stopJob(jobId) {
   _active.delete(jobId);
+  // Always write to DB — even if jobId wasn't in _active (e.g. stale from
+  // a previous process after pm2 restart). This ensures Stop always works.
+  try {
+    getDb().prepare(`UPDATE traffic_jobs SET status='paused', updated_at=? WHERE id=?`)
+      .run(new Date().toISOString(), jobId);
+  } catch (_) {}
 }
 
 function isRunning(jobId) {
   return _active.has(jobId);
 }
 
-module.exports = { runJob, stopJob, isRunning, TRAFFIC_ACTIONS };
+// Reset any jobs left in running/pending state from a previous process.
+// Called once at startup — after pm2 restart those jobs are no longer
+// actually running so they must be paused so the user can resume them.
+function resetStaleJobs() {
+  try {
+    const n = getDb().prepare(
+      `UPDATE traffic_jobs SET status='paused', updated_at=? WHERE status IN ('running','pending')`
+    ).run(new Date().toISOString()).changes;
+    if (n > 0) log.info(`Reset ${n} stale running job(s) to paused on startup`);
+  } catch (_) {}
+}
+
+// Auto-distribute delivery across the channel's video list.
+// Newest video gets priority; cycles through all videos so watch hours
+// accumulate naturally across content (mirrors real audience behavior).
+function pickTargetUrl(job) {
+  if (!job.goal_id) return job.target_value;
+  try {
+    const goal   = getDb().prepare('SELECT video_list FROM growth_goals WHERE id=?').get(job.goal_id);
+    const videos = JSON.parse(goal?.video_list || '[]');
+    if (!videos.length) return job.target_value;
+    const weights = videos.map((_, i) => Math.max(1, videos.length - i));
+    const total   = weights.reduce((s, w) => s + w, 0);
+    let r = Math.random() * total;
+    for (let i = 0; i < videos.length; i++) {
+      r -= weights[i];
+      if (r <= 0) return videos[i].url;
+    }
+    return videos[0].url;
+  } catch (_) { return job.target_value; }
+}
+
+// Map a validated delivery to its monetization metric and roll up to goal.
+function rollupToGoal(job, result) {
+  const patch = { delivered: 1 };
+  if (job.platform === 'youtube') {
+    if (job.action_type === 'views')     patch.watch_hr = (result.watchMs ?? 0) / 3_600_000;
+    else if (job.action_type === 'subscribe') patch.subs = 1;
+  } else if (job.platform === 'facebook') {
+    if (job.action_type === 'views')     patch.views_60d = 1;
+    if (job.action_type === 'follow')    patch.followers  = 1;
+  } else if (['instagram', 'tiktok'].includes(job.platform)) {
+    if (job.action_type === 'follow')    patch.followers = 1;
+  }
+  recordDelivery(job.goal_id, patch);
+}
+
+module.exports = { runJob, stopJob, isRunning, resetStaleJobs, TRAFFIC_ACTIONS };

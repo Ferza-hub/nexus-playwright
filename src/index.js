@@ -4,6 +4,8 @@ require('dotenv').config();
 const { getDb, closeDb } = require('./database/db');
 const { runMigrations }  = require('./database/schema');
 const { startPanel }     = require('./panel/server');
+const { resetStaleJobs }            = require('./traffic/runner');
+const { startWebTrafficScheduler }  = require('./web-traffic/scheduler');
 const { makeLogger }     = require('./utils/logger');
 
 const log = makeLogger('Nexus');
@@ -14,6 +16,9 @@ function main() {
   const db = getDb();
   runMigrations(db);
   log.info('Database ready.');
+
+  resetStaleJobs();
+  startWebTrafficScheduler();
 
   startPanel();
   log.info('All systems up.');

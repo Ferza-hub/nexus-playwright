@@ -173,14 +173,47 @@ async function login(page, account) {
 
 // ----------------------------------------------------------------
 // 2. watchReel
-//    Opens facebook.com/reels/, watches N reels with realistic duration.
-//    Navigates between reels via keyboard ArrowDown.
+//    If reelUrl given: navigate directly to that reel and watch it.
+//    Otherwise: browse facebook.com/reels/ feed for N reels.
 // ----------------------------------------------------------------
 
-async function watchReel(page, { reelCount = null, maxMs = null } = {}) {
-  const count   = reelCount ?? h.randInt(3, 8);
-  const budget  = maxMs    ?? 180_000; // 3-min session cap
-  log.debug('watchReel', { count, budget });
+async function watchReel(page, { reelUrl = null, reelCount = null, maxMs = null, referer = null } = {}) {
+  // ── Single specific reel URL ──────────────────────────────────────────────
+  if (reelUrl) {
+    log.debug('watchReel (direct)', { reelUrl, referer });
+
+    const gotoOpts = { waitUntil: 'domcontentloaded', timeout: 25000 };
+    if (referer) gotoOpts.referer = referer;
+    await page.goto(reelUrl, gotoOpts);
+    await h.waitForLoad(page);
+    await h.preAction();
+    await _dismissPopups(page);
+
+    const detection = await checkForDetection(page);
+    if (detection) return { success: false, event: detection };
+
+    await _ensurePlaying(page);
+    await h.delay(h.randInt(800, 1500));
+
+    const duration = await _getDuration(page);
+    let watchMs;
+    if (duration) {
+      watchMs = Math.round(duration * (0.8 + Math.random() * 0.2) * 1000);
+      watchMs = Math.min(watchMs, 90_000);
+      watchMs = Math.max(watchMs, 5_000);
+    } else {
+      watchMs = h.randInt(8_000, 30_000);
+    }
+
+    log.debug('watchReel direct done', { reelUrl, watchMs });
+    await _watchSegmented(page, watchMs);
+    return { success: true, watchMs };
+  }
+
+  // ── Feed browsing (no specific URL) ──────────────────────────────────────
+  const count  = reelCount ?? h.randInt(3, 8);
+  const budget = maxMs     ?? 180_000;
+  log.debug('watchReel (feed)', { count, budget });
 
   await page.goto(`${BASE_URL}/reels/`, { waitUntil: 'domcontentloaded', timeout: 25000 });
   await h.waitForLoad(page);
@@ -259,12 +292,12 @@ async function watchVideo(page, videoUrl, { watchMs: watchMsOverride = null, ref
   await _ensurePlaying(page);
   await h.delay(h.randInt(1000, 2000)); // let it buffer
 
-  let watchMs;
+  let watchMs, duration, pct;
   if (watchMsOverride !== null) {
     watchMs = watchMsOverride;
   } else {
-    const duration = await _getDuration(page);
-    const pct      = h.randInt(55, 85) / 100;
+    duration = await _getDuration(page);
+    pct      = h.randInt(55, 85) / 100;
     if (duration) {
       watchMs = Math.round(duration * pct * 1000);
       watchMs = Math.min(watchMs, 300_000);

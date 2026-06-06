@@ -252,7 +252,7 @@ async function watchVideo(page, videoUrl, { referer = null } = {}) {
   }
 
   log.debug('Video watched', { videoUrl, watchMs });
-  return { success: true };
+  return { success: true, watchMs };
 }
 
 // ----------------------------------------------------------------

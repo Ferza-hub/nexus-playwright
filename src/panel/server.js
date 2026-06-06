@@ -29,7 +29,11 @@ app.use('/api/settings',  requireAuth, require('./routes/settings'));
 app.use('/api/traffic',   requireAuth, require('./routes/traffic'));
 app.use('/api/accounts',  requireAuth, require('./routes/accounts'));
 app.use('/api/logs',      requireAuth, require('./routes/logs'));
-app.use('/api/relay',     requireAuth, require('./routes/relay'));
+app.use('/api/relay',      requireAuth, require('./routes/relay'));
+app.use('/api/preview',    requireAuth, require('./routes/preview'));
+app.use('/api/web-traffic', requireAuth, require('./routes/web-traffic'));
+app.use('/api/goals',      requireAuth, require('./routes/goals'));
+app.use('/api/benchmark',  requireAuth, require('./routes/benchmark'));
 
 // SPA fallback
 app.get('*', (_req, res) => res.sendFile(path.join(__dirname, '../../public/index.html')));

@@ -514,7 +514,7 @@ async function watchReel(page, reelUrl, { referer = null } = {}) {
   }
 
   log.debug('Reel watched', { reelUrl, watchMs });
-  return { success: true };
+  return { success: true, watchMs };
 }
 
 // ----------------------------------------------------------------
