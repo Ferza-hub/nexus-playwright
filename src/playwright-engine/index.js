@@ -443,6 +443,13 @@ async function _executeWatch(page, platform, totalMs, persona) {
   return actualWatchMs;
 }
 
+// Scroll the feed before navigating to target — mirrors natural browsing.
+async function _feedScroll(page, persona) {
+  const scrolls = _ri(3, 7);
+  for (let i = 0; i < scrolls; i++) {
+    await page.evaluate(d => window.scrollBy({ top: d, behavior: 'smooth' }), _ri(200, 520)).catch(() => {});
+    await _delay(_ri(700, 2200));
+    if (_coin(persona.scrubProb)) {
       await page.evaluate(d=>window.scrollBy({ top:-d, behavior:'smooth' }), _ri(60, 180)).catch(()=>{});
       await _delay(_ri(400, 900));
     }
