@@ -3,646 +3,446 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nexus — Escalate Your Digital Presence</title>
+<title>Nexus — From Zero to Monetized</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --ink:#0a0a0a;--paper:#f5f0e8;--cream:#ede8dc;
-  --accent:#c8f135;--red:#e8341a;--muted:#6b6560;
+  --accent:#c8f135;--red:#e8341a;--muted:#6b6560;--green:#16a34a;
   --border:rgba(10,10,10,.1);
   --mono:'DM Mono',monospace;--display:'Bebas Neue',sans-serif;
   --serif:'DM Serif Display',serif;--body:'Inter',sans-serif;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{background:var(--paper);color:var(--ink);font-family:var(--body);
-  font-size:15px;line-height:1.6;overflow-x:hidden}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.6;overflow-x:hidden}
 
-/* PAGES */
-.page{display:none;min-height:100vh}
-.page.active{display:flex;flex-direction:column}
-#page-dashboard.active{flex-direction:row}
+/* ── PAGES ── */
+.page{display:none}
+.page.active{display:block}
+#pg-dash.active{display:flex}
 
-/* ══ SHARED COMPONENTS ══ */
-.logo{font-family:var(--display);font-size:1.5rem;letter-spacing:.05em;
-  color:var(--ink);text-decoration:none;display:flex;align-items:center;gap:.5rem;cursor:pointer}
-.logo-mark{width:22px;height:22px;background:var(--ink);border-radius:50%;
-  display:flex;align-items:center;justify-content:center}
-.logo-pulse{width:8px;height:8px;background:var(--accent);border-radius:50%;
-  animation:breathe 2.5s ease-in-out infinite}
+/* ── SHARED ── */
+.logo{font-family:var(--display);font-size:1.4rem;letter-spacing:.05em;display:flex;align-items:center;gap:.5rem;cursor:pointer;text-decoration:none;color:inherit}
+.logo-mark{width:22px;height:22px;background:var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-dot{width:8px;height:8px;background:var(--accent);border-radius:50%;animation:breathe 2.5s ease-in-out infinite}
 @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.5);opacity:.5}}
-
-.btn-ink{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;
-  padding:.5rem 1.25rem;background:var(--ink);color:var(--paper);border:none;cursor:pointer;
-  transition:background .15s}
+.btn-ink{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;padding:.6rem 1.4rem;background:var(--ink);color:var(--paper);border:none;cursor:pointer;transition:background .15s}
 .btn-ink:hover{background:var(--red)}
-.btn-accent{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;
-  padding:.75rem 1.5rem;background:var(--accent);color:var(--ink);border:none;cursor:pointer;
-  transition:background .15s}
+.btn-accent{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;padding:.75rem 1.75rem;background:var(--accent);color:var(--ink);border:none;cursor:pointer;transition:background .15s}
 .btn-accent:hover{background:#d4f84a}
-.btn-outline{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;
-  padding:.75rem 1.5rem;background:transparent;color:var(--ink);
-  border:1px solid var(--border);cursor:pointer;transition:all .15s}
-.btn-outline:hover{border-color:var(--ink);background:var(--cream)}
+.btn-ghost{font-family:var(--mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;padding:.75rem 1.5rem;background:transparent;color:var(--ink);border:1px solid var(--border);cursor:pointer;transition:all .15s}
+.btn-ghost:hover{border-color:var(--ink);background:var(--cream)}
 
-/* ══ LANDING ══ */
-.land-header{display:flex;align-items:center;justify-content:space-between;
-  padding:0 2.5rem;height:58px;border-bottom:1px solid var(--border);
-  position:sticky;top:0;background:rgba(245,240,232,.95);
-  backdrop-filter:blur(20px);z-index:100}
-.land-nav{display:flex;align-items:center;gap:2rem}
-.land-nav a{font-size:.78rem;font-weight:500;letter-spacing:.05em;text-transform:uppercase;
-  color:var(--muted);text-decoration:none;transition:color .15s}
-.land-nav a:hover{color:var(--ink)}
+/* ════════════════════════════════
+   LANDING
+════════════════════════════════ */
+#pg-land{min-height:100vh;flex-direction:column}
+.land-nav{display:flex;align-items:center;justify-content:space-between;padding:0 2.5rem;height:58px;border-bottom:1px solid var(--border);position:sticky;top:0;background:rgba(245,240,232,.96);backdrop-filter:blur(20px);z-index:100}
+.land-nav-links{display:flex;align-items:center;gap:2rem}
+.land-nav-links a{font-size:.78rem;font-weight:500;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .15s}
+.land-nav-links a:hover{color:var(--ink)}
 
+/* Hero */
 .hero{display:grid;grid-template-columns:55% 45%;min-height:calc(100vh - 58px)}
-.hero-left{padding:7rem 3rem 5rem 2.5rem;display:flex;flex-direction:column;
-  justify-content:center;border-right:1px solid var(--border)}
-.eyebrow{font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
-  color:var(--red);margin-bottom:2rem;display:flex;align-items:center;gap:.6rem}
+.hero-l{padding:7rem 3rem 5rem 2.5rem;display:flex;flex-direction:column;justify-content:center;border-right:1px solid var(--border)}
+.eyebrow{font-family:var(--mono);font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:var(--red);margin-bottom:2rem;display:flex;align-items:center;gap:.6rem}
 .eyebrow::before{content:'';width:24px;height:1px;background:var(--red)}
-.hero-h1{font-family:var(--display);font-size:clamp(3.5rem,7vw,6.5rem);
-  line-height:.93;letter-spacing:.02em;margin-bottom:1rem}
-.hero-h1 em{font-family:var(--serif);font-style:italic;font-size:clamp(3rem,6.5vw,6rem);
-  color:var(--red);display:block}
+.hero-h1{font-family:var(--display);font-size:clamp(3.5rem,7vw,6rem);line-height:.93;letter-spacing:.02em;margin-bottom:1rem}
+.hero-h1 em{font-family:var(--serif);font-style:italic;color:var(--red);display:block}
 .hero-p{font-size:1rem;color:var(--muted);max-width:420px;margin:1.5rem 0 2.5rem;line-height:1.75}
 .hero-cta{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:3rem}
 .hero-stats{display:flex;border-top:1px solid var(--border)}
 .hstat{flex:1;padding:1rem 1.5rem;border-right:1px solid var(--border)}
 .hstat:last-child{border-right:none}
-.hstat-val{font-family:var(--display);font-size:1.6rem;letter-spacing:.02em;line-height:1;margin-bottom:.1rem}
+.hstat-val{font-family:var(--display);font-size:1.6rem;line-height:1;margin-bottom:.1rem}
 .hstat-lbl{font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
-
-.hero-right{background:var(--ink);position:relative;overflow:hidden;
-  display:flex;align-items:center;justify-content:center}
-.grid-bg{position:absolute;inset:0;
-  background-image:linear-gradient(rgba(200,241,53,.06) 1px,transparent 1px),
-  linear-gradient(90deg,rgba(200,241,53,.06) 1px,transparent 1px);
-  background-size:44px 44px;animation:gridScroll 20s linear infinite}
+.hero-r{background:var(--ink);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(200,241,53,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(200,241,53,.07) 1px,transparent 1px);background-size:44px 44px;animation:gridScroll 20s linear infinite}
 @keyframes gridScroll{to{background-position:0 44px}}
-.dash-preview{position:relative;z-index:2;width:82%;max-width:380px;
-  background:rgba(20,20,20,.92);border:1px solid rgba(200,241,53,.15);
-  border-radius:12px;overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,.6)}
-.dp-bar{padding:.7rem 1rem;border-bottom:1px solid rgba(200,241,53,.08);
-  display:flex;align-items:center;gap:.4rem}
-.dp-dot{width:8px;height:8px;border-radius:50%}
-.dp-label{font-family:var(--mono);font-size:.62rem;color:rgba(245,240,232,.35);
-  letter-spacing:.06em;margin-left:auto}
-.dp-body{padding:1rem}
-.dp-metrics{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.75rem}
-.dp-metric{background:rgba(245,240,232,.04);border:1px solid rgba(245,240,232,.06);
-  border-radius:6px;padding:.6rem}
-.dp-mval{font-family:var(--display);font-size:1.4rem;color:var(--accent);line-height:1;margin-bottom:.1rem}
-.dp-mlbl{font-family:var(--mono);font-size:.52rem;color:rgba(245,240,232,.35);text-transform:uppercase;letter-spacing:.06em}
-.dp-mchg{font-family:var(--mono);font-size:.52rem;color:var(--accent);margin-top:.15rem}
-.dp-bars{display:flex;align-items:flex-end;gap:5px;height:60px;margin-bottom:.75rem}
-.dp-bar-item{flex:1;border-radius:2px 2px 0 0;
-  background:linear-gradient(180deg,var(--accent),rgba(200,241,53,.3));
-  animation:barUp 1.5s ease-out forwards;transform-origin:bottom}
-@keyframes barUp{from{transform:scaleY(0)}to{transform:scaleY(1)}}
-.dp-bar-item:nth-child(1){animation-delay:.05s}
-.dp-bar-item:nth-child(2){animation-delay:.1s}
-.dp-bar-item:nth-child(3){animation-delay:.15s}
-.dp-bar-item:nth-child(4){animation-delay:.2s}
-.dp-bar-item:nth-child(5){animation-delay:.25s}
-.dp-bar-item:nth-child(6){animation-delay:.3s}
-.dp-bar-item:nth-child(7){animation-delay:.35s}
-.dp-src{display:flex;align-items:center;gap:.5rem;margin-bottom:.35rem}
-.dp-src-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.dp-src-name{font-family:var(--mono);font-size:.6rem;color:rgba(245,240,232,.5);flex:1}
-.dp-src-bar{flex:2;height:3px;background:rgba(245,240,232,.06);border-radius:2px;overflow:hidden}
-.dp-src-fill{height:100%;border-radius:2px}
-.dp-src-pct{font-family:var(--mono);font-size:.58rem;color:rgba(245,240,232,.4);width:26px;text-align:right}
+.hero-card{position:relative;z-index:2;width:82%;max-width:360px;background:rgba(18,18,18,.92);border:1px solid rgba(200,241,53,.12);border-radius:10px;overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,.6)}
+.hc-bar{padding:.6rem 1rem;border-bottom:1px solid rgba(200,241,53,.07);display:flex;align-items:center;gap:.35rem}
+.hc-dot{width:7px;height:7px;border-radius:50%}
+.hc-lbl{font-family:var(--mono);font-size:.58rem;color:rgba(245,240,232,.25);letter-spacing:.06em;margin-left:auto}
+.hc-body{padding:1rem}
+.hc-channel{display:flex;align-items:center;gap:.65rem;margin-bottom:1rem;padding:.65rem;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05);border-radius:6px}
+.hc-ch-ico{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;background:#fee2e2}
+.hc-ch-name{font-size:.82rem;color:var(--paper);font-weight:600}
+.hc-ch-plat{font-family:var(--mono);font-size:.55rem;color:rgba(245,240,232,.35);text-transform:uppercase;letter-spacing:.06em}
+.hc-pct{font-family:var(--display);font-size:2.5rem;color:var(--accent);line-height:1;margin-bottom:.15rem}
+.hc-pct-lbl{font-family:var(--mono);font-size:.58rem;color:rgba(245,240,232,.4);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.75rem}
+.hc-req{margin-bottom:.6rem}
+.hc-req-head{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.6rem;color:rgba(245,240,232,.45);margin-bottom:.3rem}
+.hc-req-head .cur{color:var(--accent)}
+.hc-track{height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden}
+.hc-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent),#9dd119)}
+.hc-fill.done{background:linear-gradient(90deg,var(--green),#22c55e)}
+.hc-eta{margin-top:.85rem;padding:.55rem .65rem;background:rgba(200,241,53,.06);border:1px solid rgba(200,241,53,.1);border-radius:4px;font-family:var(--mono);font-size:.6rem;color:rgba(200,241,53,.7);letter-spacing:.04em}
 
 /* Ticker */
-.ticker{background:var(--ink);padding:.6rem 0;overflow:hidden;
-  border-top:1px solid rgba(200,241,53,.15)}
-.ticker-track{display:flex;width:max-content;animation:tickRoll 25s linear infinite}
-.t-item{font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--accent);padding:0 2rem;white-space:nowrap;
-  border-right:1px solid rgba(200,241,53,.1);display:flex;align-items:center;gap:.4rem}
-.t-item::before{content:'◆';font-size:.3rem;opacity:.6}
+.ticker{background:var(--ink);padding:.55rem 0;overflow:hidden;border-top:1px solid rgba(200,241,53,.1)}
+.ticker-track{display:flex;width:max-content;animation:tickRoll 28s linear infinite}
+.t-item{font-family:var(--mono);font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);padding:0 2.5rem;white-space:nowrap;border-right:1px solid rgba(200,241,53,.08);display:flex;align-items:center;gap:.4rem}
+.t-item::before{content:'◆';font-size:.28rem;opacity:.5}
 @keyframes tickRoll{to{transform:translateX(-50%)}}
 
-/* How it works */
-.how{padding:6rem 2.5rem;max-width:1200px;margin:0 auto}
-.section-lbl{font-family:var(--mono);font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--red);margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
-.section-lbl::before{content:'';width:20px;height:1px;background:var(--red)}
-.how-title{font-family:var(--display);font-size:clamp(2rem,4vw,3.5rem);
-  line-height:.93;margin-bottom:3.5rem}
-.how-title em{font-family:var(--serif);font-style:italic;color:var(--red)}
-.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:2rem}
+/* How + Journey */
+.section{padding:5.5rem 2.5rem;max-width:1100px;margin:0 auto}
+.sec-lbl{font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--red);margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+.sec-lbl::before{content:'';width:18px;height:1px;background:var(--red)}
+.sec-h{font-family:var(--display);font-size:clamp(2rem,4vw,3.5rem);line-height:.93;margin-bottom:3rem}
+.sec-h em{font-family:var(--serif);font-style:italic;color:var(--red)}
+
+/* Journey phases */
+.phases{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
+.phase{border:1px solid var(--border);padding:2rem;background:white;position:relative;overflow:hidden}
+.phase::before{content:attr(data-n);font-family:var(--display);font-size:5rem;color:rgba(10,10,10,.04);position:absolute;top:-1rem;right:1rem;line-height:1;letter-spacing:.02em}
+.phase-tag{font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;padding:.2rem .6rem;margin-bottom:1rem;display:inline-block}
+.phase-tag.m{background:#dcfce7;color:#166534}
+.phase-tag.g{background:#fef9c3;color:#854d0e}
+.phase-tag.e{background:#eff6ff;color:#1e40af}
+.phase-title{font-family:var(--display);font-size:1.5rem;letter-spacing:.03em;margin-bottom:.5rem}
+.phase-desc{font-size:.82rem;color:var(--muted);line-height:1.75;margin-bottom:1.25rem}
+.phase-metric{font-family:var(--mono);font-size:.65rem;color:var(--muted);border-top:1px solid var(--border);padding-top:.85rem;display:flex;flex-direction:column;gap:.25rem}
+.phase-metric span{color:var(--ink);font-weight:500}
+
+/* Steps */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:1.25rem;margin-bottom:4rem}
 .step{padding:1.5rem;border:1px solid var(--border);background:white}
-.step-num{font-family:var(--mono);font-size:.62rem;color:var(--muted);
-  letter-spacing:.08em;margin-bottom:1rem}
-.step-title{font-family:var(--display);font-size:1.1rem;letter-spacing:.03em;margin-bottom:.5rem}
-.step-desc{font-size:.8rem;color:var(--muted);line-height:1.7}
+.step-n{font-family:var(--mono);font-size:.6rem;color:var(--muted);letter-spacing:.08em;margin-bottom:.85rem}
+.step-title{font-family:var(--display);font-size:1.05rem;letter-spacing:.03em;margin-bottom:.4rem}
+.step-desc{font-size:.78rem;color:var(--muted);line-height:1.7}
 
 /* Pricing */
-.pricing-section{background:var(--cream);padding:6rem 2.5rem;border-top:1px solid var(--border)}
-.pricing-inner{max-width:1100px;margin:0 auto}
-.pricing-title{font-family:var(--display);font-size:clamp(2rem,4vw,3.5rem);
-  line-height:.93;margin-bottom:3rem}
-.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem}
-.plan{border:1px solid var(--border);padding:2rem;background:var(--paper);
-  position:relative;cursor:pointer;transition:all .2s}
+.pricing-bg{background:var(--cream);border-top:1px solid var(--border);padding:5.5rem 2.5rem}
+.plans{max-width:1100px;margin:0 auto}
+.plan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-top:3rem}
+.plan{border:1px solid var(--border);padding:2rem;background:var(--paper);position:relative;cursor:pointer;transition:all .2s}
 .plan:hover{transform:translateY(-3px);border-color:var(--ink)}
 .plan.hot{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-.plan-badge{position:absolute;top:-1px;right:1.5rem;font-family:var(--mono);
-  font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;
-  background:var(--accent);color:var(--ink);padding:.18rem .6rem}
-.plan-tier{font-family:var(--mono);font-size:.65rem;letter-spacing:.1em;
-  text-transform:uppercase;color:var(--muted);margin-bottom:1.25rem}
+.plan-badge{position:absolute;top:-1px;right:1.5rem;font-family:var(--mono);font-size:.55rem;letter-spacing:.08em;text-transform:uppercase;background:var(--accent);color:var(--ink);padding:.18rem .6rem}
+.plan-tier{font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:1.25rem}
 .plan.hot .plan-tier{color:rgba(245,240,232,.4)}
 .plan-price{font-family:var(--display);font-size:3rem;letter-spacing:.02em;line-height:1}
-.plan-per{font-size:.78rem;color:var(--muted);margin-bottom:1.5rem}
+.plan-per{font-size:.75rem;color:var(--muted);margin-bottom:1.5rem}
 .plan.hot .plan-per{color:rgba(245,240,232,.4)}
 .plan-div{height:1px;background:var(--border);margin-bottom:1.25rem}
 .plan.hot .plan-div{background:rgba(245,240,232,.1)}
 .plan-features{list-style:none;display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.75rem}
-.plan-features li{font-size:.8rem;color:var(--muted);
-  display:flex;align-items:flex-start;gap:.5rem;line-height:1.4}
+.plan-features li{font-size:.8rem;color:var(--muted);display:flex;align-items:flex-start;gap:.5rem;line-height:1.4}
 .plan.hot .plan-features li{color:rgba(245,240,232,.6)}
-.plan-features li::before{content:'→';font-family:var(--mono);font-size:.65rem;
-  color:var(--red);flex-shrink:0}
+.plan-features li::before{content:'→';font-family:var(--mono);font-size:.65rem;color:var(--red);flex-shrink:0}
 .plan.hot .plan-features li::before{color:var(--accent)}
-.plan-cta{width:100%;padding:.8rem;font-family:var(--mono);font-size:.7rem;
-  letter-spacing:.08em;text-transform:uppercase;background:var(--ink);color:var(--paper);
-  border:none;cursor:pointer;transition:background .15s}
+.plan-cta{width:100%;padding:.8rem;font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;background:var(--ink);color:var(--paper);border:none;cursor:pointer;transition:background .15s}
 .plan-cta:hover{background:var(--red)}
 .plan.hot .plan-cta{background:var(--accent);color:var(--ink)}
 .plan.hot .plan-cta:hover{background:#d4f84a}
 
-/* ══ AUTH MODAL ══ */
-.overlay{position:fixed;inset:0;background:rgba(10,10,10,.72);
-  backdrop-filter:blur(8px);z-index:500;display:none;
-  align-items:center;justify-content:center}
+/* Footer */
+.footer{background:var(--ink);color:var(--paper);padding:1.75rem 2.5rem;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(245,240,232,.05)}
+
+/* ════════════════════════════════
+   AUTH MODAL
+════════════════════════════════ */
+.overlay{position:fixed;inset:0;background:rgba(10,10,10,.75);backdrop-filter:blur(8px);z-index:500;display:none;align-items:center;justify-content:center}
 .overlay.open{display:flex}
-.modal{background:var(--paper);width:100%;max-width:420px;
-  border:1px solid var(--border);position:relative;
-  animation:modalIn .25s ease-out}
-@keyframes modalIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-.modal-x{position:absolute;top:1rem;right:1rem;background:none;border:none;
-  cursor:pointer;font-size:1.1rem;color:var(--muted);transition:color .15s}
+.modal{background:var(--paper);width:100%;max-width:420px;border:1px solid var(--border);position:relative;animation:modalIn .25s ease-out}
+@keyframes modalIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.modal-x{position:absolute;top:1rem;right:1rem;background:none;border:none;cursor:pointer;font-size:1.1rem;color:var(--muted);transition:color .15s}
 .modal-x:hover{color:var(--ink)}
 .modal-body{padding:2.25rem}
-.modal-eyebrow{font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;
-  text-transform:uppercase;color:var(--red);margin-bottom:.75rem}
-.modal-title{font-family:var(--display);font-size:2rem;letter-spacing:.02em;
-  line-height:.95;margin-bottom:.65rem}
-.modal-sub{font-size:.83rem;color:var(--muted);margin-bottom:1.75rem;line-height:1.7}
-.oauth-list{display:flex;flex-direction:column;gap:.65rem}
-.oauth-btn{width:100%;padding:.8rem 1.1rem;border:1px solid var(--border);
-  background:white;cursor:pointer;font-family:var(--body);font-size:.85rem;font-weight:500;
-  display:flex;align-items:center;gap:.8rem;transition:all .15s;text-align:left}
+.modal-eyebrow{font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--red);margin-bottom:.75rem}
+.modal-title{font-family:var(--display);font-size:2rem;letter-spacing:.02em;line-height:.95;margin-bottom:.65rem}
+.modal-sub{font-size:.82rem;color:var(--muted);margin-bottom:1.75rem;line-height:1.7}
+.oauth-list{display:flex;flex-direction:column;gap:.6rem}
+.oauth-btn{width:100%;padding:.8rem 1.1rem;border:1px solid var(--border);background:white;cursor:pointer;font-family:var(--body);font-size:.85rem;font-weight:500;display:flex;align-items:center;gap:.8rem;transition:all .15s;text-align:left}
 .oauth-btn:hover{border-color:var(--ink);background:var(--cream)}
 .oauth-ico{width:20px;height:20px;flex-shrink:0}
-.modal-div{display:flex;align-items:center;gap:.8rem;margin:1.1rem 0}
-.modal-div::before,.modal-div::after{content:'';flex:1;height:1px;background:var(--border)}
-.modal-div span{font-family:var(--mono);font-size:.58rem;color:var(--muted);
-  letter-spacing:.06em;text-transform:uppercase}
-.free-note{background:var(--cream);border:1px solid var(--border);
-  padding:.7rem 1rem;display:flex;align-items:center;gap:.65rem}
-.free-note-text{font-size:.78rem;color:var(--muted);line-height:1.5}
-.free-note-text strong{color:var(--ink)}
+.modal-divider{display:flex;align-items:center;gap:.8rem;margin:1rem 0}
+.modal-divider::before,.modal-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.modal-divider span{font-family:var(--mono);font-size:.58rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.free-note{background:var(--cream);border:1px solid var(--border);padding:.7rem 1rem;display:flex;align-items:center;gap:.65rem}
+.free-note-txt{font-size:.78rem;color:var(--muted);line-height:1.5}
+.free-note-txt strong{color:var(--ink)}
 
-/* ══ DASHBOARD ══ */
-#page-dashboard{min-height:100vh}
-.sidebar{width:232px;background:var(--ink);color:var(--paper);
-  display:flex;flex-direction:column;height:100vh;position:sticky;top:0;flex-shrink:0}
-.sb-logo{padding:1.1rem 1.4rem;border-bottom:1px solid rgba(245,240,232,.08);
-  display:flex;align-items:center;gap:.55rem}
-.sb-logo-mark{width:26px;height:26px;background:var(--accent);border-radius:50%;
-  display:flex;align-items:center;justify-content:center}
-.sb-logo-dot{width:9px;height:9px;background:var(--ink);border-radius:50%}
-.sb-logo-txt{font-family:var(--display);font-size:1.2rem;letter-spacing:.05em}
-.sb-user{padding:.9rem 1.4rem;border-bottom:1px solid rgba(245,240,232,.08);
-  display:flex;align-items:center;gap:.7rem}
-.sb-av{width:30px;height:30px;border-radius:50%;
-  background:linear-gradient(135deg,var(--accent),var(--red));
-  display:flex;align-items:center;justify-content:center;
-  font-family:var(--display);font-size:.9rem;color:var(--ink);flex-shrink:0}
-.sb-name{font-size:.8rem;font-weight:600}
-.sb-plan{font-family:var(--mono);font-size:.58rem;color:var(--accent);
-  letter-spacing:.06em;text-transform:uppercase}
+/* ════════════════════════════════
+   DASHBOARD
+════════════════════════════════ */
+#pg-dash{min-height:100vh}
+.sidebar{width:230px;background:var(--ink);color:var(--paper);display:flex;flex-direction:column;height:100vh;position:sticky;top:0;flex-shrink:0}
+.sb-logo{padding:1.1rem 1.4rem;border-bottom:1px solid rgba(245,240,232,.08);display:flex;align-items:center;gap:.55rem}
+.sb-mark{width:26px;height:26px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center}
+.sb-mdot{width:9px;height:9px;background:var(--ink);border-radius:50%;animation:breathe 2.5s ease-in-out infinite}
+.sb-txt{font-family:var(--display);font-size:1.2rem;letter-spacing:.05em}
+.sb-user{padding:.85rem 1.4rem;border-bottom:1px solid rgba(245,240,232,.08);display:flex;align-items:center;gap:.7rem}
+.sb-av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--red));display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:.9rem;color:var(--ink);flex-shrink:0}
+.sb-uname{font-size:.8rem;font-weight:600}
+.sb-uplan{font-family:var(--mono);font-size:.55rem;color:var(--accent);letter-spacing:.06em;text-transform:uppercase}
 .sb-nav{padding:.5rem 0;flex:1;overflow-y:auto}
-.sb-sec{font-family:var(--mono);font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;
-  color:rgba(245,240,232,.22);padding:.45rem 1.4rem .2rem;margin-top:.4rem}
-.sb-lnk{display:flex;align-items:center;gap:.65rem;padding:.58rem 1.4rem;
-  font-size:.8rem;color:rgba(245,240,232,.55);cursor:pointer;
-  transition:all .15s;position:relative;text-decoration:none;border:none;background:none;
-  width:100%;text-align:left}
+.sb-sec{font-family:var(--mono);font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;color:rgba(245,240,232,.2);padding:.45rem 1.4rem .2rem;margin-top:.4rem}
+.sb-lnk{display:flex;align-items:center;gap:.65rem;padding:.58rem 1.4rem;font-size:.8rem;color:rgba(245,240,232,.5);cursor:pointer;transition:all .15s;position:relative;border:none;background:none;width:100%;text-align:left}
 .sb-lnk:hover{color:var(--paper);background:rgba(245,240,232,.05)}
 .sb-lnk.active{color:var(--paper);background:rgba(200,241,53,.08)}
-.sb-lnk.active::before{content:'';position:absolute;left:0;top:0;bottom:0;
-  width:3px;background:var(--accent)}
-.sb-ico{font-size:.95rem;width:18px;text-align:center;flex-shrink:0}
-.sb-bottom{padding:.9rem 1.4rem;border-top:1px solid rgba(245,240,232,.08)}
-.sb-free-lbl{font-family:var(--mono);font-size:.58rem;color:rgba(245,240,232,.38);
-  letter-spacing:.06em;text-transform:uppercase;margin-bottom:.35rem;
-  display:flex;justify-content:space-between}
-.sb-free-bar{height:3px;background:rgba(245,240,232,.08);border-radius:2px;
-  overflow:hidden;margin-bottom:.7rem}
-.sb-free-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .3s}
-.sb-upgrade{width:100%;padding:.6rem;font-family:var(--mono);font-size:.65rem;
-  letter-spacing:.08em;text-transform:uppercase;background:var(--accent);
-  color:var(--ink);border:none;cursor:pointer;transition:background .15s;margin-bottom:.4rem}
-.sb-upgrade:hover{background:#d4f84a}
-.sb-out{width:100%;padding:.45rem;font-family:var(--mono);font-size:.6rem;
-  letter-spacing:.06em;text-transform:uppercase;background:transparent;
-  color:rgba(245,240,232,.28);border:none;cursor:pointer;transition:color .15s}
-.sb-out:hover{color:rgba(245,240,232,.65)}
+.sb-lnk.active::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent)}
+.sb-ico{font-size:.9rem;width:18px;text-align:center;flex-shrink:0}
+.sb-bottom{padding:.85rem 1.4rem;border-top:1px solid rgba(245,240,232,.08)}
+.sb-cta{width:100%;padding:.65rem;font-family:var(--mono);font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;background:var(--accent);color:var(--ink);border:none;cursor:pointer;transition:.15s;margin-bottom:.4rem}
+.sb-cta:hover{background:#d4f84a}
+.sb-out{width:100%;padding:.4rem;font-family:var(--mono);font-size:.58rem;letter-spacing:.06em;text-transform:uppercase;background:transparent;color:rgba(245,240,232,.25);border:none;cursor:pointer;transition:color .15s}
+.sb-out:hover{color:rgba(245,240,232,.6)}
 
-/* Main area */
-.dash-main{flex:1;display:flex;flex-direction:column;min-height:100vh;overflow-y:auto}
-.dash-header{padding:1.1rem 1.75rem;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-  background:rgba(245,240,232,.96);backdrop-filter:blur(20px);
-  position:sticky;top:0;z-index:50}
-.dash-htitle{font-family:var(--display);font-size:1.4rem;letter-spacing:.02em}
-.dash-hbadges{display:flex;gap:.6rem}
-.badge{font-family:var(--mono);font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;
-  padding:.3rem .7rem;background:var(--cream);border:1px solid var(--border)}
-.badge.live{background:#dcfce7;border-color:#86efac;color:#166534}
-.dash-content{padding:1.75rem;flex:1}
-
-/* Subpages */
+/* Dash main */
+.dash-main{flex:1;overflow-y:auto;height:100vh}
+.dash-topbar{padding:1rem 1.75rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:rgba(245,240,232,.96);backdrop-filter:blur(20px);position:sticky;top:0;z-index:50}
+.dash-title{font-family:var(--display);font-size:1.4rem;letter-spacing:.02em}
+.dash-sub{font-size:.72rem;color:var(--muted)}
+.dash-content{padding:1.75rem}
 .sp{display:none}.sp.active{display:block}
 
-/* Overview stats */
-.ov-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.9rem;margin-bottom:1.75rem}
-.stat{background:white;border:1px solid var(--border);padding:1.25rem;
-  transition:all .2s;cursor:default}
+/* Account tabs */
+.acct-tabs{display:flex;gap:.75rem;margin-bottom:2rem;flex-wrap:wrap}
+.acct-tab{display:flex;align-items:center;gap:.7rem;padding:.65rem 1rem;border:1px solid var(--border);background:white;cursor:pointer;transition:all .2s;min-width:180px}
+.acct-tab:hover{border-color:var(--ink)}
+.acct-tab.active{border-color:var(--ink);background:var(--ink);color:var(--paper)}
+.acct-tab-ico{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.acct-tab-name{font-size:.8rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px}
+.acct-tab-meta{font-family:var(--mono);font-size:.55rem;letter-spacing:.06em;text-transform:uppercase;opacity:.6}
+.acct-tab.add{justify-content:center;min-width:auto;color:var(--muted);border-style:dashed}
+.acct-tab.add:hover{color:var(--ink)}
+
+/* Monetize hero */
+.mon-hero{background:var(--ink);color:var(--paper);padding:2.25rem;margin-bottom:1.5rem;position:relative;overflow:hidden}
+.mon-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(200,241,53,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(200,241,53,.05) 1px,transparent 1px);background-size:40px 40px}
+.mon-body{position:relative;z-index:2;display:grid;grid-template-columns:1.1fr 1fr;gap:3rem}
+.mon-eyebrow{font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:.9rem;display:flex;align-items:center;gap:.55rem}
+.mon-eyebrow::before{content:'';width:20px;height:1px;background:var(--accent)}
+.mon-status{font-family:var(--display);font-size:clamp(1.8rem,3.5vw,2.8rem);line-height:.93;letter-spacing:.02em;margin-bottom:.4rem}
+.mon-status em{font-family:var(--serif);font-style:italic;color:var(--accent)}
+.mon-eta{font-size:.85rem;color:rgba(245,240,232,.55);margin-bottom:1.75rem}
+.mon-eta strong{color:var(--accent);font-family:var(--mono)}
+.req-list{display:flex;flex-direction:column;gap:1rem}
+.req-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:.4rem}
+.req-lbl{font-size:.82rem;font-weight:500;display:flex;align-items:center;gap:.4rem}
+.req-chk{width:15px;height:15px;border-radius:50%;border:1.5px solid rgba(245,240,232,.25);display:flex;align-items:center;justify-content:center;font-size:.55rem;flex-shrink:0}
+.req-chk.done{background:var(--accent);border-color:var(--accent);color:var(--ink)}
+.req-nums{font-family:var(--mono);font-size:.78rem}
+.req-nums .cur{color:var(--accent)}.req-nums .tgt{color:rgba(245,240,232,.35)}
+.req-track{height:5px;background:rgba(245,240,232,.07);border-radius:3px;overflow:hidden}
+.req-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent),#9dd119);transition:width 1.2s cubic-bezier(.2,.8,.2,1)}
+.req-fill.done{background:linear-gradient(90deg,var(--green),#22c55e)}
+.req-sub{font-family:var(--mono);font-size:.55rem;color:rgba(245,240,232,.28);margin-top:.2rem;text-align:right}
+
+/* Benchmark right */
+.bench-lbl{font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(245,240,232,.3);margin-bottom:.7rem}
+.pct-big{font-family:var(--display);font-size:3.5rem;color:var(--accent);line-height:1}
+.pct-desc{font-size:.75rem;color:rgba(245,240,232,.5);margin-top:.15rem;line-height:1.5;margin-bottom:1.25rem}
+.narr-list{display:flex;flex-direction:column;gap:.5rem}
+.narr{font-size:.75rem;color:rgba(245,240,232,.55);line-height:1.6;padding-left:.7rem;border-left:2px solid rgba(200,241,53,.2)}
+
+/* Stats */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
+.stat{background:white;border:1px solid var(--border);padding:1.2rem;transition:.2s;cursor:default}
 .stat:hover{transform:translateY(-2px);border-color:var(--ink)}
-.stat-lbl{font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;
-  text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
-.stat-val{font-family:var(--display);font-size:2rem;letter-spacing:.02em;line-height:1;margin-bottom:.2rem}
-.stat-chg{font-size:.72rem;color:var(--muted)}
-.stat-chg.up{color:#16a34a}
+.stat-lbl{font-family:var(--mono);font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.45rem}
+.stat-val{font-family:var(--display);font-size:2rem;letter-spacing:.02em;line-height:1}
+.stat-chg{font-size:.7rem;margin-top:.3rem;color:var(--muted)}
+.stat-chg.up{color:var(--green)}
 
-.ov-row{display:grid;grid-template-columns:2fr 1fr;gap:1.25rem;margin-bottom:1.25rem}
-.card{background:white;border:1px solid var(--border);padding:1.25rem}
-.card-ttl{font-family:var(--display);font-size:.95rem;letter-spacing:.03em;margin-bottom:1rem}
-.card-ttl span{font-family:var(--body);font-size:.72rem;color:var(--muted);
-  font-weight:400;margin-left:.4rem}
+/* Rivals */
+.panel{background:white;border:1px solid var(--border);padding:1.5rem;margin-bottom:1.5rem}
+.panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
+.panel-title{font-family:var(--display);font-size:1.05rem;letter-spacing:.03em}
+.panel-title span{font-family:var(--body);font-size:.7rem;color:var(--muted);font-weight:400;margin-left:.4rem}
+.panel-btn{font-family:var(--mono);font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;background:none;border:1px solid var(--border);padding:.32rem .75rem;cursor:pointer;transition:all .15s}
+.panel-btn:hover{border-color:var(--ink);background:var(--ink);color:var(--paper)}
+.rival-row{display:flex;align-items:center;gap:1rem;padding:.8rem 0;border-bottom:1px solid var(--border)}
+.rival-row:last-child{border-bottom:none}
+.rival-rank{font-family:var(--mono);font-size:.62rem;color:var(--muted);width:18px;flex-shrink:0}
+.rival-info{flex:1;min-width:0}
+.rival-name{font-size:.82rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rival-cat{font-family:var(--mono);font-size:.55rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.rival-subs{font-family:var(--display);font-size:1.05rem;text-align:right;flex-shrink:0;width:65px}
+.rival-gap{text-align:right;flex-shrink:0;width:90px}
+.rival-gap-n{font-family:var(--mono);font-size:.7rem;color:var(--red)}
+.rival-gap-e{font-family:var(--mono);font-size:.58rem;color:var(--muted)}
+.rival-earn{text-align:right;flex-shrink:0;width:75px}
+.rival-earn-n{font-size:.8rem;font-weight:600;color:var(--green)}
+.rival-earn-l{font-family:var(--mono);font-size:.52rem;color:var(--muted)}
+.rival-badge{font-family:var(--mono);font-size:.52rem;letter-spacing:.05em;text-transform:uppercase;padding:.15rem .4rem;background:var(--cream);color:var(--muted);flex-shrink:0}
+.rival-badge.nearest{background:#fef9c3;color:#854d0e}
 
-/* Activity chart */
-.act-chart{display:flex;align-items:flex-end;gap:5px;height:90px}
-.act-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
-.act-bar{width:100%;border-radius:2px 2px 0 0;background:var(--accent);opacity:.7;transition:opacity .15s}
-.act-bar:hover{opacity:1}
-.act-day{font-family:var(--mono);font-size:.52rem;color:var(--muted)}
+/* Chart */
+.chart-wrap{height:175px;position:relative}
+.chart-svg{width:100%;height:100%;overflow:visible}
+.chart-legend{display:flex;gap:1.25rem;margin-top:.85rem;font-size:.7rem;color:var(--muted)}
+.chart-legend span{display:flex;align-items:center;gap:.35rem}
+.cl-line{width:14px;height:2px;flex-shrink:0}
 
-/* Platform quick status */
-.plat-list{display:flex;flex-direction:column;gap:.6rem}
-.plat-row{display:flex;align-items:center;gap:.65rem;padding:.65rem;
-  border:1px solid var(--border);background:var(--cream)}
-.plat-ico{width:28px;height:28px;border-radius:5px;display:flex;align-items:center;
-  justify-content:center;font-size:.9rem;flex-shrink:0}
-.plat-info{flex:1}
-.plat-name{font-size:.8rem;font-weight:600}
-.plat-st{font-family:var(--mono);font-size:.58rem;letter-spacing:.06em;text-transform:uppercase}
-.plat-st.on{color:#16a34a}.plat-st.off{color:var(--muted)}
-.plat-btn{font-family:var(--mono);font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;
-  padding:.3rem .65rem;border:1px solid var(--border);background:white;cursor:pointer;transition:all .15s}
-.plat-btn:hover{border-color:var(--ink);background:var(--ink);color:var(--paper)}
+/* Rival input */
+.rival-input-row{display:flex;gap:.6rem;margin-top:.85rem}
+.rival-inp{flex:1;padding:.55rem .8rem;border:1px solid var(--border);font-family:var(--body);font-size:.82rem;outline:none;transition:border-color .15s}
+.rival-inp:focus{border-color:var(--ink)}
+.rival-add{padding:.55rem 1rem;font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;background:var(--ink);color:var(--paper);border:none;cursor:pointer;white-space:nowrap}
+.rival-add:hover{background:var(--red)}
 
-/* Jobs table */
-.tbl{width:100%;border-collapse:collapse}
-.tbl th{font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;
-  color:var(--muted);padding:.45rem .7rem;border-bottom:1px solid var(--border);
-  text-align:left;font-weight:400}
-.tbl td{padding:.7rem;border-bottom:1px solid var(--border);font-size:.8rem}
-.tbl tr:last-child td{border-bottom:none}
-.tbl tr:hover td{background:var(--cream)}
-.jbadge{font-family:var(--mono);font-size:.58rem;letter-spacing:.06em;
-  text-transform:uppercase;padding:.18rem .55rem}
-.jbadge.done{background:#dcfce7;color:#166534}
-.jbadge.running{background:#fef9c3;color:#854d0e}
-.jbadge.failed{background:#fee2e2;color:#991b1b}
-.jbadge.pending{background:var(--cream);color:var(--muted)}
-.progress-bar{width:80px;height:4px;background:var(--cream);border-radius:2px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:.4rem}
-.progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .5s}
+/* Billing tab */
+.bill-card{background:white;border:1px solid var(--border);padding:1.5rem;margin-bottom:1.25rem;max-width:500px}
+.bill-plan{font-family:var(--display);font-size:1.5rem;letter-spacing:.02em}
+.bill-note{font-size:.78rem;color:var(--muted);margin-top:.25rem;margin-bottom:1rem}
 
-/* Campaign form */
-.cform{max-width:600px}
-.fsec{margin-bottom:1.75rem}
-.fsec-title{font-family:var(--display);font-size:.95rem;letter-spacing:.03em;
-  margin-bottom:.85rem;padding-bottom:.4rem;border-bottom:1px solid var(--border)}
-.plat-sel{display:grid;grid-template-columns:repeat(4,1fr);gap:.65rem;margin-bottom:.75rem}
-.popt{border:1px solid var(--border);padding:.85rem .5rem;text-align:center;
-  cursor:pointer;transition:all .15s;background:white}
-.popt:hover{border-color:var(--ink)}
-.popt.sel{border-color:var(--ink);background:var(--ink);color:var(--paper)}
-.popt-ico{font-size:1.35rem;margin-bottom:.3rem}
-.popt-name{font-family:var(--mono);font-size:.58rem;letter-spacing:.06em;text-transform:uppercase}
-.popt.disabled{opacity:.35;cursor:not-allowed}
-
-.act-sel{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:.75rem}
-.aopt{border:1px solid var(--border);padding:.5rem 1.1rem;cursor:pointer;
-  font-family:var(--mono);font-size:.65rem;letter-spacing:.06em;text-transform:uppercase;
-  transition:all .15s;background:white}
-.aopt:hover{border-color:var(--ink)}
-.aopt.sel{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-
-.fgrp{display:flex;flex-direction:column;gap:.3rem;margin-bottom:.85rem}
-.flbl{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;
-  text-transform:uppercase;color:var(--muted)}
-.finp,.fsel{padding:.7rem .9rem;border:1px solid var(--border);background:white;
-  font-family:var(--body);font-size:.85rem;color:var(--ink);
-  outline:none;transition:border-color .15s;width:100%}
-.finp:focus,.fsel:focus{border-color:var(--ink)}
-.fhint{font-size:.7rem;color:var(--muted)}
-
-.qty-big{font-family:var(--display);font-size:2.5rem;letter-spacing:.02em;margin-bottom:.4rem}
-.qty-range{width:100%;accent-color:var(--ink);cursor:pointer}
-.qty-marks{display:flex;justify-content:space-between;
-  font-family:var(--mono);font-size:.58rem;color:var(--muted);margin-top:.2rem}
-
-.summary{background:var(--ink);color:var(--paper);padding:1.4rem;margin-top:1.4rem}
-.sum-ttl{font-family:var(--display);font-size:1rem;letter-spacing:.03em;margin-bottom:.85rem}
-.sum-row{display:flex;justify-content:space-between;align-items:center;
-  padding:.35rem 0;border-bottom:1px solid rgba(245,240,232,.08);
-  font-size:.8rem;color:rgba(245,240,232,.65)}
-.sum-row:last-of-type{border-bottom:none}
-.sum-row strong{color:var(--paper);font-family:var(--mono)}
-.sum-price{font-family:var(--display);font-size:1.9rem;color:var(--accent);margin:1rem 0 .35rem}
-.sum-note{font-family:var(--mono);font-size:.6rem;color:rgba(245,240,232,.38);
-  letter-spacing:.06em;margin-bottom:.9rem}
-.btn-launch{width:100%;padding:.9rem;font-family:var(--mono);font-size:.75rem;
-  letter-spacing:.1em;text-transform:uppercase;background:var(--accent);
-  color:var(--ink);border:none;cursor:pointer;transition:background .15s}
-.btn-launch:hover{background:#d4f84a}
-.btn-launch:disabled{opacity:.45;cursor:not-allowed}
-
-/* Connect page */
-.conn-note{font-size:.85rem;color:var(--muted);max-width:520px;line-height:1.8;margin-bottom:1.5rem}
-.back-btn{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;
-  background:none;border:1px solid var(--border);padding:.38rem .85rem;cursor:pointer;
-  display:inline-flex;align-items:center;gap:.4rem;transition:all .15s;margin-bottom:1.25rem}
-.back-btn:hover{border-color:var(--ink)}
-.conn-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem}
-.conn-card{background:white;border:1px solid var(--border);padding:1.75rem;
-  display:flex;flex-direction:column;align-items:center;text-align:center;
-  cursor:pointer;transition:all .2s;position:relative}
-.conn-card:hover{transform:translateY(-3px);border-color:var(--ink)}
-.conn-card.on{border-color:#16a34a;background:#f0fdf4}
-.conn-badge{position:absolute;top:.85rem;right:.85rem;background:#dcfce7;color:#166534;
-  font-family:var(--mono);font-size:.52rem;letter-spacing:.06em;text-transform:uppercase;
-  padding:.18rem .5rem}
-.conn-ico{font-size:2.25rem;margin-bottom:.85rem}
-.conn-name{font-family:var(--display);font-size:1.15rem;letter-spacing:.03em;margin-bottom:.3rem}
-.conn-desc{font-size:.75rem;color:var(--muted);margin-bottom:1.1rem;line-height:1.6}
-.conn-st{font-family:var(--mono);font-size:.6rem;letter-spacing:.06em;
-  text-transform:uppercase;margin-bottom:1rem}
-.conn-st.on{color:#16a34a}.conn-st.off{color:var(--muted)}
-.conn-btn{width:100%;padding:.7rem;font-family:var(--mono);font-size:.65rem;
-  letter-spacing:.08em;text-transform:uppercase;background:var(--ink);color:var(--paper);
-  border:none;cursor:pointer;transition:background .15s}
-.conn-btn:hover{background:var(--red)}
-.conn-btn.on{background:#16a34a}.conn-btn.on:hover{background:#15803d}
-
-/* OAuth sub-modal */
-.omodal{background:var(--paper);width:100%;max-width:390px;
-  border:1px solid var(--border);position:relative;animation:modalIn .25s ease-out}
-.omodal-body{padding:1.75rem}
-.omodal-ico{font-size:2.75rem;text-align:center;margin-bottom:.85rem}
-.omodal-title{font-family:var(--display);font-size:1.6rem;letter-spacing:.02em;
-  line-height:.95;margin-bottom:.45rem;text-align:center}
-.omodal-sub{font-size:.8rem;color:var(--muted);text-align:center;
-  margin-bottom:1.25rem;line-height:1.7}
-.omodal-perms{background:var(--cream);border:1px solid var(--border);padding:.85rem;margin-bottom:1.25rem}
-.omodal-perms-ttl{font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;
-  text-transform:uppercase;color:var(--muted);margin-bottom:.6rem}
-.operm{display:flex;align-items:center;gap:.45rem;font-size:.75rem;margin-bottom:.35rem}
-.operm::before{content:'✓';color:#16a34a;font-weight:700;flex-shrink:0}
-.obtn{width:100%;padding:.8rem;font-family:var(--mono);font-size:.68rem;
-  letter-spacing:.08em;text-transform:uppercase;border:none;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;gap:.7rem;
-  transition:all .15s;margin-bottom:.45rem}
-.obtn.google{background:#4285f4;color:white}.obtn.google:hover{background:#3367d6}
-.obtn.facebook{background:#1877f2;color:white}.obtn.facebook:hover{background:#166fe5}
-.obtn.dark{background:#000;color:white}.obtn.dark:hover{background:#222}
-.obtn-ico{width:17px;height:17px;flex-shrink:0}
-.onote{font-size:.7rem;color:var(--muted);text-align:center;line-height:1.6}
-
-/* Billing */
-.bill-wrap{max-width:520px}
-.bill-card{background:white;border:1px solid var(--border);padding:1.5rem;margin-bottom:1.25rem}
-.bill-plan-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
-.bill-plan-name{font-family:var(--display);font-size:1.6rem;letter-spacing:.02em}
-.bill-plan-price{font-family:var(--display);font-size:1.9rem}
-.bill-plan-note{font-size:.78rem;color:var(--muted)}
-.bill-info{background:var(--cream);border:1px solid var(--border);padding:.85rem;
-  font-size:.8rem;color:var(--muted);line-height:1.7}
-.bill-plans{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
-
-/* Toast */
-.toast{position:fixed;bottom:1.75rem;right:1.75rem;background:var(--ink);color:var(--paper);
-  padding:.8rem 1.4rem;font-family:var(--mono);font-size:.7rem;letter-spacing:.06em;
-  z-index:1000;transform:translateY(80px);opacity:0;
-  transition:all .3s;display:flex;align-items:center;gap:.65rem;max-width:320px}
-.toast.show{transform:translateY(0);opacity:1}
-.toast.ok{border-left:3px solid var(--accent)}
-.toast.err{border-left:3px solid var(--red)}
-
-/* Loading spinner */
-.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(10,10,10,.15);
-  border-top-color:var(--ink);border-radius:50%;animation:spin .6s linear infinite}
+/* Empty / loading */
+.empty{text-align:center;padding:3rem;color:var(--muted);font-size:.85rem;line-height:1.9}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(10,10,10,.1);border-top-color:var(--ink);border-radius:50%;animation:spin .6s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--ink);color:var(--paper);padding:.75rem 1.25rem;font-family:var(--mono);font-size:.68rem;letter-spacing:.06em;z-index:1000;transform:translateY(60px);opacity:0;transition:all .3s;border-left:3px solid var(--accent);max-width:300px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.err{border-left-color:var(--red)}
 
 @media(max-width:860px){
-  .hero{grid-template-columns:1fr}
-  .hero-right,.dp-body{display:none}
-  .steps,.plans,.ov-grid,.conn-grid{grid-template-columns:1fr}
-  .ov-row{grid-template-columns:1fr}
-  .plat-sel{grid-template-columns:repeat(2,1fr)}
+  .hero{grid-template-columns:1fr}.hero-r{display:none}
+  .phases,.steps,.plan-grid,.stats-row{grid-template-columns:1fr}
   .sidebar{display:none}
-  .bill-plans{grid-template-columns:1fr}
+  .mon-body{grid-template-columns:1fr}
+  .acct-tab{min-width:150px}
 }
-
-/* ══ GROWTH DASHBOARD (sp-monetize) ══ */
-#sp-monetize .mn-acct-tabs{display:flex;gap:.75rem;margin-bottom:2rem;flex-wrap:wrap}
-#sp-monetize .acct-tab{display:flex;align-items:center;gap:.7rem;padding:.7rem 1.1rem;border:1px solid var(--border);background:white;cursor:pointer;transition:all .2s;min-width:190px}
-#sp-monetize .acct-tab:hover{border-color:var(--ink)}
-#sp-monetize .acct-tab.active{border-color:var(--ink);background:var(--ink);color:var(--paper)}
-#sp-monetize .acct-tab-ico{width:34px;height:34px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
-#sp-monetize .acct-tab-name{font-size:.82rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#sp-monetize .acct-tab-plat{font-family:var(--mono);font-size:.58rem;letter-spacing:.06em;text-transform:uppercase;opacity:.6}
-#sp-monetize .acct-tab.add{justify-content:center;min-width:auto;color:var(--muted);border-style:dashed}
-#sp-monetize .acct-tab.add:hover{color:var(--ink)}
-#sp-monetize .mn-hero{background:var(--ink);color:var(--paper);padding:2.5rem;margin-bottom:1.5rem;position:relative;overflow:hidden}
-#sp-monetize .mn-hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(200,241,53,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(200,241,53,.05) 1px,transparent 1px);background-size:40px 40px}
-#sp-monetize .mn-hero-body{position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr;gap:3rem}
-#sp-monetize .hero-eyebrow{font-family:var(--mono);font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-bottom:1rem;display:flex;align-items:center;gap:.6rem}
-#sp-monetize .hero-eyebrow::before{content:'';width:24px;height:1px;background:var(--accent)}
-#sp-monetize .hero-status{font-family:var(--display);font-size:clamp(2rem,4vw,3rem);line-height:.95;letter-spacing:.02em;margin-bottom:.5rem}
-#sp-monetize .hero-status em{font-family:var(--serif);font-style:italic;color:var(--accent)}
-#sp-monetize .hero-eta{font-size:.88rem;color:rgba(245,240,232,.6);margin-bottom:2rem}
-#sp-monetize .hero-eta strong{color:var(--accent);font-family:var(--mono)}
-#sp-monetize .req-list{display:flex;flex-direction:column;gap:1.1rem}
-#sp-monetize .req-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:.4rem}
-#sp-monetize .req-label{font-size:.82rem;font-weight:500;display:flex;align-items:center;gap:.45rem}
-#sp-monetize .req-check{width:15px;height:15px;border-radius:50%;border:1.5px solid rgba(245,240,232,.3);display:flex;align-items:center;justify-content:center;font-size:.55rem;flex-shrink:0}
-#sp-monetize .req-check.done{background:var(--accent);border-color:var(--accent);color:var(--ink)}
-#sp-monetize .req-nums{font-family:var(--mono);font-size:.8rem}
-#sp-monetize .req-nums .cur{color:var(--accent)}
-#sp-monetize .req-nums .tgt{color:rgba(245,240,232,.35)}
-#sp-monetize .req-track{height:6px;background:rgba(245,240,232,.08);border-radius:3px;overflow:hidden}
-#sp-monetize .req-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent),#9dd119);transition:width 1.2s cubic-bezier(.2,.8,.2,1)}
-#sp-monetize .req-fill.done{background:linear-gradient(90deg,#16a34a,#22c55e)}
-#sp-monetize .req-sub{font-family:var(--mono);font-size:.58rem;color:rgba(245,240,232,.3);margin-top:.25rem;text-align:right}
-#sp-monetize .bench-label{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(245,240,232,.35);margin-bottom:.75rem}
-#sp-monetize .pct-display{margin-bottom:1.25rem}
-#sp-monetize .pct-num{font-family:var(--display);font-size:3.5rem;line-height:1;color:var(--accent)}
-#sp-monetize .pct-desc{font-size:.78rem;color:rgba(245,240,232,.55);margin-top:.2rem;line-height:1.5}
-#sp-monetize .narrative{display:flex;flex-direction:column;gap:.5rem}
-#sp-monetize .narr-line{font-size:.78rem;color:rgba(245,240,232,.6);line-height:1.6;padding-left:.75rem;border-left:2px solid rgba(200,241,53,.25)}
-#sp-monetize .mn-stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
-#sp-monetize .mn-stat{background:white;border:1px solid var(--border);padding:1.25rem;transition:.2s;cursor:default}
-#sp-monetize .mn-stat:hover{transform:translateY(-2px);border-color:var(--ink)}
-#sp-monetize .mn-stat-lbl{font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
-#sp-monetize .mn-stat-val{font-family:var(--display);font-size:2.1rem;letter-spacing:.02em;line-height:1}
-#sp-monetize .mn-stat-delta{font-size:.72rem;margin-top:.35rem;display:flex;align-items:center;gap:.3rem}
-#sp-monetize .mn-stat-delta.up{color:#16a34a}
-#sp-monetize .mn-stat-delta.pending{color:var(--muted)}
-#sp-monetize .mn-panel{background:white;border:1px solid var(--border);padding:1.5rem;margin-bottom:1.5rem}
-#sp-monetize .mn-panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
-#sp-monetize .mn-panel-title{font-family:var(--display);font-size:1.1rem;letter-spacing:.03em}
-#sp-monetize .mn-panel-title span{font-family:var(--body);font-size:.72rem;color:var(--muted);font-weight:400;margin-left:.5rem}
-#sp-monetize .mn-panel-action{font-family:var(--mono);font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;background:none;border:1px solid var(--border);padding:.35rem .8rem;cursor:pointer;transition:all .15s}
-#sp-monetize .mn-panel-action:hover{border-color:var(--ink);background:var(--ink);color:var(--paper)}
-#sp-monetize .rival-row{display:flex;align-items:center;gap:1rem;padding:.85rem 0;border-bottom:1px solid var(--border)}
-#sp-monetize .rival-row:last-child{border-bottom:none}
-#sp-monetize .rival-rank{font-family:var(--mono);font-size:.65rem;color:var(--muted);width:20px;flex-shrink:0}
-#sp-monetize .rival-info{flex:1;min-width:0}
-#sp-monetize .rival-name{font-size:.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#sp-monetize .rival-cat{font-family:var(--mono);font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
-#sp-monetize .rival-subs{font-family:var(--display);font-size:1.1rem;letter-spacing:.02em;text-align:right;flex-shrink:0;width:70px}
-#sp-monetize .rival-gap{text-align:right;flex-shrink:0;width:100px}
-#sp-monetize .rival-gap-num{font-family:var(--mono);font-size:.72rem;color:var(--red)}
-#sp-monetize .rival-gap-eta{font-family:var(--mono);font-size:.6rem;color:var(--muted)}
-#sp-monetize .rival-earn{text-align:right;flex-shrink:0;width:80px}
-#sp-monetize .rival-earn-num{font-size:.8rem;font-weight:600;color:#16a34a}
-#sp-monetize .rival-earn-lbl{font-family:var(--mono);font-size:.55rem;color:var(--muted)}
-#sp-monetize .rival-badge{font-family:var(--mono);font-size:.55rem;letter-spacing:.06em;text-transform:uppercase;padding:.15rem .45rem;border-radius:2px;background:var(--cream);color:var(--muted);flex-shrink:0}
-#sp-monetize .rival-badge.nearest{background:#fef9c3;color:#854d0e}
-#sp-monetize .chart-wrap{position:relative;height:180px}
-#sp-monetize .chart-svg{width:100%;height:100%;overflow:visible}
-#sp-monetize .proj-legend{display:flex;gap:1.5rem;margin-top:1rem;font-size:.72rem;color:var(--muted)}
-#sp-monetize .proj-legend span{display:flex;align-items:center;gap:.4rem}
-#sp-monetize .proj-line{width:16px;height:2px;flex-shrink:0}
-#sp-monetize .rival-input-row{display:flex;gap:.65rem;margin-top:1rem}
-#sp-monetize .rival-inp{flex:1;padding:.6rem .85rem;border:1px solid var(--border);font-family:var(--body);font-size:.82rem;outline:none;transition:border-color .15s}
-#sp-monetize .rival-inp:focus{border-color:var(--ink)}
-#sp-monetize .rival-add-btn{padding:.6rem 1.1rem;font-family:var(--mono);font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;background:var(--ink);color:var(--paper);border:none;cursor:pointer;transition:.15s;white-space:nowrap}
-#sp-monetize .rival-add-btn:hover{background:var(--red)}
-#sp-monetize .mn-empty{text-align:center;padding:2.5rem;color:var(--muted);font-size:.85rem;line-height:1.8}
-#sp-monetize .mn-connect-btn{display:inline-block;margin-top:.75rem;padding:.55rem 1.25rem;font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;background:var(--ink);color:var(--paper);border:none;cursor:pointer}
-#sp-monetize .mn-connect-btn:hover{background:var(--red)}</style>
+</style>
 </head>
 <body>
 
-<!-- ══════════════════════════════
-     LANDING
-══════════════════════════════ -->
-<div id="page-landing" class="page active">
-
-  <header class="land-header">
-    <div class="logo" onclick="goLanding()">
-      <div class="logo-mark"><div class="logo-pulse"></div></div>
-      NEXUS
-    </div>
-    <nav class="land-nav">
-      <a href="#how">How it works</a>
+<!-- ════════════════ LANDING ════════════════ -->
+<div id="pg-land" class="page active">
+  <nav class="land-nav">
+    <div class="logo"><div class="logo-mark"><div class="logo-dot"></div></div>NEXUS</div>
+    <div class="land-nav-links">
+      <a href="#journey">How it works</a>
       <a href="#pricing">Pricing</a>
-    </nav>
-    <button class="btn-ink" onclick="openAuth()">Sign In →</button>
-  </header>
+    </div>
+    <button class="btn-ink" onclick="openAuth()">Start Free →</button>
+  </nav>
 
+  <!-- Hero -->
   <div class="hero">
-    <div class="hero-left">
-      <div class="eyebrow">Next Level Digital Marketing</div>
-      <h1 class="hero-h1">ESCALATE<br><em>your presence.</em><br>EVERYWHERE.</h1>
-      <p class="hero-p">More people discovering your brand. More engagement on your content. Every platform pushing you forward — because the numbers say you matter.</p>
+    <div class="hero-l">
+      <div class="eyebrow">Creator Growth Engine</div>
+      <h1 class="hero-h1">ZERO TO<br><em>monetized.</em><br>EVERY PLATFORM.</h1>
+      <p class="hero-p">Connect your YouTube, Facebook, Instagram, or TikTok. Nexus reads your real stats and runs a growth engine in the background — until you hit every threshold that makes platforms pay you.</p>
       <div class="hero-cta">
-        <button class="btn-ink" style="padding:.9rem 2rem;font-size:.8rem" onclick="openAuth()">Start Free — 10 Actions →</button>
-        <button class="btn-outline" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">See How →</button>
+        <button class="btn-accent" onclick="openAuth()">Start Free — No Setup →</button>
+        <button class="btn-ghost" onclick="document.getElementById('journey').scrollIntoView({behavior:'smooth'})">See How →</button>
       </div>
       <div class="hero-stats">
-        <div class="hstat"><div class="hstat-val">10M+</div><div class="hstat-lbl">Monthly Reach</div></div>
-        <div class="hstat"><div class="hstat-val">98%</div><div class="hstat-lbl">Retention Rate</div></div>
-        <div class="hstat"><div class="hstat-val">24/7</div><div class="hstat-lbl">Always Running</div></div>
+        <div class="hstat"><div class="hstat-val">4</div><div class="hstat-lbl">Platforms</div></div>
+        <div class="hstat"><div class="hstat-val">24/7</div><div class="hstat-lbl">Engine Running</div></div>
+        <div class="hstat"><div class="hstat-val">0</div><div class="hstat-lbl">Setup Required</div></div>
       </div>
     </div>
-    <div class="hero-right">
+    <div class="hero-r">
       <div class="grid-bg"></div>
-      <div class="dash-preview">
-        <div class="dp-bar">
-          <div class="dp-dot" style="background:#ef4444"></div>
-          <div class="dp-dot" style="background:#f59e0b"></div>
-          <div class="dp-dot" style="background:#22c55e"></div>
-          <div class="dp-label">nexus dashboard</div>
+      <div class="hero-card">
+        <div class="hc-bar">
+          <div class="hc-dot" style="background:#ef4444"></div>
+          <div class="hc-dot" style="background:#f59e0b"></div>
+          <div class="hc-dot" style="background:#22c55e"></div>
+          <div class="hc-lbl">nexus · growth dashboard</div>
         </div>
-        <div class="dp-body">
-          <div class="dp-metrics">
-            <div class="dp-metric"><div class="dp-mval">2.2K</div><div class="dp-mlbl">Sessions</div><div class="dp-mchg">↑ +340%</div></div>
-            <div class="dp-metric"><div class="dp-mval">7.5K</div><div class="dp-mlbl">Views</div><div class="dp-mchg">↑ +218%</div></div>
+        <div class="hc-body">
+          <div class="hc-channel">
+            <div class="hc-ch-ico">▶️</div>
+            <div><div class="hc-ch-name">Dapur Mama Rina</div><div class="hc-ch-plat">YouTube · Food & Cooking</div></div>
           </div>
-          <div class="dp-bars">
-            <div class="dp-bar-item" style="height:35%"></div>
-            <div class="dp-bar-item" style="height:52%"></div>
-            <div class="dp-bar-item" style="height:41%"></div>
-            <div class="dp-bar-item" style="height:68%"></div>
-            <div class="dp-bar-item" style="height:55%"></div>
-            <div class="dp-bar-item" style="height:82%"></div>
-            <div class="dp-bar-item" style="height:95%"></div>
+          <div class="hc-pct" id="anim-pct">0%</div>
+          <div class="hc-pct-lbl">To Monetized</div>
+          <div class="hc-req">
+            <div class="hc-req-head"><span>Subscribers</span><span><span class="cur" id="anim-subs">0</span> / 1,000</span></div>
+            <div class="hc-track"><div class="hc-fill" id="anim-subs-bar" style="width:0%"></div></div>
           </div>
-          <div class="dp-src"><div class="dp-src-dot" style="background:#4285f4"></div><div class="dp-src-name">Organic Search</div><div class="dp-src-bar"><div class="dp-src-fill" style="width:68%;background:#4285f4"></div></div><div class="dp-src-pct">68%</div></div>
-          <div class="dp-src"><div class="dp-src-dot" style="background:#c8f135"></div><div class="dp-src-name">Social</div><div class="dp-src-bar"><div class="dp-src-fill" style="width:18%;background:#c8f135"></div></div><div class="dp-src-pct">18%</div></div>
-          <div class="dp-src"><div class="dp-src-dot" style="background:#e8341a"></div><div class="dp-src-name">Direct</div><div class="dp-src-bar"><div class="dp-src-fill" style="width:14%;background:#e8341a"></div></div><div class="dp-src-pct">14%</div></div>
+          <div class="hc-req">
+            <div class="hc-req-head"><span>Watch Hours</span><span><span class="cur" id="anim-wh">0</span> / 4,000</span></div>
+            <div class="hc-track"><div class="hc-fill" id="anim-wh-bar" style="width:0%"></div></div>
+          </div>
+          <div class="hc-eta" id="anim-eta">Syncing with YouTube…</div>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- Ticker -->
   <div class="ticker">
     <div class="ticker-track">
-      <span class="t-item">Views</span><span class="t-item">Likes</span><span class="t-item">Followers</span><span class="t-item">Subscribers</span><span class="t-item">Reach</span><span class="t-item">Engagement</span><span class="t-item">Traffic</span><span class="t-item">Analytics</span>
-      <span class="t-item">Views</span><span class="t-item">Likes</span><span class="t-item">Followers</span><span class="t-item">Subscribers</span><span class="t-item">Reach</span><span class="t-item">Engagement</span><span class="t-item">Traffic</span><span class="t-item">Analytics</span>
+      <span class="t-item">Monetized</span><span class="t-item">Growth</span><span class="t-item">Established</span><span class="t-item">YouTube</span><span class="t-item">Facebook</span><span class="t-item">Instagram</span><span class="t-item">TikTok</span><span class="t-item">Watch Hours</span><span class="t-item">Subscribers</span><span class="t-item">Followers</span><span class="t-item">Reel Views</span>
+      <span class="t-item">Monetized</span><span class="t-item">Growth</span><span class="t-item">Established</span><span class="t-item">YouTube</span><span class="t-item">Facebook</span><span class="t-item">Instagram</span><span class="t-item">TikTok</span><span class="t-item">Watch Hours</span><span class="t-item">Subscribers</span><span class="t-item">Followers</span><span class="t-item">Reel Views</span>
     </div>
   </div>
 
-  <!-- How it works -->
-  <div class="how" id="how">
-    <div class="section-lbl">How It Works</div>
-    <h2 class="how-title">Sign in once.<br><em>Results start immediately.</em></h2>
-    <div class="steps">
-      <div class="step"><div class="step-num">01</div><div class="step-title">SIGN IN</div><div class="step-desc">Create your account with Google, Facebook, or Twitter. Takes 10 seconds.</div></div>
-      <div class="step"><div class="step-num">02</div><div class="step-title">CONNECT</div><div class="step-desc">Link the platforms where your content lives. One click per platform.</div></div>
-      <div class="step"><div class="step-num">03</div><div class="step-title">CHOOSE</div><div class="step-desc">Pick your platform, action, and quantity. Views, likes, or followers.</div></div>
-      <div class="step"><div class="step-num">04</div><div class="step-title">WATCH</div><div class="step-desc">Numbers go up and stay up. Open your analytics and see the difference.</div></div>
+  <!-- Journey phases -->
+  <div class="section" id="journey">
+    <div class="sec-lbl">Your Growth Journey</div>
+    <h2 class="sec-h">THREE PHASES.<br><em>One engine.</em></h2>
+    <div class="phases">
+      <div class="phase" data-n="01">
+        <div class="phase-tag m">Monetized</div>
+        <div class="phase-title">HIT THE THRESHOLD</div>
+        <p class="phase-desc">Every platform has a number that unlocks payments. Nexus knows what that number is for your platform and points every delivery at it.</p>
+        <div class="phase-metric">
+          <div>YouTube: <span>1,000 subs + 4,000 watch hours</span></div>
+          <div>Facebook: <span>10K followers + 600K reel views</span></div>
+          <div>Instagram / TikTok: <span>10K followers</span></div>
+        </div>
+      </div>
+      <div class="phase" data-n="02">
+        <div class="phase-tag g">Growth</div>
+        <div class="phase-title">BEAT YOUR RIVALS</div>
+        <p class="phase-desc">After you monetize, Nexus shifts goal. It finds channels in your exact niche that are slightly ahead — and shows you the gap and how to close it.</p>
+        <div class="phase-metric">
+          <div>Cohort rank: <span>faster than X% of similar channels</span></div>
+          <div>Nearest rival: <span>gap + days to catch up</span></div>
+          <div>Revenue est.: <span>$X/month at current view rate</span></div>
+        </div>
+      </div>
+      <div class="phase" data-n="03">
+        <div class="phase-tag e">Established</div>
+        <div class="phase-title">STAY VISIBLE</div>
+        <p class="phase-desc">Algorithms reward momentum. Nexus keeps your numbers moving so the platform keeps recommending your content — continuously, automatically.</p>
+        <div class="phase-metric">
+          <div>Visibility: <span>consistent engagement signals</span></div>
+          <div>Brand deals: <span>engagement rate that matters to sponsors</span></div>
+          <div>Compounding: <span>real audience finds you via algorithm</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- How it works steps -->
+  <div style="background:var(--cream);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+    <div class="section" style="padding-top:4rem;padding-bottom:4rem">
+      <div class="sec-lbl">How It Works</div>
+      <h2 class="sec-h" style="margin-bottom:2.5rem">CONNECT ONCE.<br><em>Engine runs itself.</em></h2>
+      <div class="steps">
+        <div class="step"><div class="step-n">01</div><div class="step-title">SIGN IN</div><p class="step-desc">Create your account with Google, Facebook, or Twitter. Takes 10 seconds.</p></div>
+        <div class="step"><div class="step-n">02</div><div class="step-title">CONNECT</div><p class="step-desc">Link your YouTube channel or Facebook page via OAuth. Nexus reads your real stats from the platform's own API — no manual input.</p></div>
+        <div class="step"><div class="step-n">03</div><div class="step-title">ENGINE ON</div><p class="step-desc">Nexus automatically distributes growth across your content the way a real audience discovers it. No target to set.</p></div>
+        <div class="step"><div class="step-n">04</div><div class="step-title">WATCH</div><p class="step-desc">Dashboard shows your % to monetized, ETA, and how you rank against similar channels. Numbers move every day.</p></div>
+      </div>
     </div>
   </div>
 
   <!-- Pricing -->
-  <div class="pricing-section" id="pricing">
-    <div class="pricing-inner">
-      <div class="section-lbl">Pricing</div>
-      <div class="pricing-title">RESULTS THAT PAY FOR THEMSELVES.</div>
-      <div class="plans">
+  <div class="pricing-bg" id="pricing">
+    <div class="plans">
+      <div class="sec-lbl">Pricing</div>
+      <h2 class="sec-h">RESULTS THAT<br><em>pay for themselves.</em></h2>
+      <div class="plan-grid">
         <div class="plan">
           <div class="plan-tier">Starter</div>
           <div class="plan-price">$29</div>
           <div class="plan-per">per month · cancel anytime</div>
           <div class="plan-div"></div>
           <ul class="plan-features">
-            <li>10,000 actions per month</li>
-            <li>YouTube · Instagram · TikTok</li>
-            <li>Views, Likes & Followers</li>
-            <li>Geo targeting</li>
+            <li>1 channel / page</li>
+            <li>YouTube + Facebook</li>
+            <li>Monetization threshold tracking</li>
+            <li>Daily metric sync from API</li>
           </ul>
           <button class="plan-cta" onclick="openAuth()">Get Started →</button>
         </div>
@@ -653,11 +453,11 @@ body{background:var(--paper);color:var(--ink);font-family:var(--body);
           <div class="plan-per">per month · cancel anytime</div>
           <div class="plan-div"></div>
           <ul class="plan-features">
-            <li>50,000 actions per month</li>
-            <li>All platforms</li>
-            <li>Priority queue</li>
-            <li>Demographic targeting</li>
-            <li>Age, gender & interest signals</li>
+            <li>3 channels across all platforms</li>
+            <li>Rival tracking + cohort rank</li>
+            <li>Revenue estimate dashboard</li>
+            <li>Priority engine queue</li>
+            <li>Instagram + TikTok</li>
           </ul>
           <button class="plan-cta" onclick="openAuth()">Get Started →</button>
         </div>
@@ -667,7 +467,7 @@ body{background:var(--paper);color:var(--ink);font-family:var(--body);
           <div class="plan-per">per month · volume discounts</div>
           <div class="plan-div"></div>
           <ul class="plan-features">
-            <li>200,000 actions per month</li>
+            <li>Unlimited channels</li>
             <li>API access</li>
             <li>White-label reporting</li>
             <li>Multi-client management</li>
@@ -678,1307 +478,364 @@ body{background:var(--paper);color:var(--ink);font-family:var(--body);
     </div>
   </div>
 
-  <footer style="background:var(--ink);color:var(--paper);padding:1.75rem 2.5rem;
-    display:flex;align-items:center;justify-content:space-between;
-    border-top:1px solid rgba(245,240,232,.06)">
-    <div style="font-family:var(--display);font-size:1.2rem;letter-spacing:.05em">NEXUS</div>
-    <div style="font-family:var(--mono);font-size:.6rem;color:rgba(245,240,232,.3);letter-spacing:.06em">© 2026 Nexus Digital</div>
-    <div style="display:flex;gap:1.25rem">
-      <a href="mailto:hello@nexus.digital" style="font-family:var(--mono);font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;color:rgba(245,240,232,.35);text-decoration:none;transition:color .15s" onmouseover="this.style.color='#c8f135'" onmouseout="this.style.color='rgba(245,240,232,.35)'">Contact</a>
-    </div>
+  <footer class="footer">
+    <div class="logo" style="color:var(--paper)"><div class="logo-mark" style="background:var(--accent)"><div style="width:8px;height:8px;background:var(--ink);border-radius:50%"></div></div>NEXUS</div>
+    <div style="font-family:var(--mono);font-size:.58rem;color:rgba(245,240,232,.25);letter-spacing:.06em">© 2026 Nexus Digital</div>
+    <div style="font-family:var(--mono);font-size:.6rem;color:rgba(245,240,232,.3);letter-spacing:.06em">hello@nexus.digital</div>
   </footer>
-
 </div><!-- /landing -->
 
-<!-- ══════════════════════════════
-     AUTH MODAL
-══════════════════════════════ -->
+<!-- ════════════════ AUTH MODAL ════════════════ -->
 <div class="overlay" id="auth-overlay">
   <div class="modal">
     <button class="modal-x" onclick="closeAuth()">✕</button>
     <div class="modal-body">
-      <div class="modal-eyebrow">Access Panel</div>
-      <div class="modal-title">SIGN IN<br>NEXUS.</div>
-      <div class="modal-sub">Enter your panel password to access the dashboard.</div>
+      <div class="modal-eyebrow">Get Started Free</div>
+      <div class="modal-title">JOIN NEXUS.</div>
+      <div class="modal-sub">Sign in to start growing your channel toward monetization. Free trial included — no credit card.</div>
       <div class="oauth-list">
-        <input type="password" id="auth-password"
-          style="width:100%;padding:.85rem 1rem;border:1.5px solid var(--border);border-radius:6px;font-size:.95rem;font-family:var(--mono);background:white;box-sizing:border-box;outline:none;transition:border-color .15s"
-          placeholder="Panel password"
-          onkeydown="if(event.key==='Enter')signIn()"
-          onfocus="this.style.borderColor='var(--ink)'"
-          onblur="this.style.borderColor='var(--border)'">
-        <div id="auth-err" style="color:#dc2626;font-size:.8rem;display:none;margin-top:-.3rem"></div>
-        <button class="oauth-btn" onclick="signIn()" style="background:var(--ink);color:var(--cream);border-color:var(--ink);justify-content:center;font-weight:600">
-          → Sign In
+        <button class="oauth-btn" onclick="doSignIn('google')">
+          <svg class="oauth-ico" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+          Continue with Google
+        </button>
+        <button class="oauth-btn" onclick="doSignIn('facebook')">
+          <svg class="oauth-ico" viewBox="0 0 24 24"><path fill="#1877F2" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          Continue with Facebook
+        </button>
+        <button class="oauth-btn" onclick="doSignIn('twitter')">
+          <svg class="oauth-ico" viewBox="0 0 24 24"><path fill="#000" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.736-8.857L1.254 2.25H8.08l4.259 5.631 5.905-5.631zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          Continue with X
         </button>
       </div>
+      <div class="modal-divider"><span>included</span></div>
+      <div class="free-note"><div style="font-size:1.1rem">🎁</div><div class="free-note-txt"><strong>Free trial on signup</strong> — see your numbers move before you pay anything.</div></div>
     </div>
   </div>
 </div>
 
-<!-- ══════════════════════════════
-     DASHBOARD
-══════════════════════════════ -->
-<div id="page-dashboard" class="page">
-
-  <!-- Sidebar -->
+<!-- ════════════════ DASHBOARD ════════════════ -->
+<div id="pg-dash" class="page">
   <aside class="sidebar">
-    <div class="sb-logo">
-      <div class="sb-logo-mark"><div class="sb-logo-dot"></div></div>
-      <span class="sb-logo-txt">NEXUS</span>
-    </div>
-    <div class="sb-user">
-      <div class="sb-av" id="sb-av">U</div>
-      <div>
-        <div class="sb-name" id="sb-name">User</div>
-        <div class="sb-plan" id="sb-plan">Free Plan</div>
-      </div>
-    </div>
+    <div class="sb-logo"><div class="sb-mark"><div class="sb-mdot"></div></div><span class="sb-txt">NEXUS</span></div>
+    <div class="sb-user"><div class="sb-av" id="sb-av">U</div><div><div class="sb-uname" id="sb-name">User</div><div class="sb-uplan" id="sb-plan">Free Trial</div></div></div>
     <nav class="sb-nav">
-      <div class="sb-sec">Main</div>
-      <button class="sb-lnk active" onclick="goSP('overview',this)"><span class="sb-ico">📊</span>Overview</button>
-      <button class="sb-lnk" onclick="goSP('campaign',this)"><span class="sb-ico">⚡</span>New Campaign</button>
-      <button class="sb-lnk" onclick="goSP('jobs',this)"><span class="sb-ico">📋</span>My Jobs</button>
-      <button class="sb-lnk" onclick="goSP('web-traffic',this)"><span class="sb-ico">🌐</span>Web Traffic</button>
-      <button class="sb-lnk" onclick="goSP('monetize',this)"><span class="sb-ico">🎯</span>Growth Dashboard</button>
-      <div class="sb-sec">Accounts</div>
-      <button class="sb-lnk" onclick="goSP('connect',this)"><span class="sb-ico">🔗</span>Connect Platforms</button>
-      <div class="sb-sec">Settings</div>
+      <div class="sb-sec">Growth</div>
+      <button class="sb-lnk active" onclick="goSP('monetize',this)"><span class="sb-ico">🎯</span>Growth Dashboard</button>
+      <button class="sb-lnk" onclick="goSP('rivals',this)"><span class="sb-ico">⚔️</span>My Rivals</button>
+      <div class="sb-sec">Account</div>
+      <button class="sb-lnk" onclick="goSP('connect',this)"><span class="sb-ico">🔗</span>Connect Channels</button>
       <button class="sb-lnk" onclick="goSP('billing',this)"><span class="sb-ico">💳</span>Billing</button>
     </nav>
     <div class="sb-bottom">
-      <div class="sb-free-lbl"><span>Free Actions</span><span id="free-lbl">10 / 10</span></div>
-      <div class="sb-free-bar"><div class="sb-free-fill" id="free-fill" style="width:100%"></div></div>
-      <button class="sb-upgrade" onclick="goSP('billing')">Upgrade Plan →</button>
-      <button class="sb-out" onclick="signOut()">Sign Out</button>
+      <button class="sb-cta" onclick="goSP('connect')">+ Connect Channel</button>
+      <button class="sb-out" onclick="doSignOut()">Sign Out</button>
     </div>
   </aside>
 
-  <!-- Main -->
   <main class="dash-main">
-    <div class="dash-header">
-      <div class="dash-htitle" id="dash-title">Overview</div>
-      <div class="dash-hbadges">
-        <span class="badge live">● Engine Live</span>
-        <span class="badge" id="plat-badge">0 Platforms</span>
-      </div>
+    <div class="dash-topbar">
+      <div><div class="dash-title" id="dash-title">Growth Dashboard</div><div class="dash-sub" id="dash-sub">Loading your channels…</div></div>
     </div>
     <div class="dash-content">
 
-      <!-- OVERVIEW -->
-      <div class="sp active" id="sp-overview">
-        <div class="ov-grid">
-          <div class="stat"><div class="stat-lbl">Total Views</div><div class="stat-val" id="sv-views">—</div><div class="stat-chg" id="sv-views-chg">no data yet</div></div>
-          <div class="stat"><div class="stat-lbl">Total Likes</div><div class="stat-val" id="sv-likes">—</div><div class="stat-chg">no data yet</div></div>
-          <div class="stat"><div class="stat-lbl">Followers Gained</div><div class="stat-val" id="sv-followers">—</div><div class="stat-chg">no data yet</div></div>
-          <div class="stat"><div class="stat-lbl">Active Jobs</div><div class="stat-val" id="sv-jobs">0</div><div class="stat-chg">idle</div></div>
-        </div>
-        <div class="ov-row">
-          <div class="card">
-            <div class="card-ttl">Activity <span>last 7 days</span></div>
-            <div class="act-chart" id="act-chart"></div>
-          </div>
-          <div class="card">
-            <div class="card-ttl">Platforms</div>
-            <div class="plat-list" id="ov-platforms"></div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-ttl">Recent Jobs</div>
-          <table class="tbl"><thead><tr><th>Platform</th><th>Action</th><th>Target</th><th>Progress</th><th>Status</th><th>Created</th></tr></thead>
-          <tbody id="ov-jobs-body"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:1.75rem;font-size:.8rem">No jobs yet — create your first campaign →</td></tr></tbody></table>
-        </div>
+      <!-- MONETIZE -->
+      <div class="sp active" id="sp-monetize">
+        <div class="acct-tabs" id="acct-tabs"></div>
+        <div id="goal-view"><div class="empty"><span class="spin"></span><br><br>Loading…</div></div>
       </div>
 
-      <!-- NEW CAMPAIGN -->
-      <div class="sp" id="sp-campaign">
-        <div class="cform">
-          <div class="fsec">
-            <div class="fsec-title">1. Platform</div>
-            <div class="plat-sel" id="plat-sel">
-              <div class="popt" onclick="selPlat(this,'youtube')"><div class="popt-ico">▶️</div><div class="popt-name">YouTube</div></div>
-              <div class="popt" onclick="selPlat(this,'instagram')"><div class="popt-ico">📷</div><div class="popt-name">Instagram</div></div>
-              <div class="popt" onclick="selPlat(this,'tiktok')"><div class="popt-ico">🎵</div><div class="popt-name">TikTok</div></div>
-              <div class="popt" onclick="selPlat(this,'facebook')"><div class="popt-ico">👤</div><div class="popt-name">Facebook</div></div>
-            </div>
-            <div id="plat-warn" style="font-size:.75rem;color:var(--red);display:none">⚠ Connect this platform first to enable likes and followers.</div>
-          </div>
-          <div class="fsec">
-            <div class="fsec-title">2. Action</div>
-            <div class="act-sel" id="act-sel">
-              <div class="aopt" onclick="selAct(this,'views')">👁 Views</div>
-              <div class="aopt" onclick="selAct(this,'likes')">❤️ Likes</div>
-              <div class="aopt" onclick="selAct(this,'followers')">➕ Followers</div>
-            </div>
-          </div>
-          <div class="fsec">
-            <div class="fsec-title">3. Target URL</div>
-            <div class="fgrp">
-              <label class="flbl">Content URL or Username</label>
-              <input class="finp" type="text" id="c-url" placeholder="https://www.youtube.com/watch?v=..." oninput="onUrlInput(this.value)">
-              <span class="fhint">Paste the full URL of the video, post, or profile page</span>
-              <div id="url-preview" style="display:none;align-items:center;gap:10px;padding:9px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;margin-top:8px">
-                <img id="prev-img" src="" alt="" style="width:52px;height:52px;object-fit:cover;border-radius:6px;flex-shrink:0;background:#e2e8f0">
-                <span id="prev-cap" style="font-size:.8rem;color:#334155;font-weight:500;line-height:1.4;word-break:break-word"></span>
-              </div>
-            </div>
-          </div>
-          <div class="fsec">
-            <div class="fsec-title">4. Quantity</div>
-            <div class="qty-big" id="qty-disp">100</div>
-            <input class="qty-range" type="range" min="10" max="10000" value="100" step="10"
-              id="qty-range" oninput="updQty(this.value)">
-            <div class="qty-marks"><span>10</span><span>1K</span><span>5K</span><span>10K</span></div>
-          </div>
-          <div class="summary">
-            <div class="sum-ttl">ORDER SUMMARY</div>
-            <div class="sum-row"><span>Platform</span><strong id="s-plat">—</strong></div>
-            <div class="sum-row"><span>Action</span><strong id="s-act">—</strong></div>
-            <div class="sum-row"><span>Quantity</span><strong id="s-qty">100</strong></div>
-            <div class="sum-row"><span>Est. delivery</span><strong id="s-eta">—</strong></div>
-            <div class="sum-price" id="s-price">$0.00</div>
-            <div class="sum-note" id="s-note">FREE — using your 10 free actions</div>
-            <button class="btn-launch" id="launch-btn" onclick="launchCampaign()" disabled>Select platform and action →</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- JOBS -->
-      <div class="sp" id="sp-jobs">
-        <div class="card">
-          <div class="card-ttl">All Jobs <span id="jobs-count"></span></div>
-          <table class="tbl"><thead><tr><th>ID</th><th>Platform</th><th>Action</th><th>Target</th><th title="Only views that met the platform watch threshold are counted here">Verified ✓</th><th>Status</th><th>Date</th><th></th></tr></thead>
-          <tbody id="all-jobs-body"><tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.75rem;font-size:.8rem">No jobs yet.</td></tr></tbody></table>
-        </div>
-      </div>
-
-      <!-- WEB TRAFFIC -->
-      <div class="sp" id="sp-web-traffic">
-        <!-- New Campaign Card -->
-        <div class="card" style="margin-bottom:1.25rem">
-          <div class="card-ttl">New Web Traffic Campaign</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.85rem 1.25rem;margin-top:.75rem">
-            <div style="grid-column:span 2">
-              <label style="font-size:.78rem;font-weight:600;color:var(--ink);display:block;margin-bottom:.3rem">Campaign Name</label>
-              <input type="text" id="wt-name" placeholder="e.g. Blog Post Boost"
-                style="width:100%;box-sizing:border-box;padding:.55rem .8rem;border:1.5px solid var(--border);border-radius:6px;font-size:.875rem">
-            </div>
-            <div style="grid-column:span 2">
-              <label style="font-size:.78rem;font-weight:600;color:var(--ink);display:block;margin-bottom:.3rem">Target URL</label>
-              <input type="url" id="wt-url" placeholder="https://yoursite.com/page"
-                style="width:100%;box-sizing:border-box;padding:.55rem .8rem;border:1.5px solid var(--border);border-radius:6px;font-size:.875rem">
-            </div>
-            <div>
-              <label style="font-size:.78rem;font-weight:600;color:var(--ink);display:block;margin-bottom:.3rem">Visits</label>
-              <input type="number" id="wt-visits" value="100" min="1" max="100000"
-                style="width:100%;box-sizing:border-box;padding:.55rem .8rem;border:1.5px solid var(--border);border-radius:6px;font-size:.875rem">
-            </div>
-            <div>
-              <label style="font-size:.78rem;font-weight:600;color:var(--ink);display:block;margin-bottom:.3rem">Traffic Source</label>
-              <select id="wt-source"
-                style="width:100%;box-sizing:border-box;padding:.55rem .8rem;border:1.5px solid var(--border);border-radius:6px;font-size:.875rem;background:var(--cream)">
-                <option value="organic">Organic (Google/Bing)</option>
-                <option value="social">Social (Facebook/Instagram)</option>
-                <option value="referral">Referral (Reddit/Medium)</option>
-                <option value="direct">Direct</option>
-              </select>
-            </div>
-            <div>
-              <label style="font-size:.78rem;font-weight:600;color:var(--ink);display:block;margin-bottom:.3rem">Device</label>
-              <select id="wt-device"
-                style="width:100%;box-sizing:border-box;padding:.55rem .8rem;border:1.5px solid var(--border);border-radius:6px;font-size:.875rem;background:var(--cream)">
-                <option value="mixed">Mixed</option>
-                <option value="desktop">Desktop</option>
-                <option value="mobile">Mobile</option>
-              </select>
-            </div>
-            <div>
-              <label style="font-size:.78rem;font-weight:600;color:var(--ink);display:block;margin-bottom:.3rem">Persona</label>
-              <select id="wt-persona"
-                style="width:100%;box-sizing:border-box;padding:.55rem .8rem;border:1.5px solid var(--border);border-radius:6px;font-size:.875rem;background:var(--cream)">
-                <option value="mixed">Mixed</option>
-                <option value="quick_scanner">Quick Scanner</option>
-                <option value="engaged_reader">Engaged Reader</option>
-                <option value="window_shopper">Window Shopper</option>
-                <option value="power_user">Power User</option>
-              </select>
-            </div>
-            <div>
-              <label style="font-size:.78rem;font-weight:600;color:var(--ink);display:block;margin-bottom:.3rem">Bounce Rate: <span id="wt-bounce-val">40</span>%</label>
-              <input type="range" id="wt-bounce" min="0" max="80" value="40"
-                oninput="document.getElementById('wt-bounce-val').textContent=this.value"
-                style="width:100%">
-            </div>
-            <div>
-              <label style="font-size:.78rem;font-weight:600;color:var(--ink);display:block;margin-bottom:.3rem">Pages/Session: <span id="wt-pages-val">3</span></label>
-              <input type="range" id="wt-pages" min="1" max="8" value="3"
-                oninput="document.getElementById('wt-pages-val').textContent=this.value"
-                style="width:100%">
-            </div>
-          </div>
-          <button onclick="launchWebCampaign()"
-            style="width:100%;margin-top:1rem;padding:.85rem;background:var(--ink);color:var(--cream);border:none;border-radius:6px;font-size:.95rem;font-weight:700;cursor:pointer;letter-spacing:.03em">
-            Launch Campaign →
-          </button>
-        </div>
-
-        <!-- Campaigns Table -->
-        <div class="card">
-          <div class="card-ttl">Campaigns <button onclick="loadWebCampaigns()" style="font-size:.72rem;font-weight:500;border:1px solid var(--border);background:var(--surface);padding:.15rem .5rem;border-radius:4px;cursor:pointer;margin-left:.5rem">↻ Refresh</button></div>
-          <table class="tbl">
-            <thead><tr><th>ID</th><th>Name</th><th>Target</th><th>Progress</th><th>Status</th><th></th></tr></thead>
-            <tbody id="wt-campaigns-body"><tr><td colspan="6" style="text-align:center;color:var(--muted);padding:1.75rem;font-size:.8rem">No campaigns yet.</td></tr></tbody>
-          </table>
-        </div>
+      <!-- RIVALS -->
+      <div class="sp" id="sp-rivals">
+        <div id="rivals-view"><div class="empty">Select a channel to see rivals.</div></div>
       </div>
 
       <!-- CONNECT -->
       <div class="sp" id="sp-connect">
-        <button class="back-btn" onclick="goSP('campaign')">← Back to Campaign</button>
-        <p class="conn-note">Connect your accounts so Nexus can deliver real results. Use <strong>Paste Cookies</strong> — export from your browser with Cookie Editor extension.</p>
-        <div style="background:#fefce8;border:1px solid #fde047;border-radius:8px;padding:.75rem 1rem;margin-bottom:1.25rem;font-size:.82rem;color:#713f12;line-height:1.7">
-          <strong>How to get cookies:</strong> On desktop Chrome/Firefox → install <em>Cookie Editor</em> extension → open platform → click extension → <em>Export</em> → copy JSON → paste below.
+        <div style="max-width:560px">
+          <p style="font-size:.88rem;color:var(--muted);margin-bottom:1.5rem;line-height:1.8">Connect a platform so Nexus can read your real stats and start growing your channel. Sign in once — engine handles the rest.</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem" id="connect-grid"></div>
         </div>
-        <div class="conn-grid" id="conn-grid"></div>
       </div>
 
       <!-- BILLING -->
       <div class="sp" id="sp-billing">
-        <div class="bill-wrap">
-          <div class="bill-card">
-            <div class="bill-plan-row">
-              <div><div class="bill-plan-name">FREE PLAN</div><div class="bill-plan-note">10 actions included · one time</div></div>
-              <div class="bill-plan-price">$0</div>
-            </div>
-            <div class="bill-info">You have <strong id="bill-free">10</strong> free actions remaining. Upgrade to keep the momentum going.</div>
-          </div>
-          <div class="bill-plans">
-            <div class="plan" style="padding:1.5rem">
-              <div class="plan-tier">Starter</div>
-              <div class="plan-price" style="font-size:2.25rem">$29</div>
-              <div class="plan-per">/month</div>
-              <div class="plan-div"></div>
-              <ul class="plan-features"><li>10,000 actions</li><li>All platforms</li><li>Geo targeting</li></ul>
-              <button class="plan-cta" onclick="toast('Redirecting to payment...','ok')">Upgrade →</button>
-            </div>
-            <div class="plan hot" style="padding:1.5rem">
-              <div class="plan-badge">Popular</div>
-              <div class="plan-tier">Growth</div>
-              <div class="plan-price" style="font-size:2.25rem">$79</div>
-              <div class="plan-per">/month</div>
-              <div class="plan-div"></div>
-              <ul class="plan-features"><li>50,000 actions</li><li>Demographics</li><li>Priority queue</li></ul>
-              <button class="plan-cta" onclick="toast('Redirecting to payment...','ok')">Upgrade →</button>
-            </div>
-          </div>
+        <div class="bill-card">
+          <div class="bill-plan">FREE TRIAL</div>
+          <div class="bill-note">Try Nexus before committing to a plan.</div>
+          <button class="btn-accent" style="width:100%;padding:.75rem">Upgrade to Starter — $29/mo →</button>
         </div>
       </div>
 
-      <!-- GROWTH DASHBOARD -->
-      <div class="sp" id="sp-monetize">
-        <div class="mn-acct-tabs" id="mn-acct-tabs"></div>
-        <div id="mn-goal-view"><div class="mn-empty"><span class="spin"></span><br><br>Loading…</div></div>
-      </div>
-
-    </div><!-- /dash-content -->
+    </div>
   </main>
-</div><!-- /dashboard -->
-
-<!-- Connect sub-modal -->
-<div class="overlay" id="omodal-overlay">
-  <div class="omodal">
-    <button class="modal-x" onclick="closeOModal()">✕</button>
-    <div class="omodal-body">
-      <div class="omodal-ico" id="om-ico">▶️</div>
-      <div class="omodal-title" id="om-title">CONNECT YOUTUBE</div>
-      <div class="omodal-sub" id="om-sub">A browser will open on the server — log in normally, including any 2FA or captcha.</div>
-      <div class="omodal-perms">
-        <div class="omodal-perms-ttl">How it works</div>
-        <div class="operm">Browser opens on the server</div>
-        <div class="operm">You log in normally — password never stored</div>
-        <div class="operm">Click Capture Session when ready</div>
-      </div>
-      <button class="obtn google" id="om-btn" onclick="doConnect()">
-        <span style="font-size:1.1rem">🖥️</span>
-        <span id="om-btn-txt">Launch Browser</span>
-      </button>
-      <div class="onote">Session saved securely on the server. Disconnect anytime.</div>
-    </div>
-  </div>
-</div>
-
-<!-- Browser relay overlay -->
-<div id="relay-overlay" style="display:none;position:fixed;inset:0;background:#000;z-index:10000;flex-direction:column">
-  <div style="display:flex;align-items:center;gap:.6rem;padding:.5rem .85rem;background:#111;border-bottom:1px solid #2a2a2a;flex-shrink:0">
-    <span id="relay-plat-ico" style="font-size:1.1rem">🖥️</span>
-    <input id="relay-url-bar" style="flex:1;background:#1e1e1e;border:1px solid #383838;color:#aaa;padding:.35rem .65rem;border-radius:4px;font-size:.78rem;font-family:monospace" placeholder="Loading…" readonly>
-    <input id="relay-label" style="background:#1e1e1e;border:1px solid #383838;color:#ccc;padding:.35rem .65rem;border-radius:4px;font-size:.8rem;width:170px" placeholder="Label (e.g. My YouTube)">
-    <button onclick="RelayClient.capture()" style="padding:.38rem 1rem;background:#16a34a;color:white;border:none;border-radius:4px;cursor:pointer;font-size:.82rem;font-weight:600;white-space:nowrap">✓ Capture Session</button>
-    <button onclick="RelayClient.close()" style="padding:.38rem .75rem;background:#dc2626;color:white;border:none;border-radius:4px;cursor:pointer;font-size:.82rem">✕</button>
-  </div>
-  <div style="flex:1;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#0a0a0a">
-    <canvas id="relay-canvas" style="max-width:100%;max-height:100%;cursor:default;display:block;touch-action:none"></canvas>
-  </div>
-  <!-- Keyboard input bar -->
-  <div style="display:flex;gap:.4rem;padding:.45rem .6rem;background:#0f172a;border-top:1px solid #1e293b;flex-shrink:0;align-items:center">
-    <span style="color:#64748b;font-size:.72rem;white-space:nowrap">⌨ Type:</span>
-    <input id="relay-type-input" type="text"
-      style="flex:1;background:#1e293b;border:1px solid #334155;color:#f1f5f9;padding:.45rem .7rem;border-radius:5px;font-size:.95rem;outline:none;min-width:0"
-      placeholder="Tap here and type — goes to browser field"
-      autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
-    <button onclick="RelayClient.sendEnter()" title="Enter" style="padding:.42rem .75rem;background:#1d4ed8;color:white;border:none;border-radius:5px;font-size:.85rem;cursor:pointer;flex-shrink:0">↵</button>
-    <button onclick="RelayClient.sendKey('Tab')" title="Tab to next field" style="padding:.42rem .7rem;background:#334155;color:#cbd5e1;border:none;border-radius:5px;font-size:.75rem;cursor:pointer;flex-shrink:0">Tab</button>
-    <button onclick="RelayClient.sendBackspace()" title="Backspace" style="padding:.42rem .7rem;background:#334155;color:#cbd5e1;border:none;border-radius:5px;font-size:.85rem;cursor:pointer;flex-shrink:0">⌫</button>
-  </div>
-  <div id="relay-status" style="padding:.25rem 1rem;background:#111;color:#666;font-size:.72rem;text-align:center;flex-shrink:0">Connecting…</div>
-</div>
-
-<!-- Cookie paste modal -->
-<div class="overlay" id="cookie-overlay">
-  <div class="modal" style="max-width:520px">
-    <button class="modal-x" onclick="closeCookieModal()">✕</button>
-    <div class="modal-body">
-      <div class="modal-eyebrow">Step-by-step</div>
-      <div class="modal-title" id="ck-title" style="font-size:1.6rem">PASTE COOKIES</div>
-      <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:.75rem 1rem;margin:.75rem 0;font-size:.8rem;color:#166534;line-height:1.8">
-        1. Open <strong id="ck-site">YouTube</strong> in desktop Chrome/Firefox<br>
-        2. Install <strong>Cookie Editor</strong> extension<br>
-        3. Click extension → <strong>Export</strong> (copies JSON)<br>
-        4. Paste below
-      </div>
-      <div style="margin-bottom:.75rem">
-        <label style="font-size:.8rem;font-weight:600;color:var(--ink);display:block;margin-bottom:.35rem">Label <span style="font-weight:400;color:var(--muted)">(optional)</span></label>
-        <input type="text" id="ck-label" placeholder="e.g. My YouTube Account"
-          style="width:100%;box-sizing:border-box;padding:.6rem .8rem;border:1.5px solid var(--border);border-radius:6px;font-size:.9rem">
-      </div>
-      <div>
-        <label style="font-size:.8rem;font-weight:600;color:var(--ink);display:block;margin-bottom:.35rem">Cookies JSON</label>
-        <textarea id="ck-json" rows="7"
-          style="width:100%;box-sizing:border-box;padding:.6rem .8rem;border:1.5px solid var(--border);border-radius:6px;font-size:.75rem;font-family:monospace;resize:vertical"
-          placeholder='[{"name":"SID","value":"...","domain":".youtube.com",...}]'></textarea>
-      </div>
-      <button onclick="submitCookies()"
-        style="width:100%;margin-top:.85rem;padding:.85rem;background:var(--ink);color:var(--cream);border:none;border-radius:6px;font-size:.95rem;font-weight:700;cursor:pointer;letter-spacing:.03em">
-        Import & Connect →
-      </button>
-    </div>
-  </div>
 </div>
 
 <div class="toast" id="toast-el"></div>
 
 <script>
 'use strict';
+const API   = '';
+const TOKEN = () => localStorage.getItem('nx_token') || '';
+const PLAT_BG  = {youtube:'#fee2e2',facebook:'#eff6ff',instagram:'#fce7f3',tiktok:'#f0fdf4'};
+const PLAT_ICO = {youtube:'▶️',facebook:'👤',instagram:'📷',tiktok:'🎵'};
+let goals=[], benchmarks={}, activeGoalId=null;
 
-// ── CONFIG ──
-const API = ''; // same origin
-const PRICE_PER = 0.005;
-
-const PLATS = {
-  youtube:   { name:'YouTube',   ico:'▶️', color:'#fee2e2', oauthCls:'google',   oauthTxt:'Continue with Google',   perms:['View your channel and videos','Read your content analytics'] },
-  instagram: { name:'Instagram', ico:'📷', color:'#fce7f3', oauthCls:'facebook', oauthTxt:'Continue with Facebook', perms:['Access your Instagram profile','View post and reel stats'] },
-  tiktok:    { name:'TikTok',    ico:'🎵', color:'#f0fdf4', oauthCls:'dark',     oauthTxt:'Continue with TikTok',   perms:['View your TikTok profile','Access video performance'] },
-  facebook:  { name:'Facebook',  ico:'👤', color:'#eff6ff', oauthCls:'facebook', oauthTxt:'Continue with Facebook', perms:['Access your Facebook pages','View post interactions'] },
-};
-
-// ── STATE ──
-const S = {
-  user: null,
-  token: localStorage.getItem('nx_token') || null,
-  freeLeft: 10,
-  connected: {},   // platform → true/false
-  jobs: [],
-  stats: { views:0, likes:0, followers:0 },
-  campaign: { platform: null, action: null },
-  connectTarget: null,
-};
-
-// ── INIT ──
-window.addEventListener('DOMContentLoaded', async () => {
-  if (S.token) {
-    // Verify stored token is still valid
-    const ok = await fetch('/api/accounts', { headers: { 'x-auth-token': S.token } })
-      .then(r => r.ok).catch(() => false);
-    if (ok) {
-      const saved = localStorage.getItem('nx_user');
-      S.user = saved ? JSON.parse(saved) : { name: 'Admin', avatar: 'A' };
-      enterDash();
-    } else {
-      localStorage.removeItem('nx_token');
-      localStorage.removeItem('nx_user');
-      S.token = null;
-    }
+// ── Boot ──
+window.addEventListener('DOMContentLoaded',()=>{
+  const t = TOKEN();
+  if(t && localStorage.getItem('nx_user')){
+    enterDash();
   }
-  renderActivityChart();
-  renderConnGrid();
-  renderOvPlatforms();
-  document.querySelectorAll('.overlay').forEach(o =>
-    o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); })
-  );
+  startHeroAnim();
+  document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open')}));
 });
 
-// ── AUTH ──
-function openAuth() { document.getElementById('auth-overlay').classList.add('open'); }
-function closeAuth() { document.getElementById('auth-overlay').classList.remove('open'); }
+// ── Auth ──
+function openAuth(){ document.getElementById('auth-overlay').classList.add('open'); }
+function closeAuth(){ document.getElementById('auth-overlay').classList.remove('open'); }
 
-async function signIn() {
-  const pwdEl = document.getElementById('auth-password');
-  const errEl = document.getElementById('auth-err');
-  const password = pwdEl ? pwdEl.value.trim() : '';
-  if (!password) { if(errEl){errEl.textContent='Enter password';errEl.style.display='block';} return; }
-  if(errEl) errEl.style.display='none';
-  try {
-    const res  = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Invalid password');
-    S.token = data.token;
-    S.user  = { name: 'Admin', avatar: 'A' };
-    localStorage.setItem('nx_token', S.token);
-    localStorage.setItem('nx_user', JSON.stringify(S.user));
-    closeAuth();
-    enterDash();
-    toast('Welcome to Nexus!', 'ok');
-  } catch(err) {
-    if(errEl){errEl.textContent = err.message; errEl.style.display='block';}
-    toast(err.message, 'err');
-  }
+function doSignIn(provider){
+  // Production: window.location.href = `/api/goals/auth/${provider}`
+  // Demo simulation:
+  closeAuth();
+  const name={google:'Alex Johnson',facebook:'Alex Johnson',twitter:'Alex Johnson'}[provider];
+  const user={name,provider,avatar:name[0]};
+  localStorage.setItem('nx_token','demo-'+Date.now());
+  localStorage.setItem('nx_user',JSON.stringify(user));
+  enterDash();
+  toast('Welcome to Nexus 🎉 Connect your first channel to begin.');
 }
 
-function signOut() {
-  S.user = null; S.token = null;
+function doSignOut(){
   localStorage.removeItem('nx_token');
   localStorage.removeItem('nx_user');
-  showPage('landing');
-  toast('Signed out.', 'ok');
+  showPage('land');
 }
 
-function goLanding() {
-  if (!S.user) showPage('landing');
+// ── Pages ──
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('pg-'+id).classList.add('active');
 }
 
-function enterDash() {
-  document.getElementById('sb-av').textContent  = S.user.avatar;
-  document.getElementById('sb-name').textContent = S.user.name;
-  showPage('dashboard');
-  loadJobs();
-  loadConnected();
+function enterDash(){
+  const u = JSON.parse(localStorage.getItem('nx_user')||'{}');
+  document.getElementById('sb-av').textContent  = u.avatar||'U';
+  document.getElementById('sb-name').textContent = u.name||'User';
+  showPage('dash');
+  loadGoals();
+  renderConnectGrid();
 }
 
-async function loadConnected() {
-  try {
-    const accounts = await fetch('/api/accounts', {
-      headers: { 'x-auth-token': S.token }
-    }).then(r => r.json());
-    // Reset then mark each platform that has at least one active account
-    Object.keys(PLATS).forEach(p => { S.connected[p] = false; });
-    accounts.forEach(a => {
-      if (a.status === 'active' && PLATS[a.platform]) S.connected[a.platform] = true;
-    });
-    renderConnGrid();
-    renderOvPlatforms();
-  } catch (_) {}
+// ── Subpages ──
+function goSP(id, el){
+  document.querySelectorAll('.sp').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sp-'+id).classList.add('active');
+  document.querySelectorAll('.sb-lnk').forEach(b=>b.classList.remove('active'));
+  if(el) el.classList.add('active');
+  const titles={monetize:'Growth Dashboard',rivals:'My Rivals',connect:'Connect Channels',billing:'Billing'};
+  document.getElementById('dash-title').textContent=titles[id]||id;
+  if(id==='rivals'&&activeGoalId) renderRivalsView(activeGoalId);
 }
 
-// ── PAGES ──
-function showPage(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById(`page-${id}`).classList.add('active');
-}
-
-// ── SUBPAGES ──
-function goSP(id, el) {
-  document.querySelectorAll('.sp').forEach(p => p.classList.remove('active'));
-  document.getElementById(`sp-${id}`).classList.add('active');
-  const titles = { overview:'Overview', campaign:'New Campaign', jobs:'My Jobs',
-                   connect:'Connect Platforms', billing:'Billing',
-                   'web-traffic':'Web Traffic', monetize:'Growth Dashboard' };
-  document.getElementById('dash-title').textContent = titles[id] || id;
-  document.querySelectorAll('.sb-lnk').forEach(b => b.classList.remove('active'));
-  if (el) el.classList.add('active');
-  else {
-    document.querySelectorAll('.sb-lnk').forEach(b => {
-      if (b.textContent.toLowerCase().includes(id.toLowerCase().slice(0,4)))
-        b.classList.add('active');
-    });
-  }
-  if (id === 'web-traffic') loadWebCampaigns();
-  if (id === 'monetize') loadGoals();
-}
-
-// ── CAMPAIGN ──
-function selPlat(el, platform) {
-  document.querySelectorAll('.popt').forEach(e => e.classList.remove('sel'));
-  el.classList.add('sel');
-  S.campaign.platform = platform;
-  const warn = document.getElementById('plat-warn');
-  warn.style.display = (S.campaign.action !== 'views' && !S.connected[platform]) ? 'block' : 'none';
-  updSummary();
-}
-
-function selAct(el, action) {
-  document.querySelectorAll('.aopt').forEach(e => e.classList.remove('sel'));
-  el.classList.add('sel');
-  S.campaign.action = action;
-  const warn = document.getElementById('plat-warn');
-  if (action !== 'views' && S.campaign.platform && !S.connected[S.campaign.platform]) {
-    warn.style.display = 'block';
-  } else {
-    warn.style.display = 'none';
-  }
-  updSummary();
-}
-
-// ── URL Preview ──
-const _prevCache = {};
-let   _prevTimer  = null;
-
-function _trunc(s, n) { return s && s.length > n ? s.slice(0, n) + '...' : (s || ''); }
-
-function _showPreview(data) {
-  const box = document.getElementById('url-preview');
-  if (!data || (!data.image && !data.title && !data.description)) {
-    box.style.display = 'none'; return;
-  }
-  const cap = _trunc(data.description || data.title, 20);
-  document.getElementById('prev-img').src          = data.image || '';
-  document.getElementById('prev-img').style.display = data.image ? '' : 'none';
-  document.getElementById('prev-cap').textContent  = cap;
-  box.style.display = 'flex';
-}
-
-function onUrlInput(val) {
-  clearTimeout(_prevTimer);
-  if (!val.startsWith('http')) { document.getElementById('url-preview').style.display = 'none'; return; }
-  if (_prevCache[val]) { _showPreview(_prevCache[val]); return; }
-  document.getElementById('url-preview').style.display = 'none';
-  _prevTimer = setTimeout(async () => {
-    try {
-      const r = await fetch(`${API}/api/preview?url=${encodeURIComponent(val)}`, {
-        headers: { 'x-auth-token': S.token }
-      });
-      if (!r.ok) return;
-      const d = await r.json();
-      _prevCache[val] = d;
-      // Only show if user hasn't changed the input
-      if (document.getElementById('c-url').value === val) _showPreview(d);
-    } catch (_) {}
-  }, 600);
-}
-
-function updQty(v) {
-  const n = parseInt(v);
-  document.getElementById('qty-disp').textContent = n.toLocaleString();
-  document.getElementById('s-qty').textContent = n.toLocaleString();
-  updSummary();
-}
-
-function updSummary() {
-  const { platform, action } = S.campaign;
-  const qty = parseInt(document.getElementById('qty-range').value);
-  const btn = document.getElementById('launch-btn');
-  document.getElementById('s-plat').textContent = platform ? PLATS[platform].name : '—';
-  document.getElementById('s-act').textContent  = action   ? action.charAt(0).toUpperCase()+action.slice(1) : '—';
-  document.getElementById('s-qty').textContent  = qty.toLocaleString();
-  if (platform && action) {
-    // Realistic throughput with MAX_CONCURRENT=8 workers, accounting for watch time + failures
-    const ACTION_HOURLY = { views: 400, likes: 650, subscribe: 500, follow: 500 };
-    const etaMins = Math.ceil((qty / (ACTION_HOURLY[action] || 400)) * 60);
-    document.getElementById('s-eta').textContent = etaMins < 60 ? `~${etaMins} min` : `~${(etaMins/60).toFixed(1)} hr`;
-    if (S.freeLeft > 0 && qty <= S.freeLeft) {
-      document.getElementById('s-price').textContent = '$0.00';
-      document.getElementById('s-note').textContent  = `FREE — ${qty} of your ${S.freeLeft} free actions`;
-    } else {
-      document.getElementById('s-price').textContent = `$${(qty * PRICE_PER).toFixed(2)}`;
-      document.getElementById('s-note').textContent  = 'Billed to your active plan';
-    }
-    btn.disabled = false;
-    btn.textContent = `Launch ${qty.toLocaleString()} ${action} →`;
-  } else {
-    btn.disabled = true;
-    btn.textContent = 'Select platform and action →';
-  }
-}
-
-async function launchCampaign() {
-  const { platform, action } = S.campaign;
-  if (!platform || !action) { toast('Select platform and action.', 'err'); return; }
-  const url = document.getElementById('c-url').value.trim();
-  if (!url) { toast('Enter a target URL.', 'err'); return; }
-  const qty = parseInt(document.getElementById('qty-range').value);
-
-  const btn = document.getElementById('launch-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spin"></span> Launching...';
-
-  try {
-    const res = await fetch(`${API}/api/traffic`, {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json', 'x-auth-token': S.token },
-      body: JSON.stringify({ platform, action_type: action, target_value: url, count: qty })
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Failed');
-    if (S.freeLeft > 0) S.freeLeft = Math.max(0, S.freeLeft - qty);
-    updFreeBar();
-    toast(`✓ Campaign #${data.id} launched — ${qty.toLocaleString()} ${action} queued.`, 'ok');
-    await loadJobs();
-    goSP('jobs', null);
-  } catch (e) {
-    toast(`Error: ${e.message}`, 'err');
-  } finally {
-    btn.disabled = false;
-    updSummary();
-  }
-}
-
-// ── JOBS ──
-async function loadJobs() {
-  try {
-    const res = await fetch(`${API}/api/traffic`, {
-      headers: { 'x-auth-token': S.token }
-    });
-    if (!res.ok) return;
-    S.jobs = await res.json();
-    renderJobs();
-    updStats();
-  } catch (_) {}
-}
-
-function _jobBtns(j) {
-  const s = 'font-size:.7rem;padding:.2rem .55rem;border-radius:4px;cursor:pointer;border:1px solid;line-height:1.4;';
-  if (j.status === 'running' || j.status === 'pending') {
-    return `<button onclick="jobAction(${j.id},'stop')" style="${s}background:#fee2e2;border-color:#fca5a5;color:#991b1b">Stop</button>`;
-  }
-  if (j.status === 'paused' || j.status === 'failed') {
-    return `<button onclick="jobAction(${j.id},'resume')" style="${s}background:#dcfce7;border-color:#86efac;color:#166534;margin-right:4px">Resume</button>`
-         + `<button onclick="jobAction(${j.id},'delete')" style="${s}background:#f1f5f9;border-color:#cbd5e1;color:#64748b">Del</button>`;
-  }
-  return `<button onclick="jobAction(${j.id},'delete')" style="${s}background:#f1f5f9;border-color:#cbd5e1;color:#64748b">Del</button>`;
-}
-
-function renderJobs() {
-  const rows = S.jobs.length ? S.jobs.map(j => {
-    const pct = j.target_count > 0 ? Math.round((j.completed_count / j.target_count) * 100) : 0;
-    const p = PLATS[j.platform];
-    return `<tr>
-      <td style="font-family:var(--mono);font-size:.7rem">#${j.id}</td>
-      <td>${p?.ico || ''} ${p?.name || j.platform}</td>
-      <td style="text-transform:capitalize">${j.action_type}</td>
-      <td style="font-size:.7rem;color:var(--muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${j.target_value}">${j.target_value}</td>
-      <td title="Counts only views that met the platform watch threshold (30 s+ for YouTube)"><span class="progress-bar"><span class="progress-fill" style="width:${pct}%"></span></span>${j.completed_count}/${j.target_count}</td>
-      <td><span class="jbadge ${j.status}">${j.status}</span></td>
-      <td style="font-size:.7rem;color:var(--muted)">${new Date(j.created_at).toLocaleDateString()}</td>
-      <td style="white-space:nowrap">${_jobBtns(j)}</td>
-    </tr>`;
-  }).join('') : `<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:1.75rem;font-size:.8rem">No jobs yet.</td></tr>`;
-
-  document.getElementById('all-jobs-body').innerHTML = rows;
-  const ovRows = S.jobs.slice(0,5).map(j => {
-    const pct = j.target_count > 0 ? Math.round((j.completed_count / j.target_count) * 100) : 0;
-    const p = PLATS[j.platform];
-    return `<tr>
-      <td>${p?.ico || ''} ${p?.name || j.platform}</td>
-      <td style="text-transform:capitalize">${j.action_type}</td>
-      <td style="font-size:.7rem;color:var(--muted);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${j.target_value}</td>
-      <td><span class="progress-bar"><span class="progress-fill" style="width:${pct}%"></span></span>${pct}%</td>
-      <td><span class="jbadge ${j.status}">${j.status}</span></td>
-      <td style="font-size:.7rem;color:var(--muted)">${new Date(j.created_at).toLocaleDateString()}</td>
-    </tr>`;
-  }).join('') || `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:1.75rem;font-size:.8rem">No jobs yet — create your first campaign →</td></tr>`;
-  document.getElementById('ov-jobs-body').innerHTML = ovRows;
-  document.getElementById('jobs-count').textContent = S.jobs.length ? `(${S.jobs.length})` : '';
-
-  const hasRunning = S.jobs.some(j => j.status === 'running' || j.status === 'pending');
-  if (hasRunning) setTimeout(loadJobs, 4000);
-}
-
-async function jobAction(id, action) {
-  try {
-    if (action === 'delete') {
-      if (!confirm('Delete this job and its logs?')) return;
-      await fetch(`${API}/api/traffic/${id}`, { method: 'DELETE', headers: { 'x-auth-token': S.token } });
-    } else {
-      await fetch(`${API}/api/traffic/${id}/${action}`, { method: 'POST', headers: { 'x-auth-token': S.token } });
-    }
-    await loadJobs();
-  } catch (e) { toast('Error: ' + e.message, 'err'); }
-}
-
-// ── WEB TRAFFIC ──
-async function loadWebCampaigns() {
-  try {
-    const res = await fetch(`${API}/api/web-traffic/campaigns`, {
-      headers: { 'x-auth-token': S.token }
-    });
-    if (!res.ok) return;
-    const campaigns = await res.json();
-    renderWebCampaigns(campaigns);
-  } catch (_) {}
-}
-
-function renderWebCampaigns(campaigns) {
-  const s = 'font-size:.7rem;padding:.2rem .55rem;border-radius:4px;cursor:pointer;border:1px solid;line-height:1.4;';
-  const rows = campaigns.length ? campaigns.map(c => {
-    const pct = c.visits_total > 0 ? Math.round((c.visits_sent / c.visits_total) * 100) : 0;
-    let btns = '';
-    if (c.status === 'pending' || c.status === 'paused' || c.status === 'failed') {
-      btns += `<button onclick="webCampaignAction(${c.id},'start')" style="${s}background:#dcfce7;border-color:#86efac;color:#166534;margin-right:4px">Start</button>`;
-    }
-    if (c.status === 'running') {
-      btns += `<button onclick="webCampaignAction(${c.id},'pause')" style="${s}background:#fef9c3;border-color:#fde047;color:#713f12;margin-right:4px">Pause</button>`;
-    }
-    if (c.status !== 'running') {
-      btns += `<button onclick="webCampaignAction(${c.id},'delete')" style="${s}background:#f1f5f9;border-color:#cbd5e1;color:#64748b">Del</button>`;
-    }
-    return `<tr>
-      <td style="font-family:var(--mono);font-size:.7rem">#${c.id}</td>
-      <td>${c.name}</td>
-      <td style="font-size:.7rem;color:var(--muted);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${c.target_url}">${c.target_url}</td>
-      <td><span class="progress-bar"><span class="progress-fill" style="width:${pct}%"></span></span>${c.visits_sent}/${c.visits_total}</td>
-      <td><span class="jbadge ${c.status}">${c.status}</span></td>
-      <td style="white-space:nowrap">${btns}</td>
-    </tr>`;
-  }).join('') : `<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:1.75rem;font-size:.8rem">No campaigns yet.</td></tr>`;
-
-  document.getElementById('wt-campaigns-body').innerHTML = rows;
-
-  // Auto-poll while any campaign is running
-  const hasRunning = campaigns.some(c => c.status === 'running');
-  if (hasRunning) setTimeout(loadWebCampaigns, 4000);
-}
-
-async function launchWebCampaign() {
-  const name    = document.getElementById('wt-name').value.trim();
-  const url     = document.getElementById('wt-url').value.trim();
-  const visits  = parseInt(document.getElementById('wt-visits').value);
-  const source  = document.getElementById('wt-source').value;
-  const device  = document.getElementById('wt-device').value;
-  const persona = document.getElementById('wt-persona').value;
-  const bounce  = parseInt(document.getElementById('wt-bounce').value);
-  const pages   = parseInt(document.getElementById('wt-pages').value);
-
-  if (!name) { toast('Enter a campaign name.', 'err'); return; }
-  if (!url)  { toast('Enter a target URL.', 'err');   return; }
-  if (!visits || visits < 1) { toast('Enter a valid visit count.', 'err'); return; }
-
-  try {
-    const res = await fetch(`${API}/api/web-traffic/campaigns`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-auth-token': S.token },
-      body: JSON.stringify({
-        name, target_url: url, visits_total: visits,
-        traffic_source: source, device, persona,
-        bounce_rate: bounce, pages_per_session: pages,
-      }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Failed to create campaign');
-
-    // Immediately start it
-    await fetch(`${API}/api/web-traffic/campaigns/${data.id}/start`, {
-      method: 'POST',
-      headers: { 'x-auth-token': S.token },
-    });
-
-    toast(`Campaign #${data.id} launched!`, 'ok');
-    document.getElementById('wt-name').value = '';
-    document.getElementById('wt-url').value  = '';
-    await loadWebCampaigns();
-  } catch (e) { toast('Error: ' + e.message, 'err'); }
-}
-
-async function webCampaignAction(id, action) {
-  try {
-    if (action === 'delete') {
-      if (!confirm('Delete this campaign and all its visit logs?')) return;
-      await fetch(`${API}/api/web-traffic/campaigns/${id}`, {
-        method: 'DELETE', headers: { 'x-auth-token': S.token }
-      });
-    } else if (action === 'start') {
-      await fetch(`${API}/api/web-traffic/campaigns/${id}/start`, {
-        method: 'POST', headers: { 'x-auth-token': S.token }
-      });
-    } else if (action === 'pause') {
-      await fetch(`${API}/api/web-traffic/campaigns/${id}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'x-auth-token': S.token },
-        body: JSON.stringify({ status: 'paused' }),
-      });
-    } else if (action === 'cancel') {
-      await fetch(`${API}/api/web-traffic/campaigns/${id}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'x-auth-token': S.token },
-        body: JSON.stringify({ status: 'cancelled' }),
-      });
-    }
-    await loadWebCampaigns();
-  } catch (e) { toast('Error: ' + e.message, 'err'); }
-}
-
-function updStats() {
-  const views     = S.jobs.filter(j=>j.action_type==='views').reduce((a,j)=>a+j.completed_count,0);
-  const likes     = S.jobs.filter(j=>j.action_type==='likes').reduce((a,j)=>a+j.completed_count,0);
-  const followers = S.jobs.filter(j=>j.action_type==='followers').reduce((a,j)=>a+j.completed_count,0);
-  const active    = S.jobs.filter(j=>j.status==='running'||j.status==='pending').length;
-  document.getElementById('sv-views').textContent     = views     ? views.toLocaleString()     : '—';
-  document.getElementById('sv-likes').textContent     = likes     ? likes.toLocaleString()     : '—';
-  document.getElementById('sv-followers').textContent = followers ? followers.toLocaleString() : '—';
-  document.getElementById('sv-jobs').textContent      = active;
-}
-
-// ── CONNECT ──
-function renderConnGrid() {
-  const count = Object.values(S.connected).filter(Boolean).length;
-  document.getElementById('plat-badge').textContent = `${count} Platform${count!==1?'s':''}`;
-  const grid = document.getElementById('conn-grid');
-  grid.innerHTML = Object.entries(PLATS).map(([key,cfg]) => {
-    const on = !!S.connected[key];
-    return `<div class="conn-card ${on?'on':''}">
-      ${on ? '<div class="conn-badge">Connected</div>' : ''}
-      <div class="conn-ico">${cfg.ico}</div>
-      <div class="conn-name">${cfg.name}</div>
-      <div class="conn-desc">${on ? 'Session active. Actions will be delivered to your content.' : 'Paste cookies exported from Cookie Editor to connect.'}</div>
-      <div class="conn-st ${on?'on':'off'}">${on ? '● Connected' : '○ Not connected'}</div>
-      ${on
-        ? `<button class="conn-btn on" onclick="disconnectPlat('${key}')">✓ Connected — Disconnect</button>`
-        : `<button class="conn-btn" onclick="openCookieModal('${key}')">🍪 Paste Cookies →</button>`
-      }
-    </div>`;
-  }).join('');
-}
-
-function renderOvPlatforms() {
-  document.getElementById('ov-platforms').innerHTML = Object.entries(PLATS).map(([key,cfg]) => {
-    const on = !!S.connected[key];
-    return `<div class="plat-row">
-      <div class="plat-ico" style="background:${cfg.color}">${cfg.ico}</div>
-      <div class="plat-info">
-        <div class="plat-name">${cfg.name}</div>
-        <div class="plat-st ${on?'on':'off'}">${on?'Connected':'Not connected'}</div>
-      </div>
-      <button class="plat-btn" onclick="${on?`disconnectPlat('${key}')`:`openCookieModal('${key}')`}">${on?'Disconnect':'Connect'}</button>
-    </div>`;
-  }).join('');
-}
-
-function openOModal(platform) {
-  S.connectTarget = platform;
-  const cfg = PLATS[platform];
-  document.getElementById('om-ico').textContent   = cfg.ico;
-  document.getElementById('om-title').textContent = `CONNECT ${cfg.name.toUpperCase()}`;
-  document.getElementById('om-sub').textContent   = `A browser will open on the server — log in to ${cfg.name} normally, including any 2FA or captcha.`;
-  document.getElementById('om-btn-txt').textContent = '🖥️ Launch Browser';
-  document.getElementById('omodal-overlay').classList.add('open');
-}
-
-function closeOModal() { document.getElementById('omodal-overlay').classList.remove('open'); }
-
-async function doConnect() {
-  closeOModal();
-  if (!S.connectTarget) return;
-  const platform = S.connectTarget;
-  toast('Opening browser…', 'ok');
-  try {
-    const res = await fetch('/api/relay', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-auth-token': S.token },
-      body: JSON.stringify({ platform }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Failed to start relay');
-    RelayClient.open(data.sessionId, platform);
-  } catch (err) {
-    toast('Error: ' + err.message, 'err');
-  }
-}
-
-function disconnectPlat(platform) {
-  S.connected[platform] = false;
-  renderConnGrid();
-  renderOvPlatforms();
-  toast(`${PLATS[platform].name} disconnected.`, 'ok');
-}
-
-// ── UI HELPERS ──
-function updFreeBar() {
-  const pct = (S.freeLeft / 10) * 100;
-  document.getElementById('free-fill').style.width = pct + '%';
-  document.getElementById('free-lbl').textContent  = `${S.freeLeft} / 10`;
-  document.getElementById('bill-free').textContent = S.freeLeft;
-}
-
-function renderActivityChart() {
-  const days = ['M','T','W','T','F','S','S'];
-  const h    = [20,45,35,60,50,80,95];
-  document.getElementById('act-chart').innerHTML = days.map((d,i) =>
-    `<div class="act-col">
-      <div class="act-bar" style="height:${h[i]}%;flex:1" title="${h[i]} actions"></div>
-      <div class="act-day">${d}</div>
-    </div>`
-  ).join('');
-}
-
-let _toastTimer;
-function toast(msg, type='ok') {
-  const el = document.getElementById('toast-el');
-  el.textContent = msg; el.className = `toast ${type} show`;
-  clearTimeout(_toastTimer);
-  _toastTimer = setTimeout(() => el.classList.remove('show'), 3500);
-}
-
-// Auto-poll jobs every 10s if dashboard is active
-setInterval(() => {
-  if (S.token && document.getElementById('page-dashboard').classList.contains('active')) {
-    loadJobs();
-  }
-}, 10000);
-
-// ── COOKIE IMPORT ────────────────────────────────────────────────────────────
-let _ckTarget = null;
-function openCookieModal(platform) {
-  _ckTarget = platform;
-  const cfg = PLATS[platform];
-  document.getElementById('ck-title').textContent = `PASTE ${cfg.name.toUpperCase()} COOKIES`;
-  document.getElementById('ck-site').textContent  = cfg.name;
-  document.getElementById('ck-label').value = '';
-  document.getElementById('ck-json').value  = '';
-  document.getElementById('cookie-overlay').classList.add('open');
-}
-function closeCookieModal() {
-  document.getElementById('cookie-overlay').classList.remove('open');
-}
-async function submitCookies() {
-  const platform     = _ckTarget;
-  const label        = document.getElementById('ck-label').value.trim();
-  const cookies_json = document.getElementById('ck-json').value.trim();
-  if (!cookies_json) { toast('Paste cookies JSON first', 'err'); return; }
-  try {
-    JSON.parse(cookies_json); // validate
-  } catch { toast('Invalid JSON — copy again from Cookie Editor', 'err'); return; }
-  try {
-    const res = await fetch('/api/accounts/import', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-auth-token': S.token },
-      body: JSON.stringify({ platform, label, cookies_json }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Import failed');
-    S.connected[platform] = true;
-    renderConnGrid();
-    renderOvPlatforms();
-    closeCookieModal();
-    toast(`✓ ${PLATS[platform].name} connected — ${data.cookies} cookies imported, warmup started!`, 'ok');
-  } catch (err) {
-    toast('Error: ' + err.message, 'err');
-  }
-}
-
-// ── BROWSER RELAY CLIENT ──────────────────────────────────────────────────────
-const RelayClient = (() => {
-  let _ws = null, _sid = null, _plat = null, _canvas = null, _ctx = null, _lastMove = 0;
-
-  function _sx(x) { return x * (1280 / _canvas.offsetWidth); }
-  function _sy(y) { return y * (800  / _canvas.offsetHeight); }
-  function _send(obj) { if (_ws && _ws.readyState === 1) _ws.send(JSON.stringify(obj)); }
-
-  // ── Unified pointer handlers (mouse + touch via Pointer Events API) ──
-  function _onPointerDown(e) {
-    e.preventDefault();
-    const r = _canvas.getBoundingClientRect();
-    _send({ type: 'click', x: _sx(e.clientX - r.left), y: _sy(e.clientY - r.top) });
-  }
-  function _onPointerMove(e) {
-    if (e.buttons === 0 && e.pointerType === 'mouse') return; // only move when pressed on desktop
-    const now = Date.now(); if (now - _lastMove < 60) return; _lastMove = now;
-    const r = _canvas.getBoundingClientRect();
-    _send({ type: 'mousemove', x: _sx(e.clientX - r.left), y: _sy(e.clientY - r.top) });
-  }
-  function _onWheel(e) { e.preventDefault(); _send({ type: 'scroll', dy: e.deltaY }); }
-  function _onKey(e) {
-    const overlay = document.getElementById('relay-overlay');
-    if (!overlay || overlay.style.display === 'none') return;
-    if (e.key === 'Escape') { close(); return; }
-    const SPEC = new Set(['Enter','Backspace','Delete','Tab','ArrowUp','ArrowDown','ArrowLeft','ArrowRight',
-      'Home','End','PageUp','PageDown','F1','F2','F3','F4','F5','F6','F7','F8','F9','F10','F11','F12']);
-    if (e.ctrlKey || e.metaKey) {
-      e.preventDefault(); _send({ type: 'keydown', key: `Control+${e.key}` });
-    } else if (SPEC.has(e.key)) {
-      e.preventDefault(); _send({ type: 'keydown', key: e.key });
-    } else if (e.key.length === 1) {
-      _send({ type: 'type', text: e.key });
-    }
-  }
-
-  function _drawFrame(buf) {
-    const blob = new Blob([buf.slice(1)], { type: 'image/jpeg' });
-    const url  = URL.createObjectURL(blob);
-    const img  = new Image();
-    img.onload = () => { _ctx.drawImage(img, 0, 0); URL.revokeObjectURL(url); };
-    img.src = url;
-  }
-
-  function open(sessionId, platform) {
-    _sid    = sessionId;
-    _plat   = platform;
-    _canvas = document.getElementById('relay-canvas');
-    _ctx    = _canvas.getContext('2d');
-    _canvas.width  = 1280;
-    _canvas.height = 800;
-    _canvas.style.touchAction  = 'none';
-    _canvas.style.userSelect   = 'none';
-    _canvas.style.webkitUserSelect = 'none';
-
-    document.getElementById('relay-plat-ico').textContent = PLATS[platform]?.ico || '🌐';
-    document.getElementById('relay-label').value = '';
-    document.getElementById('relay-url-bar').value = 'Loading…';
-    document.getElementById('relay-status').textContent = 'Connecting…';
-    document.getElementById('relay-overlay').style.display = 'flex';
-
-    const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-    _ws = new WebSocket(`${proto}://${location.host}/ws/relay?s=${sessionId}`);
-    _ws.binaryType = 'arraybuffer';
-    _ws.onmessage = (e) => {
-      if (e.data instanceof ArrayBuffer) {
-        const v = new Uint8Array(e.data);
-        if (v[0] === 0x01) _drawFrame(e.data);
-      } else {
-        const msg = JSON.parse(e.data);
-        if (msg.type === 'url')    document.getElementById('relay-url-bar').value = msg.url;
-        if (msg.type === 'status') document.getElementById('relay-status').textContent =
-          msg.status === 'ready' ? '🟢 Tap the screen to interact — type in the bar below' : msg.status;
-        if (msg.type === 'error')  toast('Relay: ' + msg.message, 'err');
-        if (msg.type === 'closed') close();
-      }
-    };
-    _ws.onclose = () => { document.getElementById('relay-status').textContent = '🔴 Disconnected'; };
-
-    _canvas.addEventListener('pointerdown', _onPointerDown);
-    _canvas.addEventListener('pointermove', _onPointerMove);
-    _canvas.addEventListener('wheel',       _onWheel, { passive: false });
-    document.addEventListener('keydown',    _onKey);
-
-    // Typing bar — send characters directly as they're typed
-    const ti = document.getElementById('relay-type-input');
-    if (ti) {
-      ti.value = '';
-      ti.oninput = null;
-      ti.onkeydown = null;
-      ti.addEventListener('keydown', _onTypeKey);
-      ti.addEventListener('input',   _onTypeInput);
-      ti._sent = 0;
-    }
-  }
-
-  let _typeBuffer = '';
-  function _onTypeInput(e) {
-    const ti = e.target;
-    const val = ti.value;
-    // Send any newly appended characters
-    if (val.length > ti._sent) {
-      _send({ type: 'type', text: val.slice(ti._sent) });
-      ti._sent = val.length;
-    } else if (val.length < ti._sent) {
-      const diff = ti._sent - val.length;
-      for (let i = 0; i < diff; i++) _send({ type: 'keydown', key: 'Backspace' });
-      ti._sent = val.length;
-    }
-  }
-  function _onTypeKey(e) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      _send({ type: 'keydown', key: 'Enter' });
-      e.target.value = ''; e.target._sent = 0;
-    }
-  }
-
-  async function capture() {
-    const label = document.getElementById('relay-label').value.trim();
-    document.getElementById('relay-status').textContent = '⏳ Capturing session…';
-    try {
-      const res = await fetch(`/api/relay/${_sid}/capture`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-auth-token': S.token },
-        body: JSON.stringify({ label }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Capture failed');
-      S.connected[_plat] = true;
-      renderConnGrid();
-      renderOvPlatforms();
-      toast(`✓ ${PLATS[_plat]?.name || _plat} connected — warmup started!`, 'ok');
-      close();
-    } catch (err) {
-      document.getElementById('relay-status').textContent = '❌ ' + err.message;
-      toast('Error: ' + err.message, 'err');
-    }
-  }
-
-  function sendEnter()     { _send({ type: 'keydown', key: 'Enter' }); }
-  function sendBackspace() { _send({ type: 'keydown', key: 'Backspace' }); }
-  function sendKey(k)      { _send({ type: 'keydown', key: k }); }
-
-  function close() {
-    _canvas?.removeEventListener('pointerdown', _onPointerDown);
-    _canvas?.removeEventListener('pointermove', _onPointerMove);
-    _canvas?.removeEventListener('wheel',       _onWheel);
-    document.removeEventListener('keydown',     _onKey);
-    const ti = document.getElementById('relay-type-input');
-    if (ti) { ti.removeEventListener('keydown', _onTypeKey); ti.removeEventListener('input', _onTypeInput); ti.value = ''; ti._sent = 0; }
-    document.getElementById('relay-overlay').style.display = 'none';
-    if (_ws) { _ws.close(); _ws = null; }
-    if (_sid) {
-      fetch(`/api/relay/${_sid}`, { method: 'DELETE', headers: { 'x-auth-token': S.token } }).catch(() => {});
-      _sid = null;
-    }
-  }
-
-  return { open, capture, close, sendEnter, sendBackspace, sendKey };
-})();
-
-// ── GROWTH DASHBOARD ──
-const GOAL_PLAT_ICO = { youtube:'▶️', facebook:'👤', instagram:'📷', tiktok:'🎵' };
-const GOAL_PLAT_BG  = { youtube:'#fee2e2', facebook:'#eff6ff', instagram:'#fce7f3', tiktok:'#f0fdf4' };
-let _goals=[], _benchmarks={}, _activeGoalId=null;
-
+// ── Goals ──
 async function loadGoals(){
-  try {
-    _goals = await fetch('/api/goals', { headers:{'x-auth-token':S.token} }).then(r=>r.ok?r.json():[]);
-    if(!_goals.length){ renderGoalsEmpty(); return; }
-    if(!_activeGoalId||!_goals.find(g=>g.goal.id===_activeGoalId)) _activeGoalId=_goals[0].goal.id;
-    try { _benchmarks[_activeGoalId] = await fetch(`/api/benchmark/${_activeGoalId}`,{headers:{'x-auth-token':S.token}}).then(r=>r.ok?r.json():null); } catch(_){}
-    renderGoalTabs(); renderGoalView();
-  } catch(e){
-    document.getElementById('mn-goal-view').innerHTML=`<div class="mn-empty">Could not load data: ${e.message}</div>`;
-  }
+  try{
+    goals = await apiFetch('/api/goals');
+    if(!goals.length){ renderEmptyDash(); return; }
+    if(!activeGoalId||!goals.find(g=>g.goal.id===activeGoalId)) activeGoalId=goals[0].goal.id;
+    try{ benchmarks[activeGoalId]=await apiFetch('/api/benchmark/'+activeGoalId); }catch(_){}
+    renderTabs(); renderGoalCard();
+  }catch(_){ renderEmptyDash(); }
 }
 
-function renderGoalsEmpty(){
-  document.getElementById('mn-acct-tabs').innerHTML=`<div class="acct-tab add" onclick="goSP('connect')">+ Connect Your First Channel</div>`;
-  document.getElementById('mn-goal-view').innerHTML=`<div class="mn-empty">Connect a YouTube or Facebook account to start tracking your path to monetization.<br><button class="mn-connect-btn" onclick="goSP('connect')">Connect Account →</button></div>`;
+function renderEmptyDash(){
+  document.getElementById('acct-tabs').innerHTML=`<div class="acct-tab add" onclick="goSP('connect')">+ Connect Your First Channel</div>`;
+  document.getElementById('goal-view').innerHTML=`<div class="empty">Connect a YouTube channel or Facebook page to start tracking your path to monetization.<br><br><button class="btn-accent" onclick="goSP('connect')" style="margin-top:.5rem">Connect Now →</button></div>`;
+  document.getElementById('dash-sub').textContent='No channels connected yet';
 }
 
-function renderGoalTabs(){
-  document.getElementById('mn-acct-tabs').innerHTML =
-    _goals.map(g=>`<div class="acct-tab ${g.goal.id===_activeGoalId?'active':''}" onclick="selectGoal(${g.goal.id})">
-      <div class="acct-tab-ico" style="background:${GOAL_PLAT_BG[g.goal.platform]||'#eee'}">${GOAL_PLAT_ICO[g.goal.platform]||'🌐'}</div>
+function renderTabs(){
+  document.getElementById('acct-tabs').innerHTML=
+    goals.map(g=>`<div class="acct-tab ${g.goal.id===activeGoalId?'active':''}" onclick="selectGoal(${g.goal.id})">
+      <div class="acct-tab-ico" style="background:${PLAT_BG[g.goal.platform]||'#eee'}">${PLAT_ICO[g.goal.platform]||'🌐'}</div>
       <div><div class="acct-tab-name">${g.goal.channel_label||'Channel'}</div>
-      <div class="acct-tab-plat">${g.goal.platform} · ${g.overallPct}%</div></div>
-    </div>`).join('') + `<div class="acct-tab add" onclick="goSP('connect')">+</div>`;
+      <div class="acct-tab-meta">${g.goal.platform} · ${g.overallPct}%</div></div>
+    </div>`).join('')+`<div class="acct-tab add" onclick="goSP('connect')">+</div>`;
 }
 
 async function selectGoal(id){
-  _activeGoalId=id;
-  renderGoalTabs();
-  if(!_benchmarks[id]){ try{ _benchmarks[id]=await fetch(`/api/benchmark/${id}`,{headers:{'x-auth-token':S.token}}).then(r=>r.ok?r.json():null); }catch(_){} }
-  renderGoalView();
+  activeGoalId=id; renderTabs();
+  if(!benchmarks[id]){ try{ benchmarks[id]=await apiFetch('/api/benchmark/'+id); }catch(_){} }
+  renderGoalCard();
 }
 
-function renderGoalView(){
-  const g = _goals.find(x=>x.goal.id===_activeGoalId);
-  if(!g) return;
-  const bm = _benchmarks[_activeGoalId];
-  const fmt  = n => n>=1000000?`${(n/1000000).toFixed(1)}M`:n>=1000?`${(n/1000).toFixed(1)}K`:String(Math.round(n));
-  const fmtH = h => h>=1000?`${(h/1000).toFixed(1)}K`:Math.round(h).toLocaleString();
-  const etaText = g.reached ? '' :
-    g.etaDays==null ? 'Building baseline — check back in a few days' :
-    g.etaDays===0   ? 'Finalizing…' :
+function renderGoalCard(){
+  const g=goals.find(x=>x.goal.id===activeGoalId); if(!g) return;
+  const bm=benchmarks[activeGoalId];
+  const fmt=n=>n>=1e6?`${(n/1e6).toFixed(1)}M`:n>=1000?`${(n/1000).toFixed(1)}K`:String(Math.round(n));
+  document.getElementById('dash-sub').textContent=`${g.goal.channel_label||'Channel'} · ${g.platformLabel}`;
+
+  // ETA — show only if sufficient data
+  const etaTxt = g.reached ? '' :
+    (g.etaDays==null) ? 'Building baseline — check back in a few days' :
     `est. <strong>${g.etaDays} days</strong> at current rate`;
-  const reqsHtml = (g.reqs||[]).map(r=>`
+
+  const reqsHtml=g.reqs.map(r=>`
     <div class="req">
       <div class="req-head">
-        <div class="req-label"><span class="req-check ${r.done?'done':''}">${r.done?'✓':'○'}</span>${r.label}</div>
-        <div class="req-nums"><span class="cur">${r.key==='watch_hr'?fmtH(r.current):fmt(r.current)}</span> <span class="tgt">/ ${r.key==='watch_hr'?fmtH(r.target):fmt(r.target)}</span></div>
+        <div class="req-lbl"><span class="req-chk ${r.done?'done':''}">${r.done?'✓':'○'}</span>${r.label}</div>
+        <div class="req-nums"><span class="cur">${fmt(r.current)}</span><span class="tgt"> / ${fmt(r.target)}</span></div>
       </div>
       <div class="req-track"><div class="req-fill ${r.done?'done':''}" style="width:${r.pct}%"></div></div>
-      <div class="req-sub">${r.pct}%${r.done?' · done':(r.remaining>0?` · ${r.key==='watch_hr'?fmtH(r.remaining):fmt(r.remaining)} to go`:'')}</div>
+      <div class="req-sub">${r.pct}%${r.done?' · done':r.remaining>0?` · ${fmt(r.remaining)} to go`:''}</div>
     </div>`).join('');
-  let benchHtml = '';
+
+  // Benchmark panel
+  let benchHtml='<div class="narr" style="margin-top:.5rem;opacity:.4">Benchmark syncing…</div>';
   if(bm?.percentile?.percentile!=null){
-    benchHtml = `<div class="pct-display"><div class="pct-num">${bm.percentile.percentile}<span style="font-size:1.5rem;opacity:.6">%</span></div>
-      <div class="pct-desc">faster than other ${bm.category||''} channels in your cohort</div></div>
-      <div class="narrative">${(bm.narrative||[]).map(l=>`<div class="narr-line">${l}</div>`).join('')}</div>`;
-  } else {
-    benchHtml=`<div class="narr-line" style="margin-top:1rem;opacity:.5">${bm?.percentile?.needsMoreData?'Building your benchmark — check back soon.':'Benchmark data syncing…'}</div>`;
+    benchHtml=`<div class="pct-big">${bm.percentile.percentile}<span style="font-size:1.4rem;opacity:.5">%</span></div>
+    <div class="pct-desc">growing faster than<br>${bm.category||''} channels like yours</div>
+    <div class="narr-list">${(bm.narrative||[]).map(l=>`<div class="narr">${l}</div>`).join('')}</div>`;
+  } else if(bm?.percentile?.needsMoreData){
+    benchHtml=`<div class="narr" style="margin-top:.5rem">Building your benchmark — we'll compare you to similar channels once we have enough data.</div>`;
   }
-  const rivals = bm?.rivals||[];
-  const rivalRows = rivals.length ? rivals.map((r,i)=>`
+
+  // Rivals (compact, 2 rows)
+  const rivals=(bm?.rivals||[]).slice(0,3);
+  const rivalsHtml=rivals.length?rivals.map((r,i)=>`
     <div class="rival-row">
       <div class="rival-rank">#${i+1}</div>
       <div class="rival-info"><div class="rival-name">${r.label||r.channelId}</div><div class="rival-cat">${r.category||''}</div></div>
       <div class="rival-subs">${fmt(r.subs)}</div>
-      <div class="rival-gap"><div class="rival-gap-num">+${fmt(r.gapSubs)}</div><div class="rival-gap-eta">${r.catchUpDays?r.catchUpDays+' days':'—'}</div></div>
-      <div class="rival-earn"><div class="rival-earn-num">${r.estMonthlyUSD?'$'+r.estMonthlyUSD:'-'}</div><div class="rival-earn-lbl">/month est.</div></div>
-      ${i===0?'<div class="rival-badge nearest">Nearest</div>':'<div class="rival-badge">Rival</div>'}
-    </div>`).join('') :
-    `<div style="padding:1rem 0;font-size:.8rem;color:var(--muted)">No rivals found yet — add one manually or wait for more channels to join your cohort.</div>`;
-  const delivered = g.delivered||0;
-  const estMo     = bm?.estMonthlyUSD||0;
-  document.getElementById('mn-goal-view').innerHTML = `
-    <div class="mn-hero">
-      <div class="mn-hero-grid"></div>
-      <div class="mn-hero-body">
+      <div class="rival-gap"><div class="rival-gap-n">+${fmt(r.gapSubs)}</div><div class="rival-gap-e">${r.catchUpDays?r.catchUpDays+'d':'—'}</div></div>
+      <div class="rival-earn"><div class="rival-earn-n">${r.estMonthlyUSD?'$'+r.estMonthlyUSD:'—'}</div><div class="rival-earn-l">/mo</div></div>
+      ${i===0?'<div class="rival-badge nearest">Nearest</div>':''}
+    </div>`).join(''):`<div style="font-size:.8rem;color:var(--muted);padding:.5rem 0">No rivals yet — <button style="background:none;border:none;cursor:pointer;color:var(--red);font-family:var(--mono);font-size:.72rem;text-decoration:underline" onclick="goSP('rivals')">add one →</button></div>`;
+
+  document.getElementById('goal-view').innerHTML=`
+    <div class="mon-hero">
+      <div class="mon-grid"></div>
+      <div class="mon-body">
         <div>
-          <div class="hero-eyebrow">${g.platformLabel||g.goal.platform}</div>
-          <div class="hero-status">${g.reached?'YOU\'RE<br><em>monetized.</em>':`${g.overallPct}% TO<br><em>monetized.</em>`}</div>
-          ${!g.reached&&etaText?`<div class="hero-eta">${etaText}</div>`:''}
+          <div class="mon-eyebrow">${g.platformLabel}</div>
+          <div class="mon-status">${g.reached?'YOU\'RE<br><em>monetized.</em>':`${g.overallPct}% TO<br><em>monetized.</em>`}</div>
+          ${etaTxt?`<div class="mon-eta">${etaTxt}</div>`:''}
           <div class="req-list">${reqsHtml}</div>
         </div>
         <div>
-          <div class="bench-label">Your Cohort Standing</div>
+          <div class="bench-lbl">Cohort Standing</div>
           ${benchHtml}
         </div>
       </div>
     </div>
-    <div class="mn-stats-row">
-      <div class="mn-stat"><div class="mn-stat-lbl">Delivered by Nexus</div><div class="mn-stat-val">${fmt(delivered)}</div><div class="mn-stat-delta ${delivered>0?'up':'pending'}">${delivered>0?'▲ engine running':'engine running'}</div></div>
-      <div class="mn-stat"><div class="mn-stat-lbl">Est. Monthly Revenue</div><div class="mn-stat-val">${estMo?'$'+estMo:'—'}</div><div class="mn-stat-delta pending">${g.goal.platform==='youtube'?'after monetize':''}</div></div>
-      <div class="mn-stat"><div class="mn-stat-lbl">Nearest Rival Gap</div><div class="mn-stat-val">${rivals[0]?fmt(rivals[0].gapSubs):'—'}</div><div class="mn-stat-delta ${rivals[0]?.catchUpDays?'up':'pending'}">${rivals[0]?.catchUpDays?'~'+rivals[0].catchUpDays+' days':''}</div></div>
-      <div class="mn-stat"><div class="mn-stat-lbl">Cohort Rank</div><div class="mn-stat-val">${bm?.percentile?.percentile!=null?'Top '+(100-bm.percentile.percentile)+'%':'—'}</div><div class="mn-stat-delta pending">${bm?.percentile?.sampleSize?bm.percentile.sampleSize+' channels':''}</div></div>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-lbl">Delivered by Nexus</div><div class="stat-val">${fmt(g.delivered||0)}</div><div class="stat-chg ${g.delivered>0?'up':''}">since last sync</div></div>
+      <div class="stat"><div class="stat-lbl">Est. Monthly Revenue</div><div class="stat-val">${bm?.estMonthlyUSD?'$'+bm.estMonthlyUSD:'—'}</div><div class="stat-chg">after monetize</div></div>
+      <div class="stat"><div class="stat-lbl">Nearest Rival Gap</div><div class="stat-val">${rivals[0]?fmt(rivals[0].gapSubs):'—'}</div><div class="stat-chg ${rivals[0]?.catchUpDays?'up':''}">${rivals[0]?.catchUpDays?'~'+rivals[0].catchUpDays+' days':''}</div></div>
+      <div class="stat"><div class="stat-lbl">Cohort Rank</div><div class="stat-val">${bm?.percentile?.percentile!=null?'Top '+(100-bm.percentile.percentile)+'%':'—'}</div><div class="stat-chg">${bm?.percentile?.sampleSize?bm.percentile.sampleSize+' channels':''}</div></div>
     </div>
-    <div class="mn-panel">
-      <div class="mn-panel-head">
-        <div class="mn-panel-title">Your Rivals <span>channels slightly ahead of you</span></div>
-        <button class="mn-panel-action" onclick="showMnRivalInput()">+ Add Rival</button>
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Rivals <span>channels slightly ahead</span></div>
+        <button class="panel-btn" onclick="goSP('rivals')">View All →</button>
       </div>
-      ${rivalRows}
-      <div id="mn-rival-input" style="display:none">
-        <div class="rival-input-row">
-          <input class="rival-inp" type="text" id="mn-rival-url" placeholder="https://www.youtube.com/@channelname">
-          <button class="rival-add-btn" onclick="addMnRival()">Add →</button>
-        </div>
-      </div>
+      ${rivalsHtml}
     </div>
-    <div class="mn-panel">
-      <div class="mn-panel-head"><div class="mn-panel-title">Growth Trajectory <span>path to threshold</span></div></div>
-      <div class="chart-wrap"><svg class="chart-svg" id="mn-chart" viewBox="0 0 800 180" preserveAspectRatio="none"></svg></div>
-      <div class="proj-legend">
-        <span><span class="proj-line" style="background:var(--ink)"></span>Actual (from platform API)</span>
-        <span><span class="proj-line" style="background:var(--accent);border-top:2px dashed var(--accent);height:0"></span>Projected</span>
-        <span><span class="proj-line" style="background:var(--red);border-top:1px dashed var(--red);height:0"></span>Threshold</span>
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">Trajectory <span>path to threshold</span></div></div>
+      <div class="chart-wrap"><svg class="chart-svg" id="chart" viewBox="0 0 800 175" preserveAspectRatio="none"></svg></div>
+      <div class="chart-legend">
+        <span><span class="cl-line" style="background:var(--ink)"></span>Actual (platform API)</span>
+        <span><span class="cl-line" style="background:var(--accent)"></span>Projected</span>
+        <span><span class="cl-line" style="background:var(--red)"></span>Threshold</span>
       </div>
     </div>`;
-  drawGoalChart(g);
+  drawChart(g);
 }
 
-function drawGoalChart(g){
-  const svg=document.getElementById('mn-chart'); if(!svg) return;
-  const W=800,H=180,pad=12;
-  const key    = (g.reqs||[])[0]?.key==='subs'?'subs':'followers';
-  const target = (g.reqs||[])[0]?.target||0;
-  const traj   = g.trajectory||[];
-  const vals   = traj.length ? traj.map(t=>t[key]??0) : [(g.reqs||[])[0]?.current||0];
-  const cur    = vals[vals.length-1];
-  const proj   = [cur];
+function renderRivalsView(goalId){
+  const bm=benchmarks[goalId];
+  const rivals=bm?.rivals||[];
+  const rivalRows=rivals.length?rivals.map((r,i)=>`
+    <div class="rival-row">
+      <div class="rival-rank">#${i+1}</div>
+      <div class="rival-info"><div class="rival-name">${r.label||r.channelId}</div><div class="rival-cat">${r.category||''}</div></div>
+      <div class="rival-subs" style="width:80px;font-family:var(--display);font-size:1.1rem">${(r.subs||0).toLocaleString()}</div>
+      <div class="rival-gap"><div class="rival-gap-n">+${(r.gapSubs||0).toLocaleString()}</div><div class="rival-gap-e">${r.catchUpDays?r.catchUpDays+' days to catch up':'—'}</div></div>
+      <div class="rival-earn"><div class="rival-earn-n">${r.estMonthlyUSD?'$'+r.estMonthlyUSD:'—'}</div><div class="rival-earn-l">/month est.</div></div>
+      ${i===0?'<div class="rival-badge nearest">Nearest</div>':'<div class="rival-badge">Rival</div>'}
+    </div>`).join(''):'<div style="padding:1rem 0;font-size:.8rem;color:var(--muted)">No rivals found in your cohort yet.</div>';
+  document.getElementById('rivals-view').innerHTML=`
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Your Rivals <span>channels in your niche, slightly ahead</span></div>
+        <button class="panel-btn" onclick="showRivalInput()">+ Add Manually</button>
+      </div>
+      ${rivalRows}
+      <div id="rival-input-wrap" style="display:none">
+        <div class="rival-input-row">
+          <input class="rival-inp" type="text" id="rival-url-inp" placeholder="https://www.youtube.com/@channelname">
+          <button class="rival-add" onclick="addRival()">Add →</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function showRivalInput(){
+  const el=document.getElementById('rival-input-wrap');
+  if(el) el.style.display=el.style.display==='none'?'block':'none';
+}
+
+async function addRival(){
+  const url=document.getElementById('rival-url-inp')?.value?.trim();
+  if(!url){ toast('Enter a channel URL','err'); return; }
+  try{
+    await apiFetch(`/api/benchmark/${activeGoalId}/rival`,{method:'POST',body:JSON.stringify({channelUrl:url})});
+    benchmarks[activeGoalId]=await apiFetch('/api/benchmark/'+activeGoalId);
+    renderRivalsView(activeGoalId);
+    toast('Rival added ✓');
+  }catch(e){ toast(e.message,'err'); }
+}
+
+function renderConnectGrid(){
+  const platforms=[
+    {id:'youtube',name:'YouTube',ico:'▶️',bg:'#fee2e2',desc:'Track subscribers + watch hours toward YPP monetization.'},
+    {id:'facebook',name:'Facebook',ico:'👤',bg:'#eff6ff',desc:'Track followers + Reel views toward Facebook monetization.'},
+    {id:'instagram',name:'Instagram',ico:'📷',bg:'#fce7f3',desc:'Track followers toward Instagram Bonuses eligibility.'},
+    {id:'tiktok',name:'TikTok',ico:'🎵',bg:'#f0fdf4',desc:'Track followers toward TikTok Creator Rewards.'},
+  ];
+  document.getElementById('connect-grid').innerHTML=platforms.map(p=>`
+    <div style="border:1px solid var(--border);padding:1.5rem;background:white;display:flex;flex-direction:column;gap:.75rem">
+      <div style="width:40px;height:40px;border-radius:8px;background:${p.bg};display:flex;align-items:center;justify-content:center;font-size:1.4rem">${p.ico}</div>
+      <div style="font-family:var(--display);font-size:1.05rem;letter-spacing:.03em">${p.name}</div>
+      <div style="font-size:.78rem;color:var(--muted);line-height:1.6;flex:1">${p.desc}</div>
+      <button class="btn-ink" style="width:100%;padding:.65rem" onclick="connectPlatform('${p.id}')">Connect ${p.name} →</button>
+    </div>`).join('');
+}
+
+function connectPlatform(platform){
+  // Production: window.location.href = `/api/goals/auth/${platform}`;
+  toast(`Redirecting to ${platform} OAuth…`);
+  setTimeout(()=>{ window.location.href=`/api/goals/auth/${platform}`; },800);
+}
+
+// ── Chart ──
+function drawChart(g){
+  const svg=document.getElementById('chart'); if(!svg) return;
+  const W=800,H=175,pad=10;
+  const key=g.reqs[0].key==='subs'?'subs':'followers';
+  const target=g.reqs[0].target;
+  const traj=g.trajectory||[];
+  const vals=traj.length?traj.map(t=>t[key]??0):[g.reqs[0].current];
+  const cur=vals[vals.length-1];
+  const proj=[cur];
   if(g.etaDays&&g.etaDays>0&&cur<target){
     const step=(target-cur)/g.etaDays;
     for(let i=1;i<=g.etaDays;i++) proj.push(Math.min(target,Math.round(cur+step*i)));
   }
-  const total = vals.length+proj.length-1;
-  const maxV  = Math.max(target*1.06,...vals,...proj);
+  const total=vals.length+proj.length-1;
+  const maxV=Math.max(target*1.06,...vals,...proj);
   const x=i=>pad+(i/Math.max(1,total))*(W-2*pad);
   const y=v=>H-pad-(v/maxV)*(H-2*pad);
   let el='';
@@ -1999,21 +856,51 @@ function drawGoalChart(g){
   svg.innerHTML=el;
 }
 
-function showMnRivalInput(){
-  const el=document.getElementById('mn-rival-input');
-  if(el) el.style.display=el.style.display==='none'?'block':'none';
+// ── Hero animation ──
+function startHeroAnim(){
+  const targets={subs:847,wh:2610};
+  const starts={subs:620,wh:2400};
+  let frame=0; const total=90;
+  const ease=t=>t<.5?2*t*t:(1-Math.pow(-2*t+2,2)/2);
+  function step(){
+    frame++;
+    const p=Math.min(1,ease(frame/total));
+    const s=Math.round(starts.subs+(targets.subs-starts.subs)*p);
+    const w=Math.round(starts.wh+(targets.wh-starts.wh)*p);
+    const sPct=Math.min(100,(s/1000*100)).toFixed(1);
+    const wPct=Math.min(100,(w/4000*100)).toFixed(1);
+    const overall=((parseFloat(sPct)+parseFloat(wPct))/2).toFixed(1);
+    document.getElementById('anim-pct').textContent=overall+'%';
+    document.getElementById('anim-subs').textContent=s.toLocaleString();
+    document.getElementById('anim-wh').textContent=w.toLocaleString();
+    document.getElementById('anim-subs-bar').style.width=sPct+'%';
+    document.getElementById('anim-wh-bar').style.width=wPct+'%';
+    if(frame===total){
+      document.getElementById('anim-eta').textContent='On track — est. 18 days to monetize';
+    }
+    if(frame<total) requestAnimationFrame(step);
+  }
+  setTimeout(()=>requestAnimationFrame(step),800);
 }
 
-async function addMnRival(){
-  const url=document.getElementById('mn-rival-url')?.value?.trim();
-  if(!url){ toast('Enter a channel URL','err'); return; }
-  try {
-    await fetch(`/api/benchmark/${_activeGoalId}/rival`,{method:'POST',headers:{'Content-Type':'application/json','x-auth-token':S.token},body:JSON.stringify({channelUrl:url})});
-    _benchmarks[_activeGoalId]=await fetch(`/api/benchmark/${_activeGoalId}`,{headers:{'x-auth-token':S.token}}).then(r=>r.ok?r.json():null);
-    renderGoalView();
-    toast('Rival added ✓');
-  } catch(e){ toast(e.message,'err'); }
+// ── API ──
+async function apiFetch(path,opts={}){
+  const r=await fetch(API+path,{...opts,headers:{'Content-Type':'application/json','x-auth-token':TOKEN(),...(opts.headers||{})}});
+  if(!r.ok) throw new Error((await r.json().catch(()=>({}))).error||r.statusText);
+  return r.json();
 }
+
+// ── Toast ──
+let _tt;
+function toast(msg,type='ok'){
+  const el=document.getElementById('toast-el');
+  el.textContent=msg; el.className=`toast ${type} show`;
+  clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('show'),3500);
+}
+
+setInterval(()=>{
+  if(document.getElementById('pg-dash').classList.contains('active')) loadGoals();
+},30000);
 </script>
 </body>
 </html>
