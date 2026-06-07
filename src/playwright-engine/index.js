@@ -13,8 +13,7 @@
 //   L6: Inter-session variance (not all ghosts behave identically)
 //   L7: Shorts/Reels loop-aware (platform counts loops, not just first play)
 
-const { launchEphemeral, launchWithSession } = require('./browser');
-const { recordProxyFailure }                 = require('../database/proxies');
+const { launchEphemeral, launchWithSession, recordProxyFailure } = require('./browser');
 const { getDb }                              = require('../database/db');
 const log                                    = require('../utils/logger');
 
