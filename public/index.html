@@ -6,6 +6,7 @@
 <title>Nexus — From Zero to Monetized</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 :root{
   --ink:#0a0a0a;--paper:#f5f0e8;--cream:#ede8dc;
@@ -575,40 +576,57 @@ body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:
 <script>
 'use strict';
 const API   = '';
-const TOKEN = () => localStorage.getItem('nx_token') || '';
 const PLAT_BG  = {youtube:'#fee2e2',facebook:'#eff6ff',instagram:'#fce7f3',tiktok:'#f0fdf4'};
 const PLAT_ICO = {youtube:'▶️',facebook:'👤',instagram:'📷',tiktok:'🎵'};
 let goals=[], benchmarks={}, activeGoalId=null;
 
+// ── Supabase ──
+const _sb = supabase.createClient(
+  'https://eddbbhnshbociatjrylx.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVkZGJiaG5zaGJvY2lhdGpyeWx4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzODczMjMsImV4cCI6MjA5NTk2MzMyM30.u_N3HQNy4COsjNj4rJ7ZvbbGcUVpIc9KWTCS5-nC_sU'
+);
+const TOKEN = () => _sb.auth.getSession().then(r => r.data.session?.access_token || '');
+
 // ── Boot ──
-window.addEventListener('DOMContentLoaded',()=>{
-  const t = TOKEN();
-  if(t && localStorage.getItem('nx_user')){
-    enterDash();
+window.addEventListener('DOMContentLoaded', async ()=>{
+  // Handle OAuth redirect callback (Supabase sets session from URL hash/code)
+  await _sb.auth.exchangeCodeForSession(window.location.search).catch(()=>{});
+  const { data:{ session } } = await _sb.auth.getSession();
+  if(session) {
+    _onSession(session);
   }
   startHeroAnim();
   document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open')}));
+  // Keep session fresh
+  _sb.auth.onAuthStateChange((_event, session)=>{ if(session) _onSession(session); });
 });
+
+function _onSession(session){
+  const u = session.user;
+  const name = u.user_metadata?.full_name || u.email?.split('@')[0] || 'User';
+  document.getElementById('sb-av').textContent  = name[0].toUpperCase();
+  document.getElementById('sb-name').textContent = name;
+  showPage('dash');
+  loadGoals();
+  renderConnectGrid();
+}
 
 // ── Auth ──
 function openAuth(){ document.getElementById('auth-overlay').classList.add('open'); }
 function closeAuth(){ document.getElementById('auth-overlay').classList.remove('open'); }
 
-function doSignIn(provider){
-  // Production: window.location.href = `/api/goals/auth/${provider}`
-  // Demo simulation:
+async function doSignIn(provider){
   closeAuth();
-  const name={google:'Alex Johnson',facebook:'Alex Johnson',twitter:'Alex Johnson'}[provider];
-  const user={name,provider,avatar:name[0]};
-  localStorage.setItem('nx_token','demo-'+Date.now());
-  localStorage.setItem('nx_user',JSON.stringify(user));
-  enterDash();
-  toast('Welcome to Nexus 🎉 Connect your first channel to begin.');
+  const providerMap = { google:'google', facebook:'facebook', twitter:'twitter' };
+  const { error } = await _sb.auth.signInWithOAuth({
+    provider: providerMap[provider],
+    options: { redirectTo: window.location.origin + window.location.pathname }
+  });
+  if(error) toast(error.message, 'err');
 }
 
-function doSignOut(){
-  localStorage.removeItem('nx_token');
-  localStorage.removeItem('nx_user');
+async function doSignOut(){
+  await _sb.auth.signOut();
   showPage('land');
 }
 
@@ -619,9 +637,6 @@ function showPage(id){
 }
 
 function enterDash(){
-  const u = JSON.parse(localStorage.getItem('nx_user')||'{}');
-  document.getElementById('sb-av').textContent  = u.avatar||'U';
-  document.getElementById('sb-name').textContent = u.name||'User';
   showPage('dash');
   loadGoals();
   renderConnectGrid();
@@ -885,7 +900,8 @@ function startHeroAnim(){
 
 // ── API ──
 async function apiFetch(path,opts={}){
-  const r=await fetch(API+path,{...opts,headers:{'Content-Type':'application/json','x-auth-token':TOKEN(),...(opts.headers||{})}});
+  const token = await TOKEN();
+  const r=await fetch(API+path,{...opts,headers:{'Content-Type':'application/json','x-auth-token':token,...(opts.headers||{})}});
   if(!r.ok) throw new Error((await r.json().catch(()=>({}))).error||r.statusText);
   return r.json();
 }
@@ -898,8 +914,11 @@ function toast(msg,type='ok'){
   clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('show'),3500);
 }
 
-setInterval(()=>{
-  if(document.getElementById('pg-dash').classList.contains('active')) loadGoals();
+setInterval(async ()=>{
+  if(document.getElementById('pg-dash').classList.contains('active')){
+    const { data:{ session } } = await _sb.auth.getSession();
+    if(session) loadGoals();
+  }
 },30000);
 </script>
 </body>

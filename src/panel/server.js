@@ -7,7 +7,7 @@ const express = require('express');
 const cors    = require('cors');
 const morgan  = require('morgan');
 
-const { requireAuth, loginHandler, changePasswordHandler } = require('./middleware/auth');
+const { requireAuth } = require('./middleware/auth');
 const { attachRelay } = require('./browser-relay');
 
 const app  = express();
@@ -17,10 +17,6 @@ app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, '../../public')));
-
-// Auth
-app.post('/api/auth/login', loginHandler);
-app.post('/api/auth/change-password', requireAuth, changePasswordHandler);
 
 // All API routes require auth
 app.use('/api/analytics', requireAuth, require('./routes/analytics'));
