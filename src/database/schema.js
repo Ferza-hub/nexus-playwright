@@ -132,6 +132,18 @@ function runMigrations(db) {
   addCol('proxies', 'last_used_at_traffic', 'DATETIME');
 
   // monetization goals + benchmark
+  // Identity lock columns
+  addCol('accounts', 'identity_locked',  'INTEGER DEFAULT 0'); // flag — 1 = locked, 0 = not yet
+  addCol('accounts', 'locked_proxy_url', 'TEXT'); // null = VPS direct IP (valid state)
+  addCol('accounts', 'fp_user_agent',    'TEXT');
+  addCol('accounts', 'fp_viewport_w',    'INTEGER');
+  addCol('accounts', 'fp_viewport_h',    'INTEGER');
+  addCol('accounts', 'fp_timezone',      'TEXT');
+  addCol('accounts', 'fp_locale',        'TEXT');
+  addCol('accounts', 'fp_platform',      'TEXT');
+  addCol('accounts', 'fp_is_mobile',     'INTEGER DEFAULT 0');
+  addCol('accounts', 'geo_region',       "TEXT DEFAULT 'id'");
+
   applyGoalSchema(db);
   applyBenchmarkSchema(db);
 }
